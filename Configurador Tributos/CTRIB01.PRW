@@ -10,7 +10,7 @@ Recebe os dados do PE ITEM e trata para gravar o execauto do perfil de produto;
 /*/
 User Function CTRIB01(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xOper)
 
-    /*Local lMvcFacAuto   := .F. //MV_FACAUTO
+    /*Local lMvcFacAuto   := .F. //MV_FACAUTO*/
     Local xParProd      := SuperGetMV("MV_CONFPP",.F.,"B1_POSIPI") //Parametro para automatizar conforme configuraГЦo do perfil, nЦo usado ainda no fonte*/
     Local lRet          := .T.
 
@@ -25,7 +25,6 @@ User Function CTRIB01(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xOper)
         If xOper == '4'
             lRet := fAlteraConf(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib)
         Else
-
             //здддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд©
             //Ё Busca um registro de cada perfil para comparaГЦo, verificando se И fornecedor, cliente ou produto Ё
             //юдддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддды
@@ -606,6 +605,7 @@ Static Function fGravaZZZ(xCodPer,xCodPro,xTipo,xStatus,xMessage)
         Otherwise
             xTab := "SB1"
     EndCase
+
     //зддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд©
     //Ё Executa o reclock                                                   Ё
     //юддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддды
