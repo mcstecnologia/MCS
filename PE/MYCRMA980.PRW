@@ -17,6 +17,7 @@ User Function CRMA980() ///cXXX1,cXXX2,cXXX3,cXXX4,cXXX5,cXXX6
     Local cIDPonto      := ''
     Local cIDModel      := ''
     Local oObj          := NIL
+    Local xOrig         := ""
     //Local xFacAuto      := GetMV("MV_FACAUTO")
 
     
@@ -37,14 +38,19 @@ User Function CRMA980() ///cXXX1,cXXX2,cXXX3,cXXX4,cXXX5,cXXX6
 
             // Alteracao
             If nOperation == 4
-                U_CTRIB01("","",SA1->A1_COD, SA1->A1_LOJA, SA1->A1_GRPTRIB,'4')
+                xRet := U_CTRIB01("","",SA1->A1_COD, SA1->A1_LOJA, SA1->A1_GRPTRIB,'4',xOrig)
             EndIf
 
             // Exclusao
             If nOperation == 5
             EndIf
 
+        ElseIf cIDPonto == 'FORMCOMMITTTSPRE'
+            If nOperation == 4
+                xOrig := SA1->A1_GRPTRIB
+            EndIF
         EndIf
+
 
     EndIf
 

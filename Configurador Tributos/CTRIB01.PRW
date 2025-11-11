@@ -8,7 +8,7 @@ Recebe os dados do PE ITEM e trata para gravar o execauto do perfil de produto;
 @since 11/4/2025
 @return variant, return_description
 /*/
-User Function CTRIB01(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xOper)
+User Function CTRIB01(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xOper,xOrig)
 
     /*Local lMvcFacAuto   := .F. //MV_FACAUTO*/
     Local xParProd      := SuperGetMV("MV_CONFPP",.F.,"B1_POSIPI") //Parametro para automatizar conforme configuração do perfil, não usado ainda no fonte*/
@@ -23,7 +23,7 @@ User Function CTRIB01(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xOper)
         //³ Se vier se uma alteração, verifica em qual perfil se encontra o registro  ³
         //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
         If xOper == '4'
-            lRet := fAlteraConf(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib)
+            lRet := fAlteraConf(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,Iif(IsInCallStack('MATA020'),'1','2'))
         Else
             //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
             //³ Busca um registro de cada perfil para comparação, verificando se é fornecedor, cliente ou produto ³
@@ -50,6 +50,10 @@ User Function CTRIB01(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xOper)
 
             (xAlias)->(dbSkip())          
             EndDo
+            //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+            //³ Fechando areas abertas                                              ³
+            //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+            (xAlias)->(dbCloseArea())
 
         EndIf
 
@@ -65,11 +69,13 @@ User Function CTRIB01(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xOper)
     EndIf
 
     //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-    //³ Fechando areas abertas                                              ³
+    //³ Caso ocorra erro, retorna registro antigo para o POSIPI, ou GRPTRIB  ³
     //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-    (xAlias)->(dbCloseArea())
+    /*If lRet 
+        fRecLock(xProd,xPosIpi,xClieFor,xLoja,xOrig)
+    Return*/
 
-Return
+Return lRet
 
 /*/{Protheus.doc} fGetF24
 Busca os registros da F24
@@ -148,10 +154,11 @@ Execauto para gravação do perfil de produto
 Static Function fExecAutoConf(xClieFor,xLoja,xCodPer,xTipOpf,xTpPart,xCodPro,nOp)
 
     Local oModel as object
-    Local lOk   := .F.
-    Local aArea := F20->(GetArea())
-    Local xCod  := ""
-    Local lPar := SuperGetMV("ZZ_TABCTRL",.F.,.T.) // parametro que ativa ou não a gravação da tabela de controle
+    Local lOk       := .F.
+    Local aArea     := F20->(GetArea())
+    Local xCod      := ""
+    Local lPar      := SuperGetMV("ZZ_TABCTRL",.F.,.T.) // parametro que ativa ou não a gravação da tabela de controle
+    Local aFields   := {}
 
     F20->(dbSelectArea("F20"))
     F20->(dbSetOrder(1))
@@ -173,61 +180,78 @@ Static Function fExecAutoConf(xClieFor,xLoja,xCodPer,xTipOpf,xTpPart,xCodPro,nOp
         oModel:SetOperation(nOp)
         oModel:Activate() // ativo o modelo
     
-        //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-        //³ Adiciona os registros                                               ³
-        //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-        If Empty(xClieFor)
-            xTpPart := '3'
-            oModel:GetModel("FISA166PRODUTO"):AddLine()
-            oModel:SetValue("FISA166PRODUTO", "F24_FILIAL", FwCodFil())
-            oModel:SetValue("FISA166PRODUTO", "F24_CODIGO", xCodPer)
-            oModel:SetValue("FISA166PRODUTO", "F24_CDPROD", xCodPro)
-            oModel:SetValue("FISA166PRODUTO", "F24_TIPOPF", xTipOpf)
-        Else 
-            oModel:GetModel("FISA164PARTICIPANTE"):AddLine()
-            oModel:SetValue("FISA164PARTICIPANTE", "F22_CODIGO", xCodPer)
-            oModel:SetValue("FISA164PARTICIPANTE", "F22_TPPART", xTpPart)
-            oModel:SetValue("FISA164PARTICIPANTE", "F22_CLIFOR", xClieFor)
-            oModel:SetValue("FISA164PARTICIPANTE", "F22_LOJA", xLoja)
-            oModel:SetValue("FISA164PARTICIPANTE", "F22_TIPOPF", xTipOpf)
-        EndIf
-    
-        If oModel:VldData()
-            oModel:CommitData()
-            lOk := .T.
+        If nOp == 4
+            //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+            //³ Adiciona os registros                                               ³
+            //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
             If Empty(xClieFor)
-                Conout("Produto " + xCodPro + " inserido no perfil " + xCodPer )
-                //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-                //³ Grava log com o registro gerado no rootpath                         ³
-                //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-                U_fLogCtrb(xCodPer, xCodPro, "", "","Perfil Produto")
-                //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-                //³ Grava o registro na tabela de conferencia                          ³
-                //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-                If lPar
-                    fGravaZZZ(xCodPer,xCodPro,'3','1',"Registro Incluído")
-                EndIf
+                xTpPart := '3'
+                oModel:GetModel("FISA166PRODUTO"):AddLine()
+                oModel:SetValue("FISA166PRODUTO", "F24_FILIAL", FwCodFil())
+                oModel:SetValue("FISA166PRODUTO", "F24_CODIGO", xCodPer)
+                oModel:SetValue("FISA166PRODUTO", "F24_CDPROD", xCodPro)
+                oModel:SetValue("FISA166PRODUTO", "F24_TIPOPF", xTipOpf)
             Else 
-                Conout("Cliente " + AllTrim(xClieFor) + " loja " + AllTrim(xLoja) + " inserido no perfil " + AllTrim(xCodPer) )
-                //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-                //³ Grava log com o registro gerado no rootpath                         ³
-                //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-                U_fLogCtrb(xCodPer, "", xClieFor, xLoja,"Perfil CLiente-Fornecedor")
-                //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-                //³ Grava o registro na tabela de conferencia                          ³
-                //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-                If lPar 
-                    fGravaZZZ(xCodPer,xClieFor+xLoja,xTpPart,'1',"Registro Incluído")
+                oModel:GetModel("FISA164PARTICIPANTE"):AddLine()
+                oModel:SetValue("FISA164PARTICIPANTE", "F22_CODIGO", xCodPer)
+                oModel:SetValue("FISA164PARTICIPANTE", "F22_TPPART", xTpPart)
+                oModel:SetValue("FISA164PARTICIPANTE", "F22_CLIFOR", xClieFor)
+                oModel:SetValue("FISA164PARTICIPANTE", "F22_LOJA", xLoja)
+                oModel:SetValue("FISA164PARTICIPANTE", "F22_TIPOPF", xTipOpf)
+            EndIf
+        
+            If oModel:VldData()
+                oModel:CommitData()
+                lOk := .T.
+                If Empty(xClieFor)
+                    Conout("Produto " + xCodPro + " inserido no perfil " + xCodPer )
+                    //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+                    //³ Grava log com o registro gerado no rootpath                         ³
+                    //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+                    U_fLogCtrb(xCodPer, xCodPro, "", "","Perfil Produto")
+                    //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+                    //³ Grava o registro na tabela de conferencia                          ³
+                    //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+                    If lPar
+                        fGravaZZZ(xCodPer,xCodPro,'3','1',"Registro Incluído")
+                    EndIf
+                Else 
+                    Conout("Cliente " + AllTrim(xClieFor) + " loja " + AllTrim(xLoja) + " inserido no perfil " + AllTrim(xCodPer) )
+                    //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+                    //³ Grava log com o registro gerado no rootpath                         ³
+                    //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+                    U_fLogCtrb(xCodPer, "", xClieFor, xLoja,"Perfil CLiente-Fornecedor")
+                    //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+                    //³ Grava o registro na tabela de conferencia                          ³
+                    //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+                    If lPar 
+                        fGravaZZZ(xCodPer,xClieFor+xLoja,xTpPart,'1',"Registro Incluído")
+                    EndIf
+                EndIf
+            Else
+                //VarInfo("",oModel:GetErrorMessage())
+                xCod := Iif(xTpPart == '3',xCodPro,xClieFor+xLoja)
+                If lPar
+                    fGravaZZZ(xCodPer,xCodPro,xTpPart,'2',"Registro não gravado, verificar perfil")
                 EndIf
             EndIf
-        Else
-            //VarInfo("",oModel:GetErrorMessage())
-            xCod := Iif(xTpPart == '3',xCodPro,xClieFor+xLoja)
-            If lPar
-                fGravaZZZ(xCodPer,xCodPro,xTpPart,'2',"Registro não gravado, verificar perfil")
+        EndIf 
+
+        If xTpPart == '2' .And. nOp == 5
+            aadd(aFields,{'F22_CODIGO',xCodPer ,Nil})
+            aadd(aFields,{'F22_CLIFOR',xClieFor,Nil})
+            aadd(aFields,{'F22_LOJA'  ,xLoja   ,Nil})
+            aadd(aFields,{'F22_TPPART',xTpPart ,Nil})
+            aadd(aFields,{'F22_TIPOPF',xTipOpf ,Nil})
+            If FWMVCRotAuto(oModel, "F22", 5, {{"FISA164PARTICIPANTE", aFields}} ,,.T.)
+                lOk := .T. 
+            Else 
+                VarInfo("",oModel:GetErrorMessage())
+                fGravaZZZ(xCodPer,xCodPro,xTpPart,'2',oModel:GetErrorMessage()[6])
             EndIf
-        EndIf
-    
+        Else 
+        EndIF
+        
         oModel:DeActivate()
 
     EndIf
@@ -291,10 +315,12 @@ Faz a deleção e a alteração dos registros nos perfis
 @param xGrpTrib, variant, param_description
 @return variant, return_description
 /*/
-Static Function fAlteraConf(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib)
+Static Function fAlteraConf(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xTpPart)
 
     Local lRet := .T.
     Local lPar := SuperGetMV("ZZ_TABCTRL",.F.,.T.) // parametro que ativa ou não a gravação da tabela de controle
+
+    Default xTpPart := ""
 
     xAlias := fQueryAltera(xProd, xClieFor, xLoja, xTpPart)
 
@@ -308,7 +334,9 @@ Static Function fAlteraConf(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib)
             //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
             lRet := fExecAutoConf("","",(xAlias)->F24_CODIGO, (xAlias)->F24_TIPOPF,"",xProd,5)
             If lPar
-                fGravaZZZ((xAlias)->F24_CODIGO,xProd,'3','1',"Registro excluído")
+                If lRet
+                    fGravaZZZ((xAlias)->F24_CODIGO,xProd,'3','1',"Registro excluído")
+                EndIf
             EndIf
             If lRet
                 //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
@@ -321,19 +349,23 @@ Static Function fAlteraConf(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib)
                     //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ 
                     lRet := fValidaDados('MATA010','', '','','',(xAliasPer)->F24_CODIGO, (xAliasPer)->F24_TIPOPF,'',(xAliasPer)->F24_CDPROD,xProd,4,'',xPosIpi)      
                     If lPar
-                        fGravaZZZ((xAliasPer)->F24_CODIGO,xProd,'3','1',"Registro alterado")
+                        If lRet
+                            fGravaZZZ((xAliasPer)->F24_CODIGO,xProd,'3','1',"Registro alterado")
+                        EndIf
                     EndIf
                 (xAliasPer)->(dbSkip())
                 EndDo
-                (xAliasPer)->(dbCloseArea)
+                (xAliasPer)->(dbCloseArea())
             EndIf
         ElseIf IsInCallStack('MATA020')
             //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
             //³ Faz a exclusão do forencedor no perfil encontrado                   ³
             //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
             lRet := fExecAutoConf(xClieFor, xLoja, (xAlias)->F22_CODIGO, (xAlias)->F22_TIPOPF,'1',"",5)   
-            If lPar         
-                fGravaZZZ((xAlias)->F22_CODIGO,xClieFor+xLoja,'1','1',"Registro Excluído")
+            If lPar 
+                If lRet        
+                    fGravaZZZ((xAlias)->F22_CODIGO,xClieFor+xLoja,'1','1',"Registro Excluído")
+                EndIf
             EndIf
             If lRet
                 //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
@@ -346,11 +378,13 @@ Static Function fAlteraConf(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib)
                     //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ 
                     lRet := fValidaDados('MATA020',(xAliasPer)->F22_CLIFOR, (xAliasPer)->F22_LOJA,xClieFor,xLoja, (xAliasPer)->F22_CODIGO, (xAliasPer)->F22_TIPOPF,'1','','',4,xGrpTrib,'')
                     If lPar
-                        fGravaZZZ((xAliasPer)->F22_CODIGO,xClieFor+xLoja,'1','1',"Registro alterado")
+                        If lRet
+                            fGravaZZZ((xAliasPer)->F22_CODIGO,xClieFor+xLoja,'1','1',"Registro alterado")
+                        EndIF
                     EndIf
                 (xAliasPer)->(dbSkip())
                 EndDo
-                (xAliasPer)->(dbCloseArea)
+                (xAliasPer)->(dbCloseArea())
             EndIf
         Else
             //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
@@ -358,7 +392,9 @@ Static Function fAlteraConf(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib)
             //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
             lRet := fExecAutoConf(xClieFor, xLoja, (xAlias)->F22_CODIGO, (xAlias)->F22_TIPOPF,'2',"",5)
             If lPar
-                fGravaZZZ((xAlias)->F22_CODIGO,xClieFor+xLoja,'2','1',"Registro Excluído")
+                If lRet
+                    fGravaZZZ((xAlias)->F22_CODIGO,xClieFor+xLoja,'2','1',"Registro Excluído")
+                EndIf
             EndIf
             If lRet
                 //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
@@ -371,11 +407,13 @@ Static Function fAlteraConf(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib)
                     //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ 
                     lRet := fValidaDados('CRMA980',(xAliasPer)->F22_CLIFOR, (xAliasPer)->F22_LOJA,xClieFor,xLoja, (xAliasPer)->F22_CODIGO, (xAliasPer)->F22_TIPOPF,'2','','',4,xGrpTrib,'')
                     If lPar
-                        fGravaZZZ((xAliasPer)->F22_CODIGO,xClieFor+xLoja,'2','1',"Registro Alterado")
+                        If lRet
+                            fGravaZZZ((xAliasPer)->F22_CODIGO,xClieFor+xLoja,'2','1',"Registro Alterado")
+                        EndIf
                     EndIf
                 (xAliasPer)->(dbSkip())
                 EndDo
-                (xAliasPer)->(dbCloseArea)
+                (xAliasPer)->(dbCloseArea())
             EndIf
         EndIf
 
@@ -514,7 +552,7 @@ Static Function fQueryAltera(xProd, xClieFor, xLoja, xTpPart)
 
     MpSysOpenQuery(xQuery, xAlias)
 
-Return
+Return xAlias
 
 /*/{Protheus.doc} fMonitor
 Tabela para exibir os registros integrados ao configurador
@@ -620,6 +658,25 @@ Static Function fGravaZZZ(xCodPer,xCodPro,xTipo,xStatus,xMessage)
     ZZZ->(MsUnlock())
 
     RestArea(aArea)
+
+Return
+
+/*/{Protheus.doc} fRecLock
+Retorna o registro antigo ao registro principal, caso ocorra erro na troca dos perfis
+@type function
+@version  
+@author MCS Tecnologia
+@since 11/11/2025
+@param xProd, variant, param_description
+@param xPosIpi, variant, param_description
+@param xClieFor, variant, param_description
+@param xLoja, variant, param_description
+@param xOrig, variant, param_description
+@return variant, return_description
+/*/
+Static Function fRecLock(xProd,xPosIpi,xClieFor,xLoja,xOrig)
+
+
 
 Return
 
