@@ -237,7 +237,10 @@ Static Function fExecAutoConf(xClieFor,xLoja,xCodPer,xTipOpf,xTpPart,xCodPro,nOp
             EndIf
         EndIf 
 
-        If xTpPart == '2' .And. nOp == 5
+        //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+        //³ Abaixo faz o processo de exclusão                                   ³
+        //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+        If !Empty(xClieFor) .And. nOp == 5
             aadd(aFields,{'F22_CODIGO',xCodPer ,Nil})
             aadd(aFields,{'F22_CLIFOR',xClieFor,Nil})
             aadd(aFields,{'F22_LOJA'  ,xLoja   ,Nil})
@@ -246,10 +249,19 @@ Static Function fExecAutoConf(xClieFor,xLoja,xCodPer,xTipOpf,xTpPart,xCodPro,nOp
             If FWMVCRotAuto(oModel, "F22", 5, {{"FISA164PARTICIPANTE", aFields}} ,,.T.)
                 lOk := .T. 
             Else 
-                VarInfo("",oModel:GetErrorMessage())
                 fGravaZZZ(xCodPer,xCodPro,xTpPart,'2',oModel:GetErrorMessage()[6])
             EndIf
         Else 
+            aadd(aFields,{'F22_CODIGO',xCodPer ,Nil})
+            aadd(aFields,{'F22_CLIFOR',xClieFor,Nil})
+            aadd(aFields,{'F22_LOJA'  ,xLoja   ,Nil})
+            aadd(aFields,{'F22_TPPART',xTpPart ,Nil})
+            aadd(aFields,{'F22_TIPOPF',xTipOpf ,Nil})
+            If FWMVCRotAuto(oModel, "F24", 5, {{"FISA164PRODUTO", aFields}} ,,.T.)
+                lOk := .T. 
+            Else 
+                fGravaZZZ(xCodPer,xCodPro,xTpPart,'2',oModel:GetErrorMessage()[6])
+            EndIf   
         EndIF
         
         oModel:DeActivate()
@@ -660,26 +672,6 @@ Static Function fGravaZZZ(xCodPer,xCodPro,xTipo,xStatus,xMessage)
     RestArea(aArea)
 
 Return
-
-/*/{Protheus.doc} fRecLock
-Retorna o registro antigo ao registro principal, caso ocorra erro na troca dos perfis
-@type function
-@version  
-@author MCS Tecnologia
-@since 11/11/2025
-@param xProd, variant, param_description
-@param xPosIpi, variant, param_description
-@param xClieFor, variant, param_description
-@param xLoja, variant, param_description
-@param xOrig, variant, param_description
-@return variant, return_description
-/*/
-Static Function fRecLock(xProd,xPosIpi,xClieFor,xLoja,xOrig)
-
-
-
-Return
-
 
 
 
