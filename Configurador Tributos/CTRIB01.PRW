@@ -4,7 +4,7 @@
 Recebe os dados do PE ITEM e trata para gravar o execauto do perfil de produto;
 @type function
 @version  
-@author MCS Consultoria
+@author MCS Tecnologia
 @since 11/4/2025
 @return variant, return_description
 /*/
@@ -81,7 +81,7 @@ Return lRet
 Busca os registros da F24
 @type function
 @version  
-@author MCS Consultoria
+@author MCS Tecnologia
 @since 11/4/2025
 @return variant, return_description
 /*/
@@ -145,7 +145,7 @@ Return xAlias
 Execauto para gravação do perfil de produto
 @type function
 @version  
-@author MCS Consultoria
+@author MCS Tecnologia
 @since 11/4/2025
 @param xCodPro, variant, param_description
 @param xCodPer, variant, param_description
@@ -204,35 +204,35 @@ Static Function fExecAutoConf(xClieFor,xLoja,xCodPer,xTipOpf,xTpPart,xCodPro,nOp
                 oModel:CommitData()
                 lOk := .T.
                 If Empty(xClieFor)
-                    Conout("Produto " + xCodPro + " inserido no perfil " + xCodPer )
+                    Conout("Produto " + xCodPro + " inserido no perfil " + xCodPer +" - "+ F20->F20_DESC )
                     //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
                     //³ Grava log com o registro gerado no rootpath                         ³
                     //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-                    U_fLogCtrb(xCodPer, xCodPro, "", "","Perfil Produto")
+                    U_fLogCtrb(xCodPer +"-"+F20->F20DESC, xCodPro, "", "","Perfil Produto")
                     //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
                     //³ Grava o registro na tabela de conferencia                          ³
                     //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
                     If lPar
-                        fGravaZZZ(xCodPer,xCodPro,'3','1',"Registro Incluído")
+                        fGravaZZZ(xCodPer,xCodPro,'3','1',"Registro Incluído", F20->F20_DESC)
                     EndIf
                 Else 
                     Conout("Cliente " + AllTrim(xClieFor) + " loja " + AllTrim(xLoja) + " inserido no perfil " + AllTrim(xCodPer) )
                     //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
                     //³ Grava log com o registro gerado no rootpath                         ³
                     //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-                    U_fLogCtrb(xCodPer, "", xClieFor, xLoja,"Perfil CLiente-Fornecedor")
+                    U_fLogCtrb(xCodPer +"-"+F20->F20DESC, "", xClieFor, xLoja,"Perfil CLiente-Fornecedor")
                     //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
                     //³ Grava o registro na tabela de conferencia                          ³
                     //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
                     If lPar 
-                        fGravaZZZ(xCodPer,xClieFor+xLoja,xTpPart,'1',"Registro Incluído")
+                        fGravaZZZ(xCodPer,xClieFor+xLoja,xTpPart,'1',"Registro Incluído",F20->F20_DESC)
                     EndIf
                 EndIf
             Else
                 //VarInfo("",oModel:GetErrorMessage())
                 xCod := Iif(xTpPart == '3',xCodPro,xClieFor+xLoja)
                 If lPar
-                    fGravaZZZ(xCodPer,xCodPro,xTpPart,'2',"Registro não gravado, verificar perfil")
+                    fGravaZZZ(xCodPer,xCodPro,xTpPart,'2',"Registro não gravado, verificar perfil",F20->F20_DESC)
                 EndIf
             EndIf
         EndIf 
@@ -276,7 +276,7 @@ Return lOk
 Grava o log para analise dos testes
 @type function
 @version  
-@author MCS Consultoria
+@author MCS Tecnologia
 @since 3/5/2024
 @return variant, return_description
 /*/
@@ -318,7 +318,7 @@ Return
 Faz a deleção e a alteração dos registros nos perfis
 @type function
 @version  
-@author MCS consultoria
+@author MCS Tecnologia
 @since 11/5/2025
 @param xProd, variant, param_description
 @param xPosIpi, variant, param_description
@@ -439,7 +439,7 @@ Return lRet
 Valida as operações para efetuar a gravação
 @type function
 @version  
-@author MCS consultoria
+@author MCS Tecnologia
 @since 11/5/2025
 @param xChamada, variant, param_description
 @param xClieFor, variant, param_description
@@ -517,7 +517,7 @@ Return lRet
 Função para verificar em qual perfil se encontram o registros para deleção 
 @type function
 @version  
-@author MCS Consultoria
+@author MCS Tecnologia
 @since 11/5/2025
 @param xProd, variant, param_description
 @param xClieFor, variant, param_description
@@ -570,7 +570,7 @@ Return xAlias
 Tabela para exibir os registros integrados ao configurador
 @type function
 @version  
-@author MCS Consultoria
+@author MCS Tecnologia
 @since 11/6/2025
 @return variant, return_description
 /*/
@@ -610,7 +610,7 @@ Return
 Legenda
 @type function
 @version  
-@author MCS Consultoria
+@author MCS Tecnologia
 @since 11/6/2025
 @return variant, return_description
 /*/
@@ -629,7 +629,7 @@ Return .T.
 Ggrava os registros na ZZZ
 @type function
 @version  
-@author MCS Consultoria
+@author MCS Tecnologia
 @since 11/6/2025
 @param xCodPer, variant, param_description
 @param xCodPro, variant, param_description
@@ -637,7 +637,9 @@ Ggrava os registros na ZZZ
 @param xStatus, variant, param_description
 @return variant, return_description
 /*/
-Static Function fGravaZZZ(xCodPer,xCodPro,xTipo,xStatus,xMessage)
+Static Function fGravaZZZ(xCodPer,xCodPro,xTipo,xStatus,xMessage,xDesc)
+
+    Default xDesc := ""
 
     ChkFile("ZZZ")
 
@@ -667,6 +669,7 @@ Static Function fGravaZZZ(xCodPer,xCodPro,xTipo,xStatus,xMessage)
         ZZZ->ZZZ_PERFIL := xCodPer
         ZZZ->ZZZ_DATA   := dDataBase
         ZZZ->ZZZ_ACAO   := xMessage
+        //ZZZ->ZZZ_DESC   := xDesc
     ZZZ->(MsUnlock())
 
     RestArea(aArea)
