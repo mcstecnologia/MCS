@@ -68,13 +68,6 @@ User Function CTRIB01(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xOper,xOrig)
         Conout("Registros não inseridos, verifique perfil")     
     EndIf
 
-    //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-    //³ Caso ocorra erro, retorna registro antigo para o POSIPI, ou GRPTRIB  ³
-    //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-    /*If lRet 
-        fRecLock(xProd,xPosIpi,xClieFor,xLoja,xOrig)
-    Return*/
-
 Return lRet
 
 /*/{Protheus.doc} fGetF24
@@ -251,11 +244,9 @@ Static Function fExecAutoConf(xClieFor,xLoja,xCodPer,xTipOpf,xTpPart,xCodPro,nOp
             Else 
                 fGravaZZZ(xCodPer,xCodPro,xTpPart,'2',oModel:GetErrorMessage()[6])
             EndIf
-        Else 
-            aadd(aFields,{'F22_CODIGO',xCodPer ,Nil})
-            aadd(aFields,{'F22_CLIFOR',xClieFor,Nil})
-            aadd(aFields,{'F22_LOJA'  ,xLoja   ,Nil})
-            aadd(aFields,{'F22_TPPART',xTpPart ,Nil})
+        ElseIf Empty(xClieFor) .And. nOp == 5
+            aadd(aFields,{'F24_CODIGO',xCodPer ,Nil})
+            aadd(aFields,{'F22_CDPROD',xProd   ,Nil})
             aadd(aFields,{'F22_TIPOPF',xTipOpf ,Nil})
             If FWMVCRotAuto(oModel, "F24", 5, {{"FISA164PRODUTO", aFields}} ,,.T.)
                 lOk := .T. 
