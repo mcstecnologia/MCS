@@ -228,33 +228,32 @@ Static Function fExecAutoConf(xClieFor,xLoja,xCodPer,xTipOpf,xTpPart,xCodPro,nOp
                     fGravaZZZ(xCodPer,xCodPro,xTpPart,'2',"Registro não gravado, verificar perfil",F20->F20_DESC)
                 EndIf
             EndIf
-        EndIf 
-
-        //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-        //³ Abaixo faz o processo de exclusão                                   ³
-        //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-        If !Empty(xClieFor) .And. nOp == 5
-            aadd(aFields,{'F22_CODIGO',xCodPer ,Nil})
-            aadd(aFields,{'F22_CLIFOR',xClieFor,Nil})
-            aadd(aFields,{'F22_LOJA'  ,xLoja   ,Nil})
-            aadd(aFields,{'F22_TPPART',xTpPart ,Nil})
-            aadd(aFields,{'F22_TIPOPF',xTipOpf ,Nil})
-            If FWMVCRotAuto(oModel, "F22", 5, {{"FISA164PARTICIPANTE", aFields}} ,,.T.)
-                lOk := .T. 
-            Else 
-                fGravaZZZ(xCodPer,xCodPro,xTpPart,'2',oModel:GetErrorMessage()[6])
+        Else 
+            //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+            //³ Abaixo faz o processo de exclusão                                   ³
+            //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+            If !Empty(xClieFor) 
+                aadd(aFields,{'F22_CODIGO',xCodPer ,Nil})
+                aadd(aFields,{'F22_CLIFOR',xClieFor,Nil})
+                aadd(aFields,{'F22_LOJA'  ,xLoja   ,Nil})
+                aadd(aFields,{'F22_TPPART',xTpPart ,Nil})
+                aadd(aFields,{'F22_TIPOPF',xTipOpf ,Nil})
+                If FWMVCRotAuto(oModel, "F22", 5, {{"FISA164PARTICIPANTE", aFields}} ,,.T.)
+                    lOk := .T. 
+                Else 
+                    fGravaZZZ(xCodPer,xCodPro,xTpPart,'2',oModel:GetErrorMessage()[6])
+                EndIf
+            Else
+                aadd(aFields,{'F24_CODIGO',xCodPer ,Nil})
+                aadd(aFields,{'F22_CDPROD',xProd   ,Nil})
+                aadd(aFields,{'F22_TIPOPF',xTipOpf ,Nil})
+                If FWMVCRotAuto(oModel, "F24", 5, {{"FISA164PRODUTO", aFields}} ,,.T.)
+                    lOk := .T. 
+                Else 
+                    fGravaZZZ(xCodPer,xCodPro,xTpPart,'2',oModel:GetErrorMessage()[6])
+                EndIf   
             EndIf
-        ElseIf Empty(xClieFor) .And. nOp == 5
-            aadd(aFields,{'F24_CODIGO',xCodPer ,Nil})
-            aadd(aFields,{'F22_CDPROD',xProd   ,Nil})
-            aadd(aFields,{'F22_TIPOPF',xTipOpf ,Nil})
-            If FWMVCRotAuto(oModel, "F24", 5, {{"FISA164PRODUTO", aFields}} ,,.T.)
-                lOk := .T. 
-            Else 
-                fGravaZZZ(xCodPer,xCodPro,xTpPart,'2',oModel:GetErrorMessage()[6])
-            EndIf   
-        EndIF
-        
+        EndIf
         oModel:DeActivate()
 
     EndIf
