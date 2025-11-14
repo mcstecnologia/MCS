@@ -22,7 +22,7 @@ User Function CTRIB01(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xOper,xOrig)
         //здддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд©
         //Ё Se vier se uma alteraГЦo, verifica em qual perfil se encontra o registro  Ё
         //юдддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддды
-        If xOper == '4'
+        If xOper == 4
             lRet := fAlteraConf(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,Iif(IsInCallStack('MATA020'),'1','2'))
         Else
             //здддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд©
@@ -125,6 +125,7 @@ Static Function fGetPerfil(xTpPart,xProd)
         Else 
             xQuery += " WHERE F22_TPPART = '2'" + chr(13)
         EndIf 
+        xQuery += " AND F22_LOJA <> 'ZZ' " + chr(13)
         xQuery += " AND D_E_L_E_T_ = ' '" + chr(13)
         xQuery += " ) AS A" + chr(13)
         xQuery += " WHERE RN = 1"
@@ -149,115 +150,133 @@ Static Function fExecAutoConf(xClieFor,xLoja,xCodPer,xTipOpf,xTpPart,xCodPro,nOp
     Local oModel as object
     Local lOk       := .F.
     Local aArea     := F20->(GetArea())
+    LOcal aAreaF22  := F22->(GetArea())
+    Local aAreaF24  := F24->(GetArea())
     Local xCod      := ""
     Local lPar      := SuperGetMV("ZZ_TABCTRL",.F.,.T.) // parametro que ativa ou nЦo a gravaГЦo da tabela de controle
     Local aFields   := {}
 
-    F20->(dbSelectArea("F20"))
-    F20->(dbSetOrder(1))
+    If nOp == 4
 
-    If F20->(MsSeek(xFilial("F20") + xCodPer + xTipOpf))
- 
-        //зддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд©
-        //Ё Pega o modelo                                                       Ё
-        //юддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддды
-        If Empty(xClieFor)
-            oModel := FwLoadModel("FISA166") 
-        Else 
-            oModel := FwLoadModel("FISA164") 
-        EndIf
+        F20->(dbSelectArea("F20"))
+        F20->(dbSetOrder(1))
 
-        //зддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд©
-        //Ё Apenas na alteraГЦo                                                 Ё
-        //юддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддды
-        oModel:SetOperation(nOp)
-        oModel:Activate() // ativo o modelo
+        If F20->(MsSeek(xFilial("F20") + xCodPer + xTipOpf))
     
-        If nOp == 4
             //зддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд©
-            //Ё Adiciona os registros                                               Ё
+            //Ё Pega o modelo                                                       Ё
             //юддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддды
             If Empty(xClieFor)
-                xTpPart := '3'
-                oModel:GetModel("FISA166PRODUTO"):AddLine()
-                oModel:SetValue("FISA166PRODUTO", "F24_FILIAL", FwCodFil())
-                oModel:SetValue("FISA166PRODUTO", "F24_CODIGO", xCodPer)
-                oModel:SetValue("FISA166PRODUTO", "F24_CDPROD", xCodPro)
-                oModel:SetValue("FISA166PRODUTO", "F24_TIPOPF", xTipOpf)
+                oModel := FwLoadModel("FISA166") 
             Else 
-                oModel:GetModel("FISA164PARTICIPANTE"):AddLine()
-                oModel:SetValue("FISA164PARTICIPANTE", "F22_CODIGO", xCodPer)
-                oModel:SetValue("FISA164PARTICIPANTE", "F22_TPPART", xTpPart)
-                oModel:SetValue("FISA164PARTICIPANTE", "F22_CLIFOR", xClieFor)
-                oModel:SetValue("FISA164PARTICIPANTE", "F22_LOJA", xLoja)
-                oModel:SetValue("FISA164PARTICIPANTE", "F22_TIPOPF", xTipOpf)
+                oModel := FwLoadModel("FISA164") 
             EndIf
-        
-            If oModel:VldData()
-                oModel:CommitData()
-                lOk := .T.
-                If Empty(xClieFor)
-                    Conout("Produto " + xCodPro + " inserido no perfil " + xCodPer +" - "+ F20->F20_DESC )
-                    //зддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд©
-                    //Ё Grava log com o registro gerado no rootpath                         Ё
-                    //юддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддды
-                    U_fLogCtrb(xCodPer +"-"+F20->F20DESC, xCodPro, "", "","Perfil Produto")
-                    //зддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд©
-                    //Ё Grava o registro na tabela de conferencia                          Ё
-                    //юддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддды
-                    If lPar
-                        fGravaZZZ(xCodPer,xCodPro,'3','1',"Registro IncluМdo", F20->F20_DESC)
-                    EndIf
-                Else 
-                    Conout("Cliente " + AllTrim(xClieFor) + " loja " + AllTrim(xLoja) + " inserido no perfil " + AllTrim(xCodPer) )
-                    //зддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд©
-                    //Ё Grava log com o registro gerado no rootpath                         Ё
-                    //юддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддды
-                    U_fLogCtrb(xCodPer +"-"+F20->F20DESC, "", xClieFor, xLoja,"Perfil CLiente-Fornecedor")
-                    //зддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд©
-                    //Ё Grava o registro na tabela de conferencia                          Ё
-                    //юддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддды
-                    If lPar 
-                        fGravaZZZ(xCodPer,xClieFor+xLoja,xTpPart,'1',"Registro IncluМdo",F20->F20_DESC)
-                    EndIf
-                EndIf
-            Else
-                //VarInfo("",oModel:GetErrorMessage())
-                xCod := Iif(xTpPart == '3',xCodPro,xClieFor+xLoja)
-                If lPar
-                    fGravaZZZ(xCodPer,xCodPro,xTpPart,'2',"Registro nЦo gravado, verificar perfil",F20->F20_DESC)
-                EndIf
-            EndIf
-        Else 
+
             //зддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд©
-            //Ё Abaixo faz o processo de exclusЦo                                   Ё
+            //Ё Apenas na alteraГЦo                                                 Ё
             //юддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддды
-            If !Empty(xClieFor) 
-                aadd(aFields,{'F22_CODIGO',xCodPer ,Nil})
-                aadd(aFields,{'F22_CLIFOR',xClieFor,Nil})
-                aadd(aFields,{'F22_LOJA'  ,xLoja   ,Nil})
-                aadd(aFields,{'F22_TPPART',xTpPart ,Nil})
-                aadd(aFields,{'F22_TIPOPF',xTipOpf ,Nil})
-                If FWMVCRotAuto(oModel, "F22", 5, {{"FISA164PARTICIPANTE", aFields}} ,,.T.)
-                    lOk := .T. 
+            oModel:SetOperation(nOp)
+            oModel:Activate() // ativo o modelo
+        
+                //зддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд©
+                //Ё Adiciona os registros                                               Ё
+                //юддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддды
+                If Empty(xClieFor)
+                    xTpPart := '3'
+                    oModel:GetModel("FISA166PRODUTO"):AddLine()
+                    oModel:SetValue("FISA166PRODUTO", "F24_FILIAL", FwCodFil())
+                    oModel:SetValue("FISA166PRODUTO", "F24_CODIGO", xCodPer)
+                    oModel:SetValue("FISA166PRODUTO", "F24_CDPROD", xCodPro)
+                    oModel:SetValue("FISA166PRODUTO", "F24_TIPOPF", xTipOpf)
                 Else 
-                    fGravaZZZ(xCodPer,xCodPro,xTpPart,'2',oModel:GetErrorMessage()[6])
+                    oModel:GetModel("FISA164PARTICIPANTE"):AddLine()
+                    oModel:SetValue("FISA164PARTICIPANTE", "F22_CODIGO", xCodPer)
+                    oModel:SetValue("FISA164PARTICIPANTE", "F22_TPPART", xTpPart)
+                    oModel:SetValue("FISA164PARTICIPANTE", "F22_CLIFOR", xClieFor)
+                    oModel:SetValue("FISA164PARTICIPANTE", "F22_LOJA", xLoja)
+                    oModel:SetValue("FISA164PARTICIPANTE", "F22_TIPOPF", xTipOpf)
                 EndIf
-            Else
-                aadd(aFields,{'F24_CODIGO',xCodPer ,Nil})
-                aadd(aFields,{'F22_CDPROD',xProd   ,Nil})
-                aadd(aFields,{'F22_TIPOPF',xTipOpf ,Nil})
-                If FWMVCRotAuto(oModel, "F24", 5, {{"FISA164PRODUTO", aFields}} ,,.T.)
-                    lOk := .T. 
-                Else 
-                    fGravaZZZ(xCodPer,xCodPro,xTpPart,'2',oModel:GetErrorMessage()[6])
-                EndIf   
-            EndIf
+            
+                If oModel:VldData()
+                    oModel:CommitData()
+                    lOk := .T.
+                    If Empty(xClieFor)
+                        Conout("Produto " + xCodPro + " inserido no perfil " + xCodPer +" - "+ F20->F20_DESC )
+                        //зддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд©
+                        //Ё Grava log com o registro gerado no rootpath                         Ё
+                        //юддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддды
+                        U_fLogCtrb(xCodPer +"-"+F20->F20_DESC, xCodPro, "", "","Perfil Produto")
+                        //зддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд©
+                        //Ё Grava o registro na tabela de conferencia                          Ё
+                        //юддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддды
+                        If lPar
+                            fGravaZZZ(xCodPer,xCodPro,'3','1',"Registro IncluМdo", F20->F20_DESC)
+                        EndIf
+                    Else 
+                        Conout("Cliente " + AllTrim(xClieFor) + " loja " + AllTrim(xLoja) + " inserido no perfil " + AllTrim(xCodPer) )
+                        //зддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд©
+                        //Ё Grava log com o registro gerado no rootpath                         Ё
+                        //юддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддды
+                        U_fLogCtrb(xCodPer +"-"+F20->F20_DESC, "", xClieFor, xLoja,"Perfil CLiente-Fornecedor")
+                        //зддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд©
+                        //Ё Grava o registro na tabela de conferencia                          Ё
+                        //юддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддды
+                        If lPar 
+                            fGravaZZZ(xCodPer,xClieFor+xLoja,xTpPart,'1',"Registro IncluМdo",F20->F20_DESC)
+                        EndIf
+                    EndIf
+                Else
+                    //VarInfo("",oModel:GetErrorMessage())
+                    xCod := Iif(xTpPart == '3',xCodPro,xClieFor+xLoja)
+                    If lPar
+                        fGravaZZZ(xCodPer,xCodPro,xTpPart,'2',"Registro nЦo gravado, verificar perfil",F20->F20_DESC)
+                    EndIf
+                EndIf
+
         EndIf
+
         oModel:DeActivate()
+
+    //зддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд©
+    //Ё Processo de exclusЦo                                               Ё
+    //юддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддды
+    Else 
+
+        If Empty(xClieFor) 
+
+            F24->(dbSelectArea("F24"))
+            F24->(dbSetOrder(1))
+
+            //зддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд©
+            //Ё Conforme fonte FISA171 a deleГЦo И via reclock                      Ё
+            //юддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддды
+            If F24->(MsSeek(xFilial("F24") + xCodPer + xProd))
+                RecLock("F24",.F.)
+                    F24->(dbDelete())
+                    MsUnLock()
+                F24->(FkCommit())
+                lOk := .T. 
+            EndIf
+
+        Else 
+
+            F22->(dbSelectArea("F22"))
+            F22->(dbSetOrder(1))
+
+            If F22->(MsSeek(xFilial("F22") + xCodPer + xTpPart + xClieFor + xLoja))
+                RecLock("F22",.F.)
+                    F22->(dbDelete())
+                    MsUnLock()
+                F22->(FkCommit())
+                lOk := .T. 
+            EndIf
+
+        EndIf
 
     EndIf
 
+    RestArea(aAreaF22)
+    RestArea(aAreaF24)
     RestArea(aArea)
 
 Return lOk
@@ -351,9 +370,9 @@ Static Function fAlteraConf(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xTpPart)
                     //юддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддды 
                     lRet := fValidaDados('MATA010','', '','','',(xAliasPer)->F24_CODIGO, (xAliasPer)->F24_TIPOPF,'',(xAliasPer)->F24_CDPROD,xProd,4,'',xPosIpi)      
                     If lPar
-                        If lRet
+                        /*If lRet
                             fGravaZZZ((xAliasPer)->F24_CODIGO,xProd,'3','1',"Registro alterado")
-                        EndIf
+                        EndIf*/
                     EndIf
                 (xAliasPer)->(dbSkip())
                 EndDo
@@ -380,9 +399,9 @@ Static Function fAlteraConf(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xTpPart)
                     //юддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддды 
                     lRet := fValidaDados('MATA020',(xAliasPer)->F22_CLIFOR, (xAliasPer)->F22_LOJA,xClieFor,xLoja, (xAliasPer)->F22_CODIGO, (xAliasPer)->F22_TIPOPF,'1','','',4,xGrpTrib,'')
                     If lPar
-                        If lRet
+                        /*If lRet
                             fGravaZZZ((xAliasPer)->F22_CODIGO,xClieFor+xLoja,'1','1',"Registro alterado")
-                        EndIF
+                        EndIF*/
                     EndIf
                 (xAliasPer)->(dbSkip())
                 EndDo
@@ -409,9 +428,9 @@ Static Function fAlteraConf(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xTpPart)
                     //юддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддды 
                     lRet := fValidaDados('CRMA980',(xAliasPer)->F22_CLIFOR, (xAliasPer)->F22_LOJA,xClieFor,xLoja, (xAliasPer)->F22_CODIGO, (xAliasPer)->F22_TIPOPF,'2','','',4,xGrpTrib,'')
                     If lPar
-                        If lRet
+                        /*If lRet
                             fGravaZZZ((xAliasPer)->F22_CODIGO,xClieFor+xLoja,'2','1',"Registro Alterado")
-                        EndIf
+                        EndIf*/
                     EndIf
                 (xAliasPer)->(dbSkip())
                 EndDo
@@ -529,7 +548,8 @@ Static Function fQueryAltera(xProd, xClieFor, xLoja, xTpPart)
         xQuery += " F24_CDPROD," + chr(13)
         xQuery += " F24_TIPOPF" + chr(13)
         xQuery += " FROM " + RetSqlName("F24") + "" + chr(13)
-        xQuery += " WHERE F24_CDPROD = '" + xProd + "'" + chr(13)
+        xQuery += " WHERE F24_FILIAL = '" + FwxFilial("F24") + "'" + chr(13)
+        xQuery += " AND F24_CDPROD = '" + xProd + "'" + chr(13)
         xQuery += " AND D_E_L_E_T_ = ' '" 
     Else 
         xQuery := " SELECT" + chr(13)
@@ -539,16 +559,18 @@ Static Function fQueryAltera(xProd, xClieFor, xLoja, xTpPart)
         xQuery += " F22_TPPART," + chr(13)
         xQuery += " F22_TIPOPF" + chr(13)
         xQuery += " FROM " + RetSqlName("F22") + "" + chr(13)
+        xQuery += " WHERE F22_FILIAL = '" + FwxFilial("F22") + "'" + chr(13)
         //зддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд©
         //Ё Verificando se И fornecedor ou cliente, para tratar codigos iguais  Ё
         //юддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддды
         If xTpPart == '1'
-            xQuery += " WHERE F22_TPPART = '1'" + chr(13)
+            xQuery += " AND F22_TPPART = '1'" + chr(13)
         Else 
-            xQuery += " WHERE F22_TPPART = '2'" + chr(13)
+            xQuery += " AND F22_TPPART = '2'" + chr(13)
         EndIf 
         xQuery += " AND F22_CLIFOR = '" + xClieFor + "' " + chr(13)
         xQuery += " AND F22_LOJA = '" + xLoja + "' " + chr(13)
+        xQuery += " AND F22_LOJA <> 'ZZ' " + chr(13)
         xQuery += " AND D_E_L_E_T_ = ' '" 
     EndIf
 
@@ -665,6 +687,3 @@ Static Function fGravaZZZ(xCodPer,xCodPro,xTipo,xStatus,xMessage,xDesc)
     RestArea(aArea)
 
 Return
-
-
-

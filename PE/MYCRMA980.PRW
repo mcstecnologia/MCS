@@ -31,24 +31,10 @@ User Function CRMA980() ///cXXX1,cXXX2,cXXX3,cXXX4,cXXX5,cXXX6
         If cIDPonto == 'MODELCOMMITTTS'
             // Mostra o tipo de Operacao
             
-            // Inclusao
-            If nOperation == 3
-                U_CTRIB01("","",SA1->A1_COD, SA1->A1_LOJA, SA1->A1_GRPTRIB)
-            EndIf
-
-            // Alteracao
-            If nOperation == 4
-                xRet := U_CTRIB01("","",SA1->A1_COD, SA1->A1_LOJA, SA1->A1_GRPTRIB,'4',xOrig)
-            EndIf
-
-            // Exclusao
-            If nOperation == 5
-            EndIf
+            xRet := U_CTRIB01("","",SA1->A1_COD, SA1->A1_LOJA, SA1->A1_GRPTRIB,nOperation,xOrig)
 
         ElseIf cIDPonto == 'FORMCOMMITTTSPRE'
-            If nOperation == 4
-                xOrig := SA1->A1_GRPTRIB
-            EndIF
+
         EndIf
 
 
