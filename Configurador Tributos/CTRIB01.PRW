@@ -98,7 +98,8 @@ Static Function fGetPerfil(xTpPart,xProd)
         xQuery += "    F24_TIPOPF," + chr(13)
         xQuery += "    ROW_NUMBER() OVER (PARTITION BY F24_CODIGO ORDER BY F24_CDPROD) AS RN" + chr(13)
         xQuery += " FROM " + RetSqlName("F24") + "" + chr(13)
-        xQuery += " WHERE D_E_L_E_T_ = ' '" + chr(13)
+        xQuery += " WHERE F24_FILIAL = '" + FwxFilial("F24") + "'" + chr(13)
+        xQuery += " AND D_E_L_E_T_ = ' '" + chr(13)
         xQuery += " ) AS A" + chr(13)
         xQuery += " WHERE RN = 1"
     Else 
@@ -117,13 +118,14 @@ Static Function fGetPerfil(xTpPart,xProd)
         xQuery += "    F22_TIPOPF," + chr(13)
         xQuery += "    ROW_NUMBER() OVER (PARTITION BY F22_CODIGO ORDER BY F22_CLIFOR) AS RN" + chr(13)
         xQuery += " FROM " + RetSqlName("F22") + "" + chr(13)
+        xQuery += " WHERE F22_FILIAL = '" + FwxFilial("F22") + "'" + chr(13)
         //зддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд©
         //Ё Verificando se И fornecedor ou cliente, para tratar codigos iguais  Ё
         //юддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддды
         If xTpPart == '1'
-            xQuery += " WHERE F22_TPPART = '1'" + chr(13)
+            xQuery += " AND F22_TPPART = '1'" + chr(13)
         Else 
-            xQuery += " WHERE F22_TPPART = '2'" + chr(13)
+            xQuery += " AND F22_TPPART = '2'" + chr(13)
         EndIf 
         xQuery += " AND F22_LOJA <> 'ZZ' " + chr(13)
         xQuery += " AND D_E_L_E_T_ = ' '" + chr(13)
