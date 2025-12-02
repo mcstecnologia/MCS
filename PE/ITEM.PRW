@@ -13,10 +13,14 @@ User Function ITEM()
 
     Local aParam        := PARAMIXB
     Local xRet          := .T.
-    Local oObj          := ""
+    Local oObj          := Nil
     Local cIdPonto      := ""
     Local cIdModel      := ""
     Local lIsGrid       := .F.
+    Local nOperation    := 0
+    Local xOrig         := ""
+    
+    
     //Local xFacAuto      := GetMV("MV_FACAUTO")
 
     If aParam <> NIL
@@ -24,6 +28,7 @@ User Function ITEM()
         cIdPonto := aParam[2]
         cIdModel := aParam[3]
         lIsGrid := (Len(aParam) > 3)
+        nOperation := oObj:GetOperation()
 
         If cIdPonto == "MODELPOS"
           
@@ -34,10 +39,11 @@ User Function ITEM()
         ElseIf cIdPonto == "FORMLINEPOS"
             //ApMsgInfo("1")
         ElseIf cIdPonto == "MODELCOMMITTTS"
+            xOrig := SB1->B1_POSIPI
             //ApMsgInfo("2") //primeira chamada
         ElseIf cIdPonto == "MODELCOMMITNTTS"
             //If xFacAuto
-                U_CTRIB01(SB1->B1_COD, SB1->B1_POSIPI, "","","")
+                U_CTRIB01(SB1->B1_COD, SB1->B1_POSIPI, "","","",nOperation,xOrig)
             //EndIf
             //ApMsgInfo("3") //SEGUNDA CHAMADA
         ElseIf cIdPonto == "FORMCOMMITTTSPRE"

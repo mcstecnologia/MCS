@@ -22,8 +22,20 @@ User Function CTRIB01(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xOper,xOrig)
         //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
         //³ Se vier se uma alteração, verifica em qual perfil se encontra o registro  ³
         //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-        If xOper == 4
+        If xOper == 4 .And. xPosIpi <> xOrig .Or. xGrpTrib <> xOrig
             lRet := fAlteraConf(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,Iif(IsInCallStack('MATA020'),'1','2'))
+            //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+            //³ Se ocorrer erro na exclusão, retorno ao registrio anterior nas tabelas principais ³
+            //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+            If !lRet
+                If !Empty(xProd)
+                    fGravaSB1(xProd,xOrig)
+                ElseIf IsInCallStack('MATA020')
+                    fGravaSA2(xClieFor,xLoja,xOrig)
+                Else  
+                    fGravaSA1(xClieFor,xLoja,xOrig)
+                EndIF
+            EndIf
         Else
             //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
             //³ Busca um registro de cada perfil para comparação, verificando se é fornecedor, cliente ou produto ³
@@ -207,7 +219,7 @@ Static Function fExecAutoConf(xClieFor,xLoja,xCodPer,xTipOpf,xTpPart,xCodPro,nOp
                         //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
                         //³ Grava log com o registro gerado no rootpath                         ³
                         //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-                        U_fLogCtrb(xCodPer +"-"+F20->F20_DESC, xCodPro, "", "","Perfil Produto")
+                        U_fLogCtrb(xCodPer +"-"+F20->F20_DESC, xCodPro, "", "","Perfil Produto","Registro Incluído")
                         //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
                         //³ Grava o registro na tabela de conferencia                          ³
                         //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
@@ -219,7 +231,7 @@ Static Function fExecAutoConf(xClieFor,xLoja,xCodPer,xTipOpf,xTpPart,xCodPro,nOp
                         //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
                         //³ Grava log com o registro gerado no rootpath                         ³
                         //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-                        U_fLogCtrb(xCodPer +"-"+F20->F20_DESC, "", xClieFor, xLoja,"Perfil CLiente-Fornecedor")
+                        U_fLogCtrb(xCodPer +"-"+F20->F20_DESC, "", xClieFor, xLoja,"Perfil CLiente-Fornecedor","Registro Incluído")
                         //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
                         //³ Grava o registro na tabela de conferencia                          ³
                         //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
@@ -252,7 +264,7 @@ Static Function fExecAutoConf(xClieFor,xLoja,xCodPer,xTipOpf,xTpPart,xCodPro,nOp
             //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
             //³ Conforme fonte FISA171 a deleção é via reclock                      ³
             //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-            If F24->(MsSeek(xFilial("F24") + xCodPer + xProd))
+            If F24->(MsSeek(xFilial("F24") + xCodPer + xCodPro))
                 RecLock("F24",.F.)
                     F24->(dbDelete())
                     MsUnLock()
@@ -291,7 +303,7 @@ Grava o log para analise dos testes
 @since 3/5/2024
 @return variant, return_description
 /*/
-User Function fLogCtrb(xPerfil,xProd,xClieFor,xLoja,xProg)
+User Function fLogCtrb(xPerfil,xProd,xClieFor,xLoja,xProg,xMessage)
 
     Local cTime     
     Local cData     
@@ -319,7 +331,7 @@ User Function fLogCtrb(xPerfil,xProd,xClieFor,xLoja,xProg)
     If nPathEr < 0
 		conout("Erro durante criação do arquivo.")
 	Else 
-        FWrite(nPathEr, "Gravação efetuada do perfil:" +xPerfil+ " do registro : " +Iif(Empty(xClieFor), "Produto: " +xProd, "CliFor: " +xClieFor+"||"+xLoja))
+        FWrite(nPathEr, "Gravação efetuada do perfil:" +xPerfil+ " do registro : " +Iif(Empty(xClieFor), "Produto: " +xProd, "CliFor: " +xClieFor+"||"+xLoja+"||"+xMessage))
     EndIf
     FClose(nPathEr) 
         
@@ -356,6 +368,9 @@ Static Function fAlteraConf(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xTpPart)
             //³ Faz a exclusão do produto no perfil encontrado                      ³
             //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
             lRet := fExecAutoConf("","",(xAlias)->F24_CODIGO, (xAlias)->F24_TIPOPF,"",xProd,5)
+            If lRet 
+                U_fLogCtrb((xAlias)->F24_CODIGO, xProd, "", "","Perfil Produto","Registro Excluído")
+            EndIf
             If lPar
                 If lRet
                     fGravaZZZ((xAlias)->F24_CODIGO,xProd,'3','1',"Registro excluído")
@@ -385,6 +400,9 @@ Static Function fAlteraConf(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xTpPart)
             //³ Faz a exclusão do forencedor no perfil encontrado                   ³
             //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
             lRet := fExecAutoConf(xClieFor, xLoja, (xAlias)->F22_CODIGO, (xAlias)->F22_TIPOPF,'1',"",5)   
+            If lRet
+                U_fLogCtrb((xAlias)->F22_CODIGO, "", xClieFor, xLoja,"Perfil CLiente-Fornecedor","Registro Excluído")
+            EndIf
             If lPar 
                 If lRet        
                     fGravaZZZ((xAlias)->F22_CODIGO,xClieFor+xLoja,'1','1',"Registro Excluído")
@@ -414,6 +432,9 @@ Static Function fAlteraConf(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xTpPart)
             //³ Faz a exclusão do cliente no perfil encontrado                     ³
             //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
             lRet := fExecAutoConf(xClieFor, xLoja, (xAlias)->F22_CODIGO, (xAlias)->F22_TIPOPF,'2',"",5)
+            If lRet
+                U_fLogCtrb((xAlias)->F22_CODIGO, "", xClieFor, xLoja,"Perfil CLiente-Fornecedor","Registro Excluído")
+            EndIf
             If lPar
                 If lRet
                     fGravaZZZ((xAlias)->F22_CODIGO,xClieFor+xLoja,'2','1',"Registro Excluído")
@@ -544,7 +565,7 @@ Static Function fQueryAltera(xProd, xClieFor, xLoja, xTpPart)
     //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
     //³ Se vier da MATA010, trata a tabela do perfil de produto             ³
     //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-    If xProd == 'PROD'
+    If !Empty(xProd)
         xQuery := " SELECT" + chr(13)
         xQuery += " F24_CODIGO," + chr(13)
         xQuery += " F24_CDPROD," + chr(13)
@@ -683,9 +704,89 @@ Static Function fGravaZZZ(xCodPer,xCodPro,xTipo,xStatus,xMessage,xDesc)
         ZZZ->ZZZ_PERFIL := xCodPer
         ZZZ->ZZZ_DATA   := dDataBase
         ZZZ->ZZZ_ACAO   := xMessage
+        ZZZ->ZZZ_USER   := UsrRetName(__cUserId)
         //ZZZ->ZZZ_DESC   := xDesc
     ZZZ->(MsUnlock())
 
     RestArea(aArea)
 
 Return
+/*/{Protheus.doc} fRecLockSA1
+Caso ocorra erro na gravação, retornar o registro antetior
+@type function
+@version  
+@author MCS Tecnologia
+@since 11/20/2025
+@param xClieFor, variant, param_description
+@param xLoja, variant, param_description
+@param xOrig, variant, param_description
+@return variant, return_description
+/*/
+Static Function fGravaSA1(xClieFor,xLoja,xOrig)
+
+    Local aArea := SA1->(GetArea())
+
+    SA1->(dbSelectArea("SA1"))
+    SA1->(dbSetOrder(1))
+
+    If SA1->(MsSeek(xFilial("SA1") + xClieFor + xLoja))
+        RecLock("SA1",.F.)
+            SA1->A1_GRPTRIB := xOrig
+        SA1->(MsUnLock())
+    EndIf
+    RestArea(aArea)
+
+Return
+/*/{Protheus.doc} fGravaSA2
+Caso ocorra erro na gravação, retornar o registro antetior
+@type function
+@version  
+@author MCS Tecnologia
+@since 11/20/2025
+@param xClieFor, variant, param_description
+@param xLoja, variant, param_description
+@param xOrig, variant, param_description
+@return variant, return_description
+/*/
+Static Function fGravaSA2(xClieFor,xLoja,xOrig)
+
+    Local aArea := SA2->(GetArea())
+
+    SA2->(dbSelectArea("SA2"))
+    SA2->(dbSetOrder(1))
+
+    If SA2->(MsSeek(xFilial("SA2") + xClieFor + xLoja))
+        RecLock("SA2",.F.)
+            SA2->A2_GRPTRIB := xOrig
+        SA2->(MsUnLock())
+    EndIf
+    RestArea(aArea)
+
+Return
+
+/*/{Protheus.doc} fGravaSB1
+Caso ocorra erro na gravação, retornar o registro antetior
+@type function
+@version  
+@author MCS Tecnologia
+@since 11/20/2025
+@param xProd, variant, param_description
+@param xOrig, variant, param_description
+@return variant, return_description
+/*/
+Static Function fGravaSB1(xProd,xOrig)
+
+    Local aArea := SB1->(GetArea())
+
+    SB1->(dbSelectArea("SB1"))
+    SB1->(dbSetOrder(1))
+
+    If SB1->(MsSeek(xFilial("SB1") + xClieFor + xLoja))
+        RecLock("SB1",.F.)
+            SB1->B1_GRPTRIB := xOrig
+        SB1->(MsUnLock())
+    EndIf
+    RestArea(aArea)
+
+Return
+

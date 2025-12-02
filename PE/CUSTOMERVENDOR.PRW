@@ -13,11 +13,12 @@ User Function CUSTOMERVENDOR()
 
     Local aParam        := PARAMIXB
     Local xRet          := .T.
-    Local oObj          := ""
+    Local oObj          := Nil
     Local cIdPonto      := ""
     Local cIdModel      := ""
     Local lIsGrid       := .F.
     Local nOperation    := 0
+    Local xOrig         := ""
     //Local xFacAuto      := GetMV("MV_FACAUTO")
 
     If aParam <> NIL
@@ -37,9 +38,9 @@ User Function CUSTOMERVENDOR()
         ElseIf cIdPonto == "FORMLINEPOS"
           
         ElseIf cIdPonto == "MODELCOMMITTTS"      
-
+            xOrig := SA2->A2_GRPTRIB
         ElseIf cIdPonto == "MODELCOMMITNTTS"   
-                U_CTRIB01("","",SA2->A2_COD, SA2->A2_LOJA, SA2->A2_GRPTRIB,nOperation)
+                U_CTRIB01("","",SA2->A2_COD, SA2->A2_LOJA, SA2->A2_GRPTRIB,nOperation,xOrig)
         ElseIf cIdPonto == "FORMCOMMITTTSPRE"
            
         ElseIf cIdPonto == "FORMCOMMITTTSPOS"
