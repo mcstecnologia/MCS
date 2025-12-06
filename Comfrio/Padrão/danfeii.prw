@@ -2632,7 +2632,7 @@ If Type("oNF:_InfNfe:_infAdic:_infCpl:TEXT")<>"U"
 					cAux2 += SubStr(cAux,nCont,1)
 				Endif
 				While !Empty(cAux2)
-					aadd(aMensagem,SubStr(cAux2,1,IIf(EspacoAt(cAux2, MAXMENLIN) > 1, EspacoAt(cAux2, MAXMENLIN) - 1, MAXMENLIN)))
+					aadd(aMensagem,{SubStr(cAux2,1,IIf(EspacoAt(cAux2, MAXMENLIN) > 1, EspacoAt(cAux2, MAXMENLIN) - 1, MAXMENLIN)),.F.})
 					cAux2 := SubStr(cAux2,IIf(EspacoAt(cAux2, MAXMENLIN) > 1, EspacoAt(cAux2, MAXMENLIN), MAXMENLIN) + 1)
 				EndDo
 				cAux2 := ""
@@ -2642,7 +2642,7 @@ If Type("oNF:_InfNfe:_infAdic:_infCpl:TEXT")<>"U"
 		Next nCont
 	Else
 		While !Empty(cAux)
-			aadd(aMensagem,SubStr(cAux,1,IIf(EspacoAt(cAux, MAXMENLIN) > 1, EspacoAt(cAux, MAXMENLIN) - 1, MAXMENLIN)))
+			aadd(aMensagem,{SubStr(cAux,1,IIf(EspacoAt(cAux, MAXMENLIN) > 1, EspacoAt(cAux, MAXMENLIN) - 1, MAXMENLIN)),.F.})
 			cAux := SubStr(cAux,IIf(EspacoAt(cAux, MAXMENLIN) > 1, EspacoAt(cAux, MAXMENLIN), MAXMENLIN) + 1)
 		EndDo		
 	Endif

@@ -8080,14 +8080,15 @@ Else
 EndIf
 cString += NfeTag('<CEST>',ConvType(aProd[41]))
 cString += NfeTag('<indEscala>',ConvType(aProd[47]))
-cString += NfeTag('<cBenef>',ConvType(aProd[44]))
-
+//cString += NfeTag('<cBenef>',ConvType(aProd[44]))
 
 /*
 // CUSTOMIZADO UNITA - CBENEF ////////*/ //MCS 20251113
 If Substr((alltrim(aCST[1]) + alltrim(aCST[2])),1,2) == "20" 
 	cString += NfeTag('<cBenef>',ConvType("SC820028"))
-Endif
+Else 
+	cString += NfeTag('<cBenef>',ConvType(aProd[44]))
+EndIf
 /*Fim tratamento MCS*/
 
 /////////////////////////////////////////
