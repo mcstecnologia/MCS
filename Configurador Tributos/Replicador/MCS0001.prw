@@ -51,7 +51,7 @@ Static Function fTabTemp(oSay, nCombo)
     Local x          := 0
     Local xQuery     := ""
 
-    MsgInfo("Marque ná proxima tela para quais filiais o registros precisam ser copiados")
+    MsgInfo("Marque ná proxima tela, qual a filial que deseja realizar a cópia")
 
     aSelect := AdmGetFil()
 
@@ -93,7 +93,7 @@ Static Function fTabTemp(oSay, nCombo)
 	//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
 	//³ Chama rotina para buscar os registros                               ³
 	//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-    xAlias := fMCS0001(nCombo)
+    xAlias := fMCS0001(nCombo,aSelect)
 
     For x := 1 to Len(aSelect)
   
@@ -149,7 +149,7 @@ Query que busca os registros a serem inseridos na tabela temporária
 @param nCombo, numeric, param_description
 @return variant, return_description
 /*/
-Static Function fMCS0001(nCombo)
+Static Function fMCS0001(nCombo,aSelect)
 
     Local xAlias    := GetNextAlias()
     Local xQuery    := ""
@@ -157,16 +157,16 @@ Static Function fMCS0001(nCombo)
     If nCombo == 1 
 
         xQuery := "SELECT F27_FILIAL,F27_CODIGO,F27_DESC ,F27_VALORI,F27_DESCON,F27_FRETE,F27_SEGURO,F27_DESPE,F27_ICMDES,F27_ICMRET,F27_REDBAS,F27_TPRED,F27_UM,F27_ALTERA,F27_CHVMD5 FROM "+ RetSqlName("F27")+ " " + chr(13)
-        xQuery += "WHERE F27_FILIAL = '" + FwxFilial("F27") + "' "+ chr(13)
+        xQuery += "WHERE F27_FILIAL = '" + aSelect[1] + "' "+ chr(13)
         xQuery += "AND D_E_L_E_T_ = ' ' "
 
         MpSysOpenQuery(xQuery,xAlias)
     
-    ElseIf == 2
+    /*ElseIf == 2
 
     ElseIf == 3
 
-    Else 
+    Else */
     EndIf
 
 Return xAlias
@@ -183,6 +183,7 @@ Grava os registros na F27
 /*/
 Static Function fGravaF(aSelect,xAliasTemp)
 
+    Local oModel as object
     Local aArea     := F27->(GetArea())
     Local cChvMD5   := ""
     Local lRet      := .F.
@@ -192,9 +193,34 @@ Static Function fGravaF(aSelect,xAliasTemp)
 
     While !(xAliasTemp)->(Eof())
 
+        oModel := FwLoadModel("FISA161") 
+
+        //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+        //³ Apenas na alteração                                                 ³
+        //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+        oModel:SetOperation(3)
+        oModel:Activate() // ativo o modelo
+
         xId := FWUUID("F27")
 
-        RecLock("F27",.T.)
+        //oModel:GetModel("FISA161"):AddLine()
+        oModel:SetValue("FISA161", "F27_FILIAL", FwxFilial("F27"))
+        //oModel:SetValue("FISA161", "F27_ID"    , xId)
+        oModel:SetValue("FISA161", "F27_CODIGO", (xAliasTemp)->F27_CODIGO)
+        oModel:SetValue("FISA161", "F27_DESC"  , (xAliasTemp)->F27_DESC)
+        oModel:SetValue("FISA161", "F27_VALORI", (xAliasTemp)->F27_VALORI)
+        oModel:SetValue("FISA161", "F27_DESCON", (xAliasTemp)->F27_DESCON)
+        oModel:SetValue("FISA161", "F27_FRETE", (xAliasTemp)->F27_FRETE)
+        oModel:SetValue("FISA161", "F27_SEGURO", (xAliasTemp)->F27_SEGURO)
+        oModel:SetValue("FISA161", "F27_DESPE"  , (xAliasTemp)->F27_DESPE)
+        oModel:SetValue("FISA161", "F27_ICMDES", (xAliasTemp)->F27_ICMDES)
+        oModel:SetValue("FISA161", "F27_ICMRET", (xAliasTemp)->F27_ICMRET)
+        oModel:SetValue("FISA161", "F27_REDBAS", Val((xAliasTemp)->F27_REDBAS))
+        oModel:SetValue("FISA161", "F27_TPRED", (xAliasTemp)->F27_TPRED)
+        //oModel:SetValue("FISA161", "F27_UM", (xAliasTemp)->F27_UM)
+        //oModel:SetValue("FISA161", "F27_ALTERA", '2')
+
+        /*RecLock("F27",.T.)
             F27->F27_FILIAL	    := (xAliasTemp)->F27_FILIAL
             F27->F27_ID		    := xId
             F27->F27_CODIGO	    := (xAliasTemp)->F27_CODIGO
@@ -209,20 +235,28 @@ Static Function fGravaF(aSelect,xAliasTemp)
             F27->F27_REDBAS	    := Val((xAliasTemp)->F27_REDBAS)
             F27->F27_TPRED 	    := (xAliasTemp)->F27_TPRED
             F27->F27_UM    	    := (xAliasTemp)->F27_UM
-            F27->F27_CHVMD5     := (xAliasTemp)->F27_CHVMD5
-            F27->F27_ALTERA		:= "2" //Indica que não foi alterado    
+            F27->F27_CHVMD5     := GetChvMd5()
+            F27->F27_ALTERA		:= "2" //Indica que não foi alterado  */  
 
         /*If ( !Empty(cChvMD5) )
             F27->F27_CHVMD5 := cChvMD5
         EndIf*/
+        If oModel:VldData()
+            oModel:CommitData()
+            lRet := .T.
+        Else 
+            VarInfo("",oModel:GetErrorMessage())
+            lRet := .F.
+        EndIf 
+        oModel:DeActivate()
 
-        MsUnLock()
+        //MsUnLock()
 
         (xAliasTemp)->(dbSkip())
 
-        lRet := .T.
+        
 
-        GravaCIN('1', '1', (xAliasTemp)->F27_CODIGO, xId, (xAliasTemp)->F27_DESC, cFormula, '0', cFormUsuar, cOldIdReg, lVersiona)
+        //GravaCIN('1', '1', (xAliasTemp)->F27_CODIGO, xId, (xAliasTemp)->F27_DESC, cFormula, '0', cFormUsuar, cOldIdReg, lVersiona)
 
     EndDo
 
@@ -243,11 +277,13 @@ Função para atualização do campo MD5.
 //-------------------------------------------------------------------
 static function GetChvMd5()
 
-    local oModel := FWModelActive()
+    local oModel := Nil
     local cChave := ''
     local cPrefixo := 'CONFITRIB-' 
     local cChvMd5 := ''
     local lIsClassification := FWIsInCallStack('IntegraRegras')
+
+    oModel := FwLoadModel("FISA161") 
 
     if ( lIsClassification )
         cPrefixo := 'CLASSTRIB-'
