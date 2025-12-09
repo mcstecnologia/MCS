@@ -72,6 +72,9 @@ User Function GRVCMP(cFilAnt, cDoc, cSerie, cEntSai, xEsp)
                 F0A->F0A_QTDLOT     := SC6->C6_QTDVEN
             F0A->(MsUnlock())
         EndIf
+
+        End Transaction
+        
         (xAlias)->(dbSkip())
     EndDo 
 
