@@ -11,8 +11,8 @@ Valida linha no pedido de venda
 /*/
 User Function M410LIOK()
 
-    Local lRet := .T.
-    Local nPosxOp := Ascan(Aheader,{|x| AllTrim(x[2]) == "C6_XOP" })
+    Local lRet      := .T.
+    Local nPosxOp   := Ascan(Aheader,{|x| AllTrim(x[2]) == "C6_XOP" })
     Local lAtv      := SuperGetMV("VD_ATVRAST",.F.,.T.)
     Local xParCli   := SuperGetMV("VD_CLIRAST",.F.,"000001")
 
@@ -32,4 +32,4 @@ User Function M410LIOK()
         EndIf
     EndIf
 
-    Return lRet
+Return lRet
