@@ -26,7 +26,7 @@ User Function M410LIOK()
         If M->C5_CLIENTE $ xParCli .Or. Empty(xParCli)
             If Empty(aCols[n][nPosxOp])
                 //Alert("Para o cliente informado, é necessário informar o campo C6_XOP para geração do vRastro")
-                Help('',1,"M410LIOK",,"Para o cliente informado, é necessário informar o campo C6_XOP para geração do vRastro",1,0) 
+                Help('',1,"M410LIOK",,"Para o cliente informado, é necessário informar o campo C6_XOP para geração da tag vRastro na nota fiscal",1,0) 
                 lRet := .F.
             EndIf
         EndIf

@@ -25,6 +25,7 @@
 #DEFINE doDTC_LOJDEV	7
 #DEFINE doDTC_NFEID		8
 #DEFINE doDTC_CTEID		9
+#Define PESO_VARIAVEL  "V"
 
 /*/
 ‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹
@@ -182,25 +183,11 @@ Local lPerig		:= .F.	//-- Informa se ha produtos perigosos
 Local cStartPath    := ''
 Local cTipoDoc		:= ''
 Local cTagObs		:= ''
-Local lTMSDACTE     := ExistBlock("TMSDACTE",,.T.)
-Local lXmlCont      := .F.
-Local nLinIEM		:= 0 //-- valor de ajuste de salto pra as linhas relacionadas a InformaÁıes do Modal Rodovi·rio
-Local cEndCom		:= ""
-Local cChaveCTe		:= ""
-
-Local cDestPDF 	    := ''
-Local cFilDoc		:= ''
-Local cDoc		    := ''
-Local cSerie		:= ''
-Local cChave		:= ''
-Local lExibePerg    := .T.
-Local lJob 			:= IsBlind()
-Local aTamDocs      := IIf(FindFunction('TMSTamDocs'), TMSTamDocs("CTE"), {{9, 3}})
-Local cSerieCTE     := ''
-Local cNumCTE       := ''
-Local nTamDocumen	:= 0
-Local nTamSerie	    := 0
-
+Local lCorteCtes	:= .T.
+Local nValid		:= 0
+Local cCteSegue		:= ""
+Local aImpCteFood 	:= {} //Corte
+Local nMsg          := 0 
 //-- Variaveis Private
 Private cAliasCT	:= GetNextAlias()
 Private oDacte
@@ -217,6 +204,10 @@ Private nMM			:= 0
 Private lComp		:= .F.	//CTE Complementar
 Private cVersaoCTE	:= ""
 Private lUsaColab	:= UsaColaboracao("2")
+Private aCtesFood	:= {}
+Private aCorteOper	:= {} //Array com produtos que realmente cortou
+Private aValidMAil  := {}
+Private aRecsCorte	:= {}
 
 //-- Verifica se o arquivo sera gerado em Remote Linux
 if Type('ParamIXB') <> 'U' .And. Len( ParamIXB ) > 0
@@ -254,6 +245,12 @@ lExibePerg := !( !Empty(cChave) .And. !Empty(cFilDoc) .And. !Empty(cDoc) )
 If !Pergunte( cPerg, lExibePerg ) .And. lExibePerg
 	Return()
 EndIf
+
+//Valida Corte 
+
+If cEmpAnt == "01" .AND. cFilAnt == "0201"
+	 MsgRun("Analisando pedidos em processo de recuperacao de corte...","COMFRIO",{|| lCorteCtes := ValidRecCorte() })
+Endif
 
 If Empty(cIdEnt) .Or. Empty(cModalidade) .Or. Empty(cVersaoCTE)
 	If !lUsaColab .And. !TMSSpedNFe(@cIdEnt,@cModalidade,@cVersaoCTE,lUsaColab)
@@ -300,6 +297,21 @@ PixelY  := oDacte:nLogPixelY()
 nMM     := 0
 
 While !(cAliasCT)->(Eof())
+	//Valida Corte
+	If cEmpAnt == "01" .AND. cFilAnt == "0201" .AND. !lCorteCtes
+		nValid :=  ascan(aCtesFood, { |x| alltrim(x[1]) == Alltrim((cAliasCT)->DT6_DOC) })
+		If nValid <> 0
+			cCteSegue := ""
+		Else 
+			cCteSegue := (cAliasCT)->DT6_DOC
+		Endif 
+	Else //Demais filiais nada muda
+		cCteSegue := (cAliasCT)->DT6_DOC
+	Endif 
+
+	If !Empty(cCteSegue) 
+
+		AADD(aImpCteFood,{cCteSegue})
 
 	oDacte:StartPage()
 
@@ -1579,8 +1591,14 @@ While !(cAliasCT)->(Eof())
 	(cAliasCT)->(DbSkip())
 EndDo
 
-// TERMINO ROTINA DE IMPRESSAO
+//⁄ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒø
+//≥ TERMINO ROTINA DE IMPRESSAO                                            ≥
+//¿ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒŸ
+If Len(aImpCteFood) > 0
 oDacte:Preview()
+Else 
+	MsgInfo("N„o h· documentos para impress„o","COMFRIO")	
+Endif
 
 (cAliasCT)->(dbCloseArea())
 
@@ -2517,6 +2535,107 @@ EndDo
 (cAliasChv)->(dbCloseArea())
 
 Return
+/*/
+‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+±±⁄ƒƒƒƒƒƒƒƒƒƒ¬ƒƒƒƒƒƒƒƒƒƒƒƒƒƒ¬ƒƒƒƒƒƒƒ¬ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒ¬ƒƒƒƒƒƒ¬ƒƒƒƒƒƒƒƒƒƒø±±
+±±≥FunáÑo    ≥AjustaSX1     ≥ Autor ≥Felipe Barbiere          ≥ Data ≥01/10/12  ≥±±
+±±√ƒƒƒƒƒƒƒƒƒƒ≈ƒƒƒƒƒƒƒƒƒƒƒƒƒƒ¡ƒƒƒƒƒƒƒ¡ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒ¡ƒƒƒƒƒƒ¡ƒƒƒƒƒƒƒƒƒƒ¥±±
+±±≥DescriáÑo ≥Ajusta o X1_GSC                                                ≥±±
+±±√ƒƒƒƒƒƒƒƒƒƒ≈ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒ¥±±
+±±≥Sintaxe   ≥AjustaSX1()                                                    ≥±±
+±±√ƒƒƒƒƒƒƒƒƒƒ≈ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒ¥±±
+±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+/*/
+Static Function AjustaSX1()
+Local aArea    := GetArea()
+Local cTamLot  := TamSX3("DTP_LOTNFC")[1]
+Local cTamDoc  := TamSX3("DT6_DOC")[1]
+Local cTamSer  := TamSX3("DT6_SERIE")[1]
+Local cTamTip  := TamSX3("DT6_DOCTMS")[1]
+Local aHelpPor := {}
+Local aHelpEng := {}
+Local aHelpEsp := {}
+
+aHelpPor := {"Informe o lote inicial."}
+aHelpEng := {"Introduzca el lote inicial."}
+aHelpEsp := {"Enter the initial batch."}
+PutSx1(	"RTMSR25", "01", "Lote De", "De Lote?", "From Lot?", ;
+			"MV_CH1", "C",cTamLot, 0, 0, "G", "", "DTP", "", "", ;
+			"MV_PAR01", "", "", "", "", "", "", "", "", ;
+			"", "", "", "N", "", "", "", "", ;
+			aHelpPor, aHelpEng, aHelpEsp )
+
+aHelpPor := {"Informe o lote final."}
+aHelpEng := {"Introduzca la mezcla final."}
+aHelpEsp := {"Enter the final blend."}
+PutSx1(	"RTMSR25", "02", "Lote Ate", "A Lote?", "To Lot?", ;
+			"MV_CH2", "C", cTamLot, 0, 0, "G", "", "DTP", "", "", ;
+			"MV_PAR02", "", "", "", "", "", "", "", "", ;
+			"", "", "", "N", "", "", "", "", ;
+			aHelpPor, aHelpEng, aHelpEsp )
+
+
+//-- Numero do Documento.
+aHelpPor := {"Informe o documento inicial."}
+aHelpEng := {"Introduzca el documento de partida."}
+aHelpEsp := {"Enter the starting document."}
+PutSx1(	"RTMSR25", "03", "Documento De", "De Documento", "From Document", ;
+			"MV_CH3", "C", cTamDoc, 0, 0, "G", "", "DT6", "", "", ;
+			"MV_PAR03", "", "", "", "", "", "", "", "", ;
+			"", "", "", "N", "", "", "", "", ;
+			aHelpPor, aHelpEng, aHelpEsp )
+			
+aHelpPor := {"Informe o documento final."}
+aHelpEng := {"Introduzca el documento final."}
+aHelpEsp := {"Enter the final document."}
+PutSx1(	"RTMSR25", "04", "Documento Ate", "A Documento", "To Document", ;
+			"MV_CH4", "C", cTamDoc, 0, 0, "G", "", "DT6", "", "", ;
+			"MV_PAR04", "", "", "", "", "", "", "", "", ;
+			"", "", "", "N", "", "", "", "", ;
+			aHelpPor, aHelpEng, aHelpEsp )
+
+
+//-- Serie do Documento.
+aHelpPor := {"Informe  serie do documento inicial."}
+aHelpEng := {"Informe de la serie del documento original."}
+aHelpEsp := {"Report series of the original document."}
+PutSx1(	"RTMSR25", "05", "Serie De", "De Serie", "From Series", ;
+			"MV_CH5", "C", cTamSer, 0, 0, "G", "", "", "", "", ;
+			"MV_PAR05", "", "", "", "", "", "", "", "", ;
+			"", "", "", "N", "", "", "", "", ;
+			aHelpPor, aHelpEng, aHelpEsp )
+
+aHelpPor := {"Informe  serie do documento final."}
+aHelpEng := {"La serie de Informes del documento final."}
+aHelpEsp := {"Report series of the final document."}
+PutSx1(	"RTMSR25", "06", "Serie Ate", "A Serie", "To Series", ;
+			"MV_CH6", "C", cTamSer, 0, 0, "G", "", "", "", "", ;
+			"MV_PAR06", "", "", "", "", "", "", "", "", ;
+			"", "", "", "N", "", "", "", "", ;
+			aHelpPor, aHelpEng, aHelpEsp )
+
+
+//-- Tipo do Documento.
+aHelpPor := {"Informe  o tipo do documento."}
+aHelpEng := {"Introduzca el tipo de documento."}
+aHelpEsp := {"Enter the type of document."}
+PutSx1(	"RTMSR25", "07", "Tipo do Documento", "Tipo do Documento", "Document Type", ;
+			"MV_CH7", "C", cTamTip, 0, 0, "G", "", "DLC", "", "", ;
+			"MV_PAR07", "", "", "", "", "", "", "", "", ;
+			"", "", "", "N", "", "", "", "", ;
+			aHelpPor, aHelpEng, aHelpEsp )
+
+// Busca XML
+SX1->(DbSetOrder(1))
+If SX1->(MsSeek(Padr("RTMSR25",Len(SX1->X1_GRUPO))+"08")) 
+	RecLock('SX1',.F.)
+	dbDelete()
+	MsUnLock()
+EndIf
+
+RestArea(aArea)
+Return Nil
 /*
 ‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹
 ±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
@@ -2578,6 +2697,669 @@ cQuery := GetSQL( cSource, cFilDoc, cDoc, cSerie )
 DbUseArea(.T., "TOPCONN", TCGenQry(,,cQuery), cNewArea, .F., .T.)
 
 Return ( cNewArea )
+
+/*
+FunÁ„o para validar recuperaÁ„o de corte de pedidos no momento da impressao da DACTE
+Autor: Eduardo Santana
+Data : 09/01/2021
+*/
+
+Static Function ValidRecCorte()
+	Local lRet			:= .T.
+	Local cQuery 		:= ""
+	Local cAliasCtes 	:= ""
+	Local cCte			:= "" 
+	Local cAliasDTC 	:= ""
+	Local cMsg			:= ""
+	Local cQueryDTC		:= ""
+	Local cNotEmp   	:= GetNewPar("ZZ_NOTEMP","02,13,15")
+	Local aEmp			:= {}
+	Local nPos			:= 0
+	Local cTitulo		:= "ATENCAO Pedidos em Recuperacao de Corte"
+	Local nAviso		:= 0
+	Local nTipo			:= 2
+	Local cLocal		:= ""
+	Local cTexto		:= ""
+	Local cArqHTML		:= ""
+	Local cHtml			:= ""
+	Local cAssunto		:= ""
+	Local cEmail		:= ""
+	Local cEmailCC      := GetNewPar("ZZ_EMAILCS","erp@comfriofs.com.br")
+    Local cEmailBCC     := GetNewPar("ZZ_MAILCOR","erp@comfriofs.com.br")
+	Local cClientHtml 	:= ""
+	Local cLojCliHtml 	:= ""
+	Local cEmpresaHtml	:= ""
+	Local cNomeCliHtml	:= ""
+	Local cNumPedHtml 	:= ""
+	Local nfor			:= 0
+
+	dbSelectArea("SM0")
+	SM0->(dbSetOrder(1))
+	dbGoTop()
+	While SM0->(!Eof())
+		If !(Alltrim(SM0->M0_CODIGO) $ cNotEmp)
+			nPos := Ascan(aEmp,{|x|Alltrim(x[2]) == Alltrim(SM0->M0_CODIGO)})
+			If nPos == 0
+				Aadd(aEmp, {"EMPRESA", alltrim(SM0->M0_CODIGO)})
+			Endif
+		EndIf
+		SM0->(DbSkip())	
+	Enddo
+	
+	SM0->(dbSetOrder(1))
+	SM0->(dbSeek(cEmpAnt+cFilAnt))
+
+	SM0->(dbSetOrder(1))
+	SM0->(dbSeek(cEmpAnt+cFilAnt))
+	
+	cQuery := GetSQL('DT6') //Query Retorna os Ctes conforme dados do parametro
+	TcQuery cQuery New Alias(cAliasCtes:=GetNextAlias())
+	dbSelectArea(cAliasCtes)
+	(cAliasCtes)->(dbGoTop())
+	If (cAliasCtes)->(!EOF())
+		While (cAliasCtes)->(!EOF())
+
+			cCte := (cAliasCtes)->DT6_DOC
+			cSerieCte := (cAliasCtes)->DT6_SERIE
+			cCodClient := (cAliasCtes)->DT6_CLIDES
+			cLojaClient := (cAliasCtes)->DT6_LOJDES
+			cFilDoc := (cAliasCtes)->DT6_FILDOC 
+			
+			//FunÁ„o para anaLisar se houve corte no pedido
+			AnalisaCorte(aEmp,cFilDoc, cCte, cSerieCte, cCodClient, cLojaClient)
+
+			(cAliasCtes)->(DbSkip())
+    	Enddo
+	Endif 
+
+	If Len(aRecsCorte) > 0 //Se encontrar pedidos em recuperaÁ„o de corte apresenta mensagem
+		For ncont := 1 to Len(aRecsCorte)
+			Aadd(aCtesFood,{aRecsCorte[ncont,10]}) //Array para armazenar CTes que ir„o seguir
+			If Empty(cMsg)
+				cMsg += "Os Documentos possuem pedidos em processo de recuperaÁ„o de corte. Deseja Seguir com a impress„o da DACTE ?"+CRLF
+				cMsg += "Empresa|Pedido|Cliente|Loja|Cte"+CRLF
+				cEmpMsg := SubStr(aRecsCorte[ncont,1],1,2)
+				cMsg += cEmpMsg+" "+aRecsCorte[ncont,2]+" "+aRecsCorte[ncont,8]+" "+aRecsCorte[ncont,9]+" "+aRecsCorte[ncont,10]+""+CRLF
+			Else
+				cMsg += cEmpMsg+" "+aRecsCorte[ncont,2]+" "+aRecsCorte[ncont,8]+" "+aRecsCorte[ncont,9]+" "+aRecsCorte[ncont,10]+""+CRLF
+			Endif 
+		Next ncont
+		
+		lRet := MsgYesNo(cMsg, cTitulo) //Mostra janela com mensagem e bot„o sim ou n„o 
+		
+	Endif
+
+	//Envia Workflow de pedidos em recuperaÁ„o de corte
+	If lRet .AND. Len(aRecsCorte) > 0	
+		nAviso:= Aviso("COMFRIO","Ser· gerado DACTE dos Ctes com recuperaÁ„o de corte e enviado notificaÁ„o ao cliente. Deseja prosseguir com os mesmos?",{"Sim","N„o"})
+		If nAviso == 1
+			aValidMAil := {}
+			For nfor := 1 to Len(aRecsCorte)
+				nValid :=  ascan(aValidMAil, { |x| alltrim(x[1])+alltrim(x[2])+alltrim(x[3])+alltrim(x[4]) == Alltrim(aRecsCorte[nfor,1])+Alltrim(aRecsCorte[nfor,2])+Alltrim(aRecsCorte[nfor,8])+Alltrim(aRecsCorte[nfor,9]) })
+				If nValid == 0
+					cClientHtml  := aRecsCorte[nfor,8]
+					cLojCliHtml  := aRecsCorte[nfor,9]
+					cEmpresaHtml := aRecsCorte[nfor,1]
+					cNomeCliHtml := aRecsCorte[nfor,3]
+					cNumPedHtml  := aRecsCorte[nfor,2]
+					cHtml 		 := MontaHmlEnv(aRecsCorte,cEmpresaHtml,cClientHtml,cLojCliHtml,cNomeCliHtml,cNumPedHtml)
+					cAssunto	 := "Lista de Corte COMFRIO - "+cNumPedHtml  //Assunto alterado Henrique Rubim.
+					cEmail  	 := aRecsCorte[nfor,7]     //Recebe e-mail do cliente
+					U_CFGEN01(nTipo,cLocal,cTexto,cArqHTML,cHtml,cAssunto,cEmail,cEmailCC,cEmailBCC)  //Envia Workflow
+				Endif
+			Next nfor
+		Else
+			lRet := .F.
+		Endif 		
+	Endif 
+
+	If lRet .AND. Len(aCorteOper) > 0	
+		aValidMAil := {}
+		For nfor := 1 to Len(aCorteOper)
+			nValid :=  ascan(aValidMAil, { |x| alltrim(x[1])+alltrim(x[2])+alltrim(x[3])+alltrim(x[4]) == Alltrim(aCorteOper[nfor,1])+Alltrim(aCorteOper[nfor,2])+Alltrim(aCorteOper[nfor,8])+Alltrim(aCorteOper[nfor,9]) })
+			If nValid == 0
+				//Envia email de cortes operacionais
+				cClientHtml := aCorteOper[nfor,8]
+				cLojCliHtml := aCorteOper[nfor,9]
+				cEmpresaHtml := aCorteOper[nfor,1]
+				cNomeCliHtml := aCorteOper[nfor,3]
+				cNumPedHtml := aCorteOper[nfor,2]
+				cHtml := MontaHmlEnv(aCorteOper,cEmpresaHtml,cClientHtml,cLojCliHtml,cNomeCliHtml,cNumPedHtml)
+				cAssunto := "COMFRIO - Pedido com corte de itens: "+cNumPedHtml
+				cEmail := aCorteOper[nfor,7]    //E-mail do cliente A1_EMAIL
+				U_CFGEN01(nTipo,cLocal,cTexto,cArqHTML,cHtml,cAssunto,cEmail,cEmailCC,cEmailBCC)  //Envia Workflow
+			Endif 
+		Next nfor
+	Endif
+
+	(cAliasCtes)->(dbCloseArea())  
+
+Return lRet
+
+/*
+	Busca se teve corte no pedido
+*/
+static function AnalisaCorte(aEmp,cFilDoc, cCte, cSerieCte, cCodClient, cLojaClient)
+	Local cSQL			:= ""
+	Local cSQL2			:= ""
+	Local cEmp			:= ""
+	Local cCliNcontr	:= ""
+	Local lRet 			:= .T.
+	Local cPediRecs 	:= ""
+	Local aRet 			:= {}
+	Local cNomeClient	:= ""
+	Local cNumPedido	:= ""
+	Local cNumPortal	:= ""
+	Local cClient 		:= ""
+	Local cLojaCli 		:= ""
+	Local cEmpresa		:= ""
+	Local cCodProd 		:= ""
+	Local cDescProd 	:= ""
+	Local cQuant		:= ""
+	Local nQuant		:= 0
+	Local nPosDoc 		:= 0
+	Local aScanWF		:= {}
+	Local cEmailCli 	:= ""
+	Local cAlias1		:= ""
+	Local cFilialPed 	:= ""
+	Local c1Um			:= ""
+	Local c2Um			:= ""
+	Local nRecord 		:= 0
+	Local nPedoMed		:= 0
+	Local cEmpPSM		:= GetNewPar("ZZ_EMPPSM", "010") //Empresa que contem produto tipo peso variavel
+	Local cTipoProd		:= ""
+	
+
+	For nRecord := 1 to Len(aEmp)
+		cEmp := aEmp[nRecord,2]+"0"
+
+		cSQL += "SELECT * FROM (																																							 " + CRLF
+		cSQL += "WITH  " + CRLF
+		cSQL += "	RET01 AS (  " + CRLF
+		cSQL += "		SELECT  " + CRLF
+		cSQL += "			DTC.DTC_FILIAL, DTC.DTC_FILORI, DTC.DTC_NUMNFC, DTC.DTC_SERNFC, DTC.DTC_CLIDES, DTC.DTC_LOJDES, SA1.A1_CGC AS CGCDES, SC501.C5_FILIAL AS C5_FILIAL, SC501.C5_NUM, SC501.C5_NOTA" + CRLF
+		cSQL += "		FROM  "+retSqlName("DT6")+"  DT6 " + CRLF
+		cSQL += "		INNER JOIN  "+retSqlName("SA1")+"  SA1 ON 1=1 " + CRLF
+		cSQL += "			AND SA1.A1_FILIAL = '"+xFilial("SA1")+"' " + CRLF
+		cSQL += "			AND SA1.A1_COD = DT6.DT6_CLIDES " + CRLF
+		cSQL += "			AND SA1.A1_LOJA = DT6.DT6_LOJDES " + CRLF
+		cSQL += "			AND SA1.A1_ZZFOOD = '1'  " + CRLF
+		cSQL += "			AND SA1.D_E_L_E_T_ = ' '  " + CRLF
+		cSQL += "		INNER JOIN  "+retSqlName("DTC")+"  DTC ON 1=1 " + CRLF
+		cSQL += "			AND DTC.DTC_FILIAL = DT6.DT6_FILIAL " + CRLF
+		cSQL += "			AND DTC.DTC_FILORI = DT6.DT6_FILDOC " + CRLF
+		cSQL += "			AND DTC.DTC_DOC = DT6.DT6_DOC " + CRLF
+		cSQL += "			AND DTC.DTC_SERIE = DT6.DT6_SERIE " + CRLF
+		cSQL += "			AND DTC.DTC_CLIDES = DT6.DT6_CLIDES " + CRLF
+		cSQL += "			AND DTC.DTC_LOJDES = DT6.DT6_LOJDES " + CRLF
+		cSQL += "			AND DTC.D_E_L_E_T_ = ' ' " + CRLF
+		cSQL += " 		INNER JOIN "+retSqlName("SC5")+" SC501 ON SC501.C5_NOTA = DTC.DTC_NUMNFC "+ CRLF
+		cSQL += "		WHERE 1=1 " + CRLF
+		cSQL += "			AND DT6.DT6_FILIAL = '"+xFilial("DT6")+"' " + CRLF
+		cSQL += "			AND DT6.DT6_FILDOC = '"+cFilDoc+"' " + CRLF
+		cSQL += "			AND DT6.DT6_CLIDES = '"+cCodClient+"' " + CRLF
+		cSQL += "			AND DT6.DT6_LOJDES = '"+cLojaClient+"' " + CRLF
+		cSQL += "			AND DT6.DT6_DOC = '"+cCte+"' " + CRLF
+		cSQL += "			AND DT6.DT6_SERIE = '"+cSerieCte+"' " + CRLF
+		cSQL += "			AND DT6.DT6_FIMP <> '1'" + CRLF
+		cSQL += "			AND DT6.D_E_L_E_T_ = ' ' " + CRLF
+		cSQL += "	), RET02 AS ( " + CRLF
+		cSQL += "		--SELECIONA TODOS OS PEDIDOS RELACIONADO AO CTE/CLIENTE EM QUESTAO " + CRLF
+		cSQL += "	 	SELECT SC5.C5_NUM AS C5_NUM, SC5.C5_ZZPEDOR AS C5_ZZPEDOR, SC5.C5_FILIAL AS C5_FILIAL " + CRLF
+		cSQL += "		FROM (RET01) RET01 " + CRLF
+		cSQL += "		INNER JOIN SC5"+cEmp+" SC5 ON 1=1 " + CRLF
+		//Revisar //cSQL += "			AND SC5.C5_FILIAL = RET01.DTC_FILORI " + CRLF
+		cSQL += "			AND SC5.C5_NOTA = RET01.DTC_NUMNFC " + CRLF
+		cSQL += "			AND SC5.C5_SERIE = RET01.DTC_SERNFC " + CRLF
+		cSQL += "			AND SC5.D_E_L_E_T_ = ' ' " + CRLF
+        cSQL += "       INNER JOIN SA1"+cEmp+" SA1 ON SA1.A1_COD = SC5.C5_CLIENTE " + CRLF
+        cSQL += "           AND SA1.A1_LOJA = SC5.C5_LOJACLI " + CRLF
+        cSQL += "           AND SA1.D_E_L_E_T_ = ' ' " + CRLF
+        cSQL += "           AND A1_ZZCOD = RET01.DTC_CLIDES " + CRLF
+        cSQL += "           AND A1_ZZLOJ = RET01.DTC_LOJDES " + CRLF
+		cSQL += "	), RET03 AS ( " + CRLF
+		cSQL += "		--UNIPIVOT --> LISTA AS DUAS COLUNAS EM UMA " + CRLF
+		cSQL += "		SELECT DISTINCT PEDIDO AS C5_NUM, C5_FILIAL " + CRLF
+		cSQL += "		FROM RET02 " + CRLF
+		cSQL += "		UNPIVOT( " + CRLF
+		cSQL += "			PEDIDO FOR PEDIDOS IN ( " + CRLF
+		cSQL += "				C5_NUM, C5_ZZPEDOR " + CRLF
+		cSQL += "			) " + CRLF
+		cSQL += "		) " + CRLF
+		cSQL += "		WHERE PEDIDO <> ' ' " + CRLF
+		cSQL += "	), RET04 AS ( " + CRLF
+		cSQL += "		--SELECIONA O PEDIDO QUE FOI ORIGINADO PELO PORTAL -- TIPO NORMAL (GRADE) " + CRLF
+		cSQL += "		SELECT SC5.C5_FILIAL, MIN(SC5.C5_NUM) AS C5_NUM, SC5.C5_CLIENT, SC5.C5_LOJACLI, SC5.C5_ZZNUMPT, SC5.C5_ZZPEDOR, SC5.C5_ZZLIB " + CRLF
+		cSQL += "		FROM RET03 " + CRLF
+		cSQL += "		INNER JOIN SC5"+cEmp+" SC5 ON SC5.C5_FILIAL = RET03.C5_FILIAL " + CRLF
+		cSQL += "			AND SC5.C5_NUM = RET03.C5_NUM " + CRLF
+		cSQL += "			AND SC5.C5_ZZNUMPT <> ' ' " + CRLF
+		cSQL += "			AND SC5.D_E_L_E_T_ = ' ' " + CRLF
+		cSQL += "		INNER JOIN ZZ1"+cEmp+" ZZ1 ON 1=1 " + CRLF
+		cSQL += "			AND ZZ1.ZZ1_FILIAL = SC5.C5_FILIAL " + CRLF
+		cSQL += "			AND ZZ1.ZZ1_NUM = SC5.C5_ZZNUMPT " + CRLF
+		cSQL += "			AND ZZ1.ZZ1_CLIENT = SC5.C5_CLIENT " + CRLF
+		cSQL += "			AND ZZ1.ZZ1_LOJA = SC5.C5_LOJACLI " + CRLF
+		cSQL += "			AND ZZ1.ZZ1_TIPO in ('N','U') " + CRLF
+		cSQL += "			AND ZZ1.D_E_L_E_T_ = ' ' " + CRLF
+		cSQL += "		GROUP BY SC5.C5_FILIAL, SC5.C5_CLIENT, SC5.C5_LOJACLI, SC5.C5_ZZNUMPT, SC5.C5_ZZPEDOR, SC5.C5_ZZLIB " + CRLF
+		cSQL += "	), RET05 AS ( " + CRLF
+		cSQL += "		--SELECIONA TODOS OS PEDIDOS QUE FORAM CRIADOS PARA RECUPERACAO, PARTINDO DO PEDIDO ORIGINADO PELO PORTAL " + CRLF
+		cSQL += "		SELECT RET04.C5_FILIAL, RET04.C5_NUM AS C5_REC, RET04.C5_CLIENT, RET04.C5_LOJACLI, RET04.C5_ZZNUMPT, RET04.C5_ZZPEDOR AS C5_ORI, RET04.C5_ZZLIB " + CRLF
+		cSQL += "		FROM RET04 " + CRLF
+		cSQL += "		LEFT JOIN SC5"+cEmp+" SC5 ON 1=1 " + CRLF
+		cSQL += "			AND SC5.C5_FILIAL = RET04.C5_FILIAL " + CRLF
+		cSQL += "			AND SC5.C5_CLIENT = RET04.C5_CLIENT " + CRLF
+		cSQL += "			AND SC5.C5_LOJACLI = RET04.C5_LOJACLI " + CRLF
+		cSQL += "			AND SC5.C5_ZZPEDOR = RET04.C5_NUM " + CRLF
+		cSQL += "			AND SC5.D_E_L_E_T_ = ' ' " + CRLF
+		cSQL += "	), RET06 AS ( " + CRLF
+		cSQL += "		--ANALISA EM TODOS OS PEDIDOS (ORIGINAL E RECUPERADO) SE HOUVERAM CORTES DURANTE O PROCESSO DE SEPARACAO " + CRLF
+		cSQL += "		--CORTES DO PEDIDO ORIGINAL " + CRLF
+		cSQL += "		SELECT DISTINCT RET05.C5_FILIAL, RET05.C5_REC, RET05.C5_CLIENT, RET05.C5_LOJACLI, RET05.C5_ZZNUMPT, RET05.C5_ORI, RET05.C5_ZZLIB, " + CRLF
+		cSQL += "			ZZ3.ZZ3_PRODUT, ZZ3.ZZ3_QTDPV, ZZ3.ZZ3_QTATEN, ZZ3.ZZ3_QTCORT, ZZ3.ZZ3_TPCOR,ZZ3.ZZ3_DESCRI " + CRLF
+		cSQL += "		FROM RET05 " + CRLF
+		cSQL += "		INNER JOIN ZZ3"+cEmp+" ZZ3 ON 1=1  " + CRLF
+		cSQL += "			AND ZZ3.ZZ3_FILIAL = RET05.C5_FILIAL  " + CRLF
+		cSQL += "			AND ZZ3.ZZ3_CLIENT = RET05.C5_CLIENT  " + CRLF
+		cSQL += "			AND ZZ3.ZZ3_LOJA = RET05.C5_LOJACLI  " + CRLF
+		cSQL += "			AND ZZ3.ZZ3_PEDIDO = RET05.C5_ORI --ORIGINAL " + CRLF
+		cSQL += "			AND ZZ3.ZZ3_STATUS <> 'R'" + CRLF
+		cSQL += "			AND ZZ3.D_E_L_E_T_ = ' ' " + CRLF
+		cSQL += "		UNION ALL " + CRLF
+		cSQL += "		--CORTES DOS PEDIDOS PARA RECUPERACAO " + CRLF
+		cSQL += "		SELECT DISTINCT RET05.C5_FILIAL, RET05.C5_REC, RET05.C5_CLIENT, RET05.C5_LOJACLI, RET05.C5_ZZNUMPT, RET05.C5_ORI, RET05.C5_ZZLIB, " + CRLF
+		cSQL += "			ZZ3.ZZ3_PRODUT, ZZ3.ZZ3_QTDPV, ZZ3.ZZ3_QTATEN, ZZ3.ZZ3_QTCORT, ZZ3.ZZ3_TPCOR,ZZ3.ZZ3_DESCRI " + CRLF
+		cSQL += "		FROM RET05 " + CRLF
+		cSQL += "		INNER JOIN ZZ3"+cEmp+" ZZ3 ON 1=1  " + CRLF
+		cSQL += "			AND ZZ3.ZZ3_FILIAL = RET05.C5_FILIAL  " + CRLF
+		cSQL += "			AND ZZ3.ZZ3_CLIENT = RET05.C5_CLIENT  " + CRLF
+		cSQL += "			AND ZZ3.ZZ3_LOJA = RET05.C5_LOJACLI  " + CRLF
+		cSQL += "			AND ZZ3.ZZ3_PEDIDO = RET05.C5_REC --RECUPERADO " + CRLF
+		cSQL += "			AND ZZ3.ZZ3_STATUS <> 'R'" + CRLF
+		cSQL += "			AND ZZ3.D_E_L_E_T_ = ' ' " + CRLF
+		cSQL += "	), RET07 AS ( " + CRLF
+		cSQL += "		--ANALISA OS ITENS CORTADOS X ITENS RECUPERADOS (PEDIDO REC) " + CRLF
+		cSQL += "		SELECT DISTINCT'"+ cEmp +"' AS EMP, RET06.C5_FILIAL, RET06.C5_CLIENT, RET06.C5_LOJACLI, RET06.C5_ZZLIB, RET06.ZZ3_TPCOR, RET06.C5_ORI, RET06.C5_REC, RET06.ZZ3_PRODUT,RET06.ZZ3_DESCRI, SC6.C6_UM, SC6.C6_SEGUM, " + CRLF
+		cSQL += "			CASE WHEN RET06.ZZ3_PRODUT = SC6.C6_PRODUTO " + CRLF
+		cSQL += "				THEN RET06.ZZ3_QTCORT - SC6.C6_QTDVEN " + CRLF
+		cSQL += "				ELSE RET06.ZZ3_QTCORT " + CRLF
+		cSQL += "			END ZZ3_QTCORT " + CRLF
+		cSQL += "		FROM RET06 " + CRLF
+		cSQL += "		INNER JOIN SC6"+cEmp+" SC6 ON 1=1 " + CRLF
+		cSQL += "			AND SC6.C6_FILIAL = RET06.C5_FILIAL " + CRLF
+		cSQL += "			AND SC6.C6_CLI = RET06.C5_CLIENT " + CRLF
+		cSQL += "			AND SC6.C6_LOJA = RET06.C5_LOJACLI " + CRLF
+		cSQL += "			AND SC6.C6_NUM = RET06.C5_REC " + CRLF
+		cSQL += "			AND ((SC6.C6_PRODUTO = RET06.ZZ3_PRODUT AND SC6.C6_QTDVEN < RET06.ZZ3_QTCORT) OR (SC6.C6_PRODUTO <> RET06.ZZ3_PRODUT)) " + CRLF
+		cSQL += "			AND SC6.D_E_L_E_T_ = ' ' " + CRLF
+		cSQL += "	) " + CRLF
+		cSQL += "	SELECT * FROM RET07 " + CRLF
+		cSQL += ") " + CRLF
+
+		If nRecord < Len(aEmp)
+			cSQL += " UNION ALL " + CRLF
+		Endif
+
+	Next nRecord
+
+	MemoWrite("\sql\AnalisaCorte.sql",cSQL)	
+
+	TCQUERY cSQL NEW Alias (cAlias:=GetNextAlias())
+	dbselectarea(cAlias)
+	(cAlias)->(dbGoTop())
+	If (cAlias)->(!Eof())
+		While (cAlias)->(!EOF()) //Percorre os produtos que teve corte 
+
+			///cNumPedido	:= (cAlias)->C5_ORI
+			cNumPedido	:= IF(!EMPTY((cAlias)->C5_ORI),(cAlias)->C5_ORI,(cAlias)->C5_REC)
+			cClient 	:= (cAlias)->C5_CLIENT
+			cLojaCli 	:= (cAlias)->C5_LOJACLI
+			cEmpresa	:= Alltrim((cAlias)->EMP)
+			cNomeClient	:= Alltrim(RetNomeEmail(cEmpresa, cClient,cLojaCli,"N"))
+			cCodProd 	:= Alltrim((cAlias)->ZZ3_PRODUT)
+			cDescProd 	:= Alltrim((cAlias)->ZZ3_DESCRI)
+			cQuant		:= AllTrim(Str((cAlias)->ZZ3_QTCORT))
+			nQuant		:= GetDtoVal(cQuant)
+			cEmailCli 	:= Alltrim(RetNomeEmail(cEmpresa, cClient,cLojaCli,"M"))
+			c1Um		:= Alltrim((cAlias)->C6_UM)
+			c2Um		:= Alltrim((cAlias)->C6_SEGUM)
+
+			
+			IF cEmpresa == cEmpPSM
+
+				cSQL2 += "	SELECT SB1.B1_ZZTPESO, SB1.B1_ZZPSOMD "				   + CRLF
+				cSQL2 += "	FROM SB1"+cEmpresa+" SB1"			  				   + CRLF
+				cSQL2 += "	INNER JOIN ZZ3"+cEmpresa+" ZZ3 ON ZZ3.D_E_L_E_T_ = ' '"+ CRLF
+				cSQL2 += "	AND ZZ3_PRODUT = SB1.B1_COD" 						   + CRLF
+				cSQL2 += "	WHERE ZZ3_PEDIDO = '"+cNumPedido+"'" 				   + CRLF
+				cSQL2 += "	AND ZZ3_PRODUT = '"+cCodProd+"'"					   + CRLF
+
+				TcQuery cSQL2 New Alias (cAlias1:=GetNextAlias())
+				
+				if (cAlias1)->(!eof())
+					cTipoProd := (cAlias1)->B1_ZZTPESO
+					nPedoMed  := (cAlias1)->B1_ZZPSOMD
+					lRet 	  := .T.
+				endif
+				
+				(cAlias1)->(dbCloseArea())
+				cSQL2 := ""
+
+			Else
+				cTipoProd := ""	
+			Endif
+
+			iF cEmpresa == cEmpPSM .and. cTipoProd == PESO_VARIAVEL .AND. nQuant > nPedoMed
+			
+				nPosDoc := aScan(aScanWF,{|x| x[1] == cCodProd})
+				
+				If nPosDoc == 0
+
+					aadd(aScanWF,{cCodProd})
+
+					If Alltrim((cAlias)->C5_ZZLIB) == "2" //Se n„o foi faturado a recuperaÁ„o do corte
+						AADD(aRecsCorte,{cEmpresa,cNumPedido,Alltrim(cNomeClient),cCodProd,cDescProd,cQuant,Alltrim(cEmailCli),cClient,cLojaCli,cCte,c1Um}) //Em recuperaÁ„o de corte
+					Elseif Alltrim((cAlias)->C5_ZZLIB) == "1" //Se cortou
+						AADD(aCorteOper,{cEmpresa,cNumPedido,Alltrim(cNomeClient),cCodProd,cDescProd,cQuant,Alltrim(cEmailCli),cClient,cLojaCli,c1Um}) //Cortou n„o teve recuperaÁ„o
+					Endif 
+
+				Endif
+
+			elseif !cTipoProd == PESO_VARIAVEL
+
+				nPosDoc := aScan(aScanWF,{|x| x[1] == cCodProd})
+				
+				If nPosDoc == 0
+
+					aadd(aScanWF,{cCodProd})
+
+					If Alltrim((cAlias)->C5_ZZLIB) == "2" //Se n„o foi faturado a recuperaÁ„o do corte
+						AADD(aRecsCorte,{cEmpresa,cNumPedido,Alltrim(cNomeClient),cCodProd,cDescProd,cQuant,Alltrim(cEmailCli),cClient,cLojaCli,cCte,c1Um}) //Em recuperaÁ„o de corte
+					Elseif Alltrim((cAlias)->C5_ZZLIB) == "1" //Se cortou
+						AADD(aCorteOper,{cEmpresa,cNumPedido,Alltrim(cNomeClient),cCodProd,cDescProd,cQuant,Alltrim(cEmailCli),cClient,cLojaCli,c1Um}) //Cortou n„o teve recuperaÁ„o
+					Endif 
+
+				ENDIF
+
+			Endif
+			(cAlias)->(DbSkip())
+    	Enddo
+	Endif
+
+	(cAlias)->(dbCloseArea())  
+
+Return .T.
+
+/*
+	Busca se teve corte no pedido
+*/
+static function RetNomeEmail(cEmp, cCodCli,cLojaCli,cTipoRet)
+	Local cSQL		:= ""
+	Local cAliasCli	:= ""
+	Local cRet 		:= ""
+
+	//Retorna recuperaÁ„o de corte usando produto original
+	cSQL := "			SELECT " + CRLF
+	cSQL += "				* " + CRLF
+	cSQL += "			FROM SA1"+ cEmp +" " + CRLF
+	cSQL += "			WHERE " + CRLF
+	cSQL += "				A1_COD = '"+cCodCli+"' " + CRLF
+	cSQL += "				AND A1_LOJA = '"+cLojaCli+"' " + CRLF
+	cSQL += "				AND D_E_L_E_T_ = ' ' " + CRLF
+
+	TCQUERY cSQL NEW Alias (cAliasCli:=GetNextAlias())
+	dbselectarea(cAliasCli)
+	(cAliasCli)->(dbGoTop())
+	If (cAliasCli)->(!Eof())
+		If cTipoRet == "M"
+			cRet := (cAliasCli)->A1_ZZMCORT
+		Else 
+			cRet := (cAliasCli)->A1_NREDUZ
+		Endif 
+	Endif
+
+	(cAliasCli)->(dbCloseArea())  
+
+Return cRet 
+
+/*
+	FunÁ„o para montar layout html do e-mail a ser enviado
+*/
+Static Function MontaHmlEnv(aDados,cEmpHtml,cCodCliHtml,cLojaCliHtml,cNomCliHtml,cNumPedHtml)
+	Local cSql			:= ""
+	Local cHtml 		:= ""
+	Local cLogo 		:= GetNewPar("ZZ_LOGOCFR","D:\TOTVS\PROTHEUS\LG_QA2\protheus_data\logohtml\comfrio.png") 
+	Local cUrl 			:= "url('http://localhost/pontilhado.gif'); background-color: #6699CC"
+	Local cNumPedPortal := ""
+	Local cAliasPed		:= ""
+
+	cSQL += " SELECT C5_ZZNUMPT FROM SC5"+cEmpHtml+" WHERE 1=1 " + CRLF
+	cSQL += " AND C5_FILIAL  = '" + xFilial("SC5") + "'" + CRLF
+	cSQL += " AND C5_CLIENTE = '"+cCodCliHtml+"' " + CRLF
+	cSQL += " AND C5_LOJACLI = '"+cLojaCliHtml+"' " + CRLF
+	cSQL += " AND C5_NUM = '"+cNumPedHtml+"' " + CRLF
+	cSQL += " AND D_E_L_E_T_ = ' ' " + CRLF
+	
+
+	TCQUERY cSQL NEW Alias (cAliasPed:=GetNextAlias())
+	dbselectarea(cAliasPed)
+	(cAliasPed)->(dbGoTop())
+	If (cAliasPed)->(!Eof())
+		cNumPedPortal := Alltrim((cAliasPed)->C5_ZZNUMPT)
+	Endif
+
+	Aadd(aValidMAil,{cEmpHtml,cNumPedHtml,cCodCliHtml,cLojaCliHtml})
+
+	cHtml := '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">'+ CRLF
+	cHtml += '<html>'+ CRLF
+	cHtml += '	<head>		
+	cHtml += '		<!-- saved from url=(0022)http://internet.e-mail -->
+	cHtml += '		<title>WorkFlow Cortes</title>
+	cHtml += '		<style>
+	cHtml += '			TD {
+	cHtml += '			FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; FONT-SIZE: 10pt
+	cHtml += '			}
+	cHtml += '			.TarjaTopoCor {
+	cHtml += '			text-decoration: none; height: 6px; background-image:'+cUrl+' '+CRLF
+	cHtml += '			}'+ CRLF
+	cHtml += '			.titulo {'+ CRLF
+	cHtml += '			font-family: Arial, Helvetica, sans-serif; font-size: 16px; color: #19167D; text-decoration: none; font-weight: bold;'+ CRLF
+	cHtml += '			}'+ CRLF
+	cHtml += '			.TitleBig {'+ CRLF
+	cHtml += '			COLOR: #074b85; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; FONT-SIZE: 24px; FONT-WEIGHT: normal; LINE-HEIGHT: 26px; TEXT-ALIGN: left'+ CRLF
+	cHtml += '			}'+ CRLF
+	cHtml += '			.style1 {'+ CRLF
+	cHtml += '			color: #19167D'+ CRLF
+	cHtml += '			}'+ CRLF
+	cHtml += '			.style2 {'+ CRLF
+	cHtml += '			BACKGROUND-COLOR: #E4E4E4; COLOR: #19167D; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; FONT-SIZE: 14px; VERTICAL-ALIGN: top;'+ CRLF
+	cHtml += '			}'+ CRLF
+	cHtml += '			.style3 {'+ CRLF
+	cHtml += '			BACKGROUND-COLOR: #E4E4E4; COLOR: #19167D; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; FONT-SIZE: 10px; VERTICAL-ALIGN: top;'+ CRLF
+	cHtml += '			}'+ CRLF
+	cHtml += '			.style5 {'+ CRLF
+	cHtml += '			color: #19167D; font-weight: bold;'+ CRLF
+	cHtml += '			}'+ CRLF
+	cHtml += '			.SmallBold {'+ CRLF
+	cHtml += '			FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; FONT-SIZE: 10px; FONT-WEIGHT: bold'+ CRLF
+	cHtml += '			}'+ CRLF
+	cHtml += '			.Small {'+ CRLF
+	cHtml += '			FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; FONT-SIZE: 10px'+ CRLF
+	cHtml += '			}'+ CRLF
+	cHtml += '			.TableRowBlueDarkMini {'+ CRLF
+	cHtml += '			BACKGROUND-COLOR: #E4E4E4; COLOR: #FFCC00; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; FONT-SIZE: 10px; VERTICAL-ALIGN: top'+ CRLF
+	cHtml += '			}'+ CRLF
+	cHtml += '			.TableRowWhiteMini2 {'+ CRLF
+	cHtml += '			COLOR: #000000; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; FONT-SIZE: 10px; VERTICAL-ALIGN: top'+ CRLF
+	cHtml += '			}'+ CRLF
+	cHtml += '			.Mini {'+ CRLF
+	cHtml += '			FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; FONT-SIZE: 10px'+ CRLF
+	cHtml += '			}'+ CRLF
+	cHtml += '			DIV {'+ CRLF
+	cHtml += '			FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; FONT-SIZE: 10pt'+ CRLF
+	cHtml += '			}'+ CRLF
+	cHtml += '			.texto-layer {'+ CRLF
+	cHtml += '			font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 9px; color: #000000; text-decoration: none'+ CRLF
+	cHtml += '			}'+ CRLF
+	cHtml += '		</style>'+ CRLF
+	cHtml += '	</head>'+ CRLF
+	cHtml += '	<body style="background-color: rgb(255, 255, 255);">'+ CRLF
+	cHtml += '<p><strong><font color="#808080" face="calibri size="2">Prezados,</font></strong></p>' + CRLF
+	cHtml += '<p><font color="#808080" face="calibri size="1">Informo que a relaÁ„o de itens abaixo est· indisponÌvel no momento. Favor inserir novamente os itens em seu prÛximo  pedido:</font></p>' + CRLF
+	cHtml += '<table width="998" border="0">' + CRLF
+	cHtml += '<tr><td>' + CRLF
+	cHtml += '<div align="center"><font color="#4f4f4f">' + CRLF
+	cHtml += '</font>' + CRLF
+	cHtml += '</div></td></tr>' + CRLF
+	cHtml += '</table>' + CRLF
+	cHtml += '</p>' + CRLF
+	cHtml += '</p>' + CRLF
+	cHtml += '		<table style="border-collapse: collapse;" id="table1" align="center" border="0" bordercolor="#111111" cellpadding="0" cellspacing="0" height="32" width="100%">'+ CRLF
+	cHtml += '			<tbody>'+ CRLF
+	cHtml += '				<tr>'+ CRLF
+	cHtml += '					<td height="32" width="14%"><img src="'+cLogo+'" border="0"></td>'+ CRLF
+	cHtml += '					<td height="32" width="20%">'+ CRLF
+	cHtml += '						<table style="border-collapse: collapse;" id="table2" bgcolor="#f7f7f7" border="0" bordercolor="#000000" cellpadding="0" cellspacing="0" width="100%">'+ CRLF
+	cHtml += '							<tbody>'+ CRLF
+	cHtml += '								<tr>'+ CRLF
+	cHtml += '									<td style="border-bottom: 1px solid rgb(192, 192, 192); padding: 0pt;" width="51%"> <b><font color="#19167d" face="Arial" size="2">Nome Cliente</font></b></td>'+ CRLF
+	cHtml += '									<td style="padding: 0pt; border-left-width: 1px; border-right-width: 1px; border-top-width: 1px;" width="3%">&nbsp;</td>'+ CRLF
+	cHtml += '									<td style="border-width: 1px; border-bottom: 1px solid rgb(192, 192, 192); padding: 0pt;" width="66%"> <font face="Arial" size="2"><b>'+cNomCliHtml+'</b></font></td>'+ CRLF
+	cHtml += '								</tr>'+ CRLF
+	cHtml += '								<tr>'+ CRLF
+	cHtml += '									<td style="border-bottom: 1px solid rgb(192, 192, 192); padding: 0pt;" width="51%"> <b><font color="#19167d" face="Arial" size="2">N&ordm; Pedido</font></b></td>'+ CRLF
+	cHtml += '									<td style="padding: 0pt; border-left-width: 1px; border-right-width: 1px; border-top-width: 1px;" width="3%">&nbsp;</td>'+ CRLF
+	cHtml += '									<td style="border-width: 1px; border-bottom: 1px solid rgb(192, 192, 192); padding: 0pt;" width="66%"> <font face="Arial" size="2"><b>'+cNumPedHtml+'</b></font></td>'+ CRLF
+	cHtml += '								</tr>'+ CRLF
+	cHtml += '								<tr>'+ CRLF
+	cHtml += '									<td style="border-bottom: 1px solid rgb(192, 192, 192); padding: 0pt;" width="51%"> <b><font color="#19167d" face="Arial" size="2">N&ordm; Pedido Portal</font></b></td>'+ CRLF
+	cHtml += '									<td style="padding: 0pt; border-left-width: 1px; border-right-width: 1px; border-top-width: 1px;" width="3%">&nbsp;</td>'+ CRLF
+	cHtml += '									<td style="border-width: 1px; border-bottom: 1px solid rgb(192, 192, 192); padding: 0pt;" width="66%"> <font face="Arial" size="2"><b>'+cNumPedPortal+'</b></font></td>'+ CRLF
+	cHtml += '								</tr>'+ CRLF
+	cHtml += '							</tbody>'+ CRLF
+	cHtml += '						</table>'+ CRLF
+	cHtml += '					</td>'+ CRLF
+	cHtml += '				</tr>'+ CRLF
+	cHtml += '			</tbody>'+ CRLF
+	cHtml += '		</table>'+ CRLF
+	cHtml += '		<br>'+ CRLF
+	cHtml += '		<table style="font-family: Verdana,Arial,Helvetica,sans-serif; font-size: 10pt;" border="0" cellpadding="0" cellspacing="0" width="100%">'+ CRLF
+	cHtml += '			<tbody>'+ CRLF
+	cHtml += '				<tr background="http://localhost/pontilhado.gif">'+ CRLF
+	cHtml += '					<td class="TarjaTopoCor" height="5"> <img src="http://localhost/transparente.gif" height="1" width="1"></td>'+ CRLF
+	cHtml += '				</tr>'+ CRLF
+	cHtml += '			</tbody>'+ CRLF
+	cHtml += '		</table>'+ CRLF
+	cHtml += '		<table style="font-family: Verdana,Arial,Helvetica,sans-serif; font-size: 10pt;" border="0" cellpadding="0" cellspacing="0" hspace="0" vspace="0" width="100%">'+ CRLF
+	cHtml += '			<tbody>'+ CRLF
+	cHtml += '			</tbody>'+ CRLF
+	cHtml += '		</table>'+ CRLF
+	cHtml += '		&nbsp;'+ CRLF
+	cHtml += '		<table style="font-family: Verdana,Arial,Helvetica,sans-serif; font-size: 10pt;" id="table6" align="center" border="0" cellpadding="0" cellspacing="3" width="96%">'+ CRLF
+	cHtml += '			<tbody>'+ CRLF
+	cHtml += '				<tr>'+ CRLF
+	cHtml += '					<td width="99%"><span class="titulo"><font size="3">&raquo; Cortes do Pedido</font></span></td>'+ CRLF
+	cHtml += '				</tr>'+ CRLF
+	cHtml += '			</tbody>'+ CRLF
+	cHtml += '		</table>'+ CRLF
+	cHtml += '		<table style="font-family: Verdana,Arial,Helvetica,sans-serif; font-size: 10pt;" align="center" bgcolor="#f7f7f7" border="1" bordercolor="#e5e5e5" cellpadding="6" cellspacing="0" width="96%">'+ CRLF
+	cHtml += '			<tbody>'+ CRLF
+	cHtml += '			<tr>'+ CRLF
+	cHtml += '			<td bordercolor="#FFFFFF" class="titulo" width="100%">'+ CRLF
+	cHtml += '			<div style="font-family: Verdana,Arial,Helvetica,sans-serif; font-size: 10pt;" align="center">'+ CRLF
+	cHtml += '				<table style="font-family: Verdana,Arial,Helvetica,sans-serif; font-size: 10pt;" width="100%"></table>'+ CRLF
+	cHtml += '			</div>'+ CRLF
+	cHtml += '			<form method="post" action="mailto:%WFMailTo%" name="FrontPage_Form1" style="margin: 0px;">'+ CRLF
+	cHtml += '				<input name="T30" size="4" maxlength="5" value="%t.9%" style="font-family: Courier; font-size: 12px;" type="hidden">'+ CRLF
+	cHtml += '				<input name="T11" size="12" maxlength="12" value="%t.14%" style="font-family: Courier; font-size: 12px;" type="hidden">'+ CRLF
+	cHtml += '				<input name="nItem" size="12" maxlength="12" value="%nItem%" style="font-family: Courier; font-size: 12px;" type="hidden">'+ CRLF
+	cHtml += '				<table style="font-family: Verdana,Arial,Helvetica,sans-serif; font-size: 10pt;" id="table3" border="0" cellpadding="2" cellspacing="1" width="100%">'+ CRLF
+	cHtml += '				</table>'+ CRLF
+	cHtml += '				<table style="font-family: Verdana,Arial,Helvetica,sans-serif; font-size: 10pt;" border="0" cellpadding="0" cellspacing="0" width="100%">'+ CRLF
+	cHtml += '					<tbody>'+ CRLF
+	cHtml += '						<tr>'+ CRLF
+	cHtml += '							<td bgcolor="#074b85"><img src="http://localhost/pic_invis.gif" height="1" width="1"></td>'+ CRLF
+	cHtml += '						</tr>'+ CRLF
+	cHtml += '					</tbody>'+ CRLF
+	cHtml += '				</table>'+ CRLF
+	cHtml += '				<br>'+ CRLF
+	cHtml += '				<table id="table4" border="0" cellspacing="2" height="40" width="100%">'+ CRLF
+	cHtml += '					<tbody>'+ CRLF
+	cHtml += '						<tr class="TituloMenor" bgcolor="#e4e4e4">'+ CRLF
+	cHtml += '							<td align="center" height="3" width="5%"> <font color="#000080" face="Arial"><b>C&oacute;digo</b></font></td>'+ CRLF
+	cHtml += '							<td align="center" height="3" width="18%"> <font color="#000080" face="Arial"><b>Descri&ccedil;&atilde;o</b></font></td>'+ CRLF
+	cHtml += '							<td align="center" height="3" width="8%"> <font color="#000080" face="Arial"><b>Quant</b></font></td>'+ CRLF
+	cHtml += '						</tr>'+ CRLF
+	cHtml += '					</tbody>'+ CRLF
+	cHtml += '					<tbody>'+ CRLF
+
+	For nhtml := 1 to Len(aDados)
+		If aDados[nhtml,1]+aDados[nhtml,2]+aDados[nhtml,8]+aDados[nhtml,9] == cEmpHtml+cNumPedHtml+cCodCliHtml+cLojaCliHtml
+			cHtml += '						<tr class="texto-layer" bgcolor="#ffffff">'+ CRLF
+			cHtml += '							<td height="5" width="5%">'+ CRLF
+			cHtml += '								<div align="center"><span style="font-size: 7pt;">'+Alltrim(aDados[nhtml,4])+'</span></div>'+ CRLF //CODIGO PRODUTO
+			cHtml += '							</td>'+ CRLF
+			cHtml += '							<td height="5" width="18%">'+ CRLF
+			cHtml += '								<div align="center"><span style="font-size: 7pt;">'+Alltrim(aDados[nhtml,5])+'</span></div>'+ CRLF //DESCRICAO
+			cHtml += '							</td>'+ CRLF
+			cHtml += '							<td height="5" width="8%">'+ CRLF
+			cHtml += '								<div align="center"><span style="font-size: 7pt;">'+aDados[nhtml,6]+'</span></div>'+ CRLF //QUANTIDADE
+			cHtml += '							</td>'+ CRLF
+			cHtml += '						</tr>'+ CRLF
+		Endif 
+	Next nhtml
+
+
+	cHtml += '					</tbody>'+ CRLF
+	cHtml += '				</table>'+ CRLF
+	cHtml += '			</form>'+ CRLF
+	cHtml += '			</td>'+ CRLF
+	cHtml += '			</tr>'+ CRLF
+	cHtml += '			</tbody>'+ CRLF
+	cHtml += '		</table>'+ CRLF
+	cHtml += '		<br>'+ CRLF
+	cHtml += '		<table style="font-family: Verdana,Arial,Helvetica,sans-serif; font-size: 10pt;" border="0" width="100%">'+ CRLF
+	cHtml += '			<tbody>'+ CRLF
+	cHtml += '				<tr></tr>'+ CRLF
+	cHtml += '				<tr>'+ CRLF
+	cHtml += '					<td class="TituloMenor">'+ CRLF
+	cHtml += '						<table style="font-family: Verdana,Arial,Helvetica,sans-serif; font-size: 10pt;" align="center" bgcolor="#f7f7f7" border="1" bordercolor="#e5e5e5" cellpadding="0" cellspacing="0" width="96%">'+ CRLF
+	cHtml += '							<tbody>'+ CRLF
+	cHtml += '							</tbody>'+ CRLF
+	cHtml += '						</table>'+ CRLF
+	cHtml += '					</td>'+ CRLF
+	cHtml += '				</tr>'+ CRLF
+	cHtml += '			</tbody>'+ CRLF
+	cHtml += '		</table>'+ CRLF
+	cHtml += '		<table style="font-family: Verdana,Arial,Helvetica,sans-serif; font-size: 10pt;" border="0" width="100%">'+ CRLF
+	cHtml += '			<tbody>'+ CRLF
+	cHtml += '				<tr>'+ CRLF
+	cHtml += '					<td class="Mini"></td>'+ CRLF
+	cHtml += '				</tr>'+ CRLF
+	cHtml += '				<tr>'+ CRLF
+	cHtml += '					<td class="Mini">'+ CRLF
+	cHtml += '						<table style="font-family: Verdana,Arial,Helvetica,sans-serif; font-size: 10pt;" align="center" bgcolor="#f7f7f7" border="1" bordercolor="#e5e5e5" cellpadding="0" cellspacing="0" width="96%">'+ CRLF
+	cHtml += '							<tbody>'+ CRLF
+	cHtml += '								<tr>'+ CRLF
+	cHtml += '									<td bordercolor="#FFFFFF" width="100%">'+ CRLF
+	cHtml += '										<div class="texto-layer" align="right">WorkFlow &#64 COMFRIO S.A</div>'+ CRLF
+	cHtml += '									</td>'+ CRLF
+	cHtml += '								</tr>'+ CRLF
+	cHtml += '							</tbody>'+ CRLF
+	cHtml += '						</table>'+ CRLF
+	cHtml += '					</td>'+ CRLF
+	cHtml += '				</tr>'+ CRLF
+	cHtml += '			</tbody>'+ CRLF
+	cHtml += '		</table>'+ CRLF
+	cHtml += '		<!--<pre><font color="#ff0000" face="Verdana" size="2"><b>%WFAvisoJS%</b></font></pre>-->'+ CRLF
+	cHtml += '	</body>'+ CRLF
+	cHtml += '</html>'+ CRLF
+
+	
+Return cHTML
+
+
 
 /*
 ‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹
