@@ -6,7 +6,7 @@ Valida linha no pedido de venda
 @type function
 @version  
 @author MCS Tecnologia
-@since 12/9/2025
+@since 01/2/2026
 @return variant, return_description
 /*/
 User Function M410LIOK()
@@ -16,10 +16,10 @@ User Function M410LIOK()
     Local lAtv      := SuperGetMV("VD_ATVRAST",.F.,.T.)
     Local xParCli   := SuperGetMV("VD_CLIRAST",.F.,"000001")
 
-    //зддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд©
-    //Ё Caso ativado, executa processo de gravaГЦo do complemento           Ё
-    //юддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддды
-    If lAtv
+    //зддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд©
+    //Ё Caso ativado e exista o campo, executa processo de gravaГЦo do complementoЁ
+    //юддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддды
+    If lAtv .And. FieldPos("C6_XOP") > 0
         //здддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд©
         //Ё Segue apenas se for o cliente informado ou ser o parБmetro estiver em branco Ё
         //юддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддды

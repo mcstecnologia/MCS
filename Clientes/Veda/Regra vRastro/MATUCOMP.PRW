@@ -6,7 +6,7 @@ Gera registros nas tabelas complementares
 @type function
 @version  
 @author MCS Tecnologia
-@since 12/9/2025
+@since 01/2/2026
 @return variant, return_description
 /*/
 User Function MATUCOMP()

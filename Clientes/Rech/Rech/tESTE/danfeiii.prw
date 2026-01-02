@@ -1873,7 +1873,7 @@ For nZ := 1 To nLenDet
 		SubStr(aAux[10], 1, PosQuebrVal(aAux[10])),;
 		SubStr(aAux[11], 1, PosQuebrVal(aAux[11])),;
 		AllTrim(TransForm(nPICM,"@r 99.99%")),;
-		AllTrim(TransForm(nPIPI,"@r 99.99%"));
+		AllTrim(TransForm(nPIPI,"@r 99%")); //RECH - RETIRADA AS CASAS DECIMAIS PARA NAO SOBREPOR A LINHA
 	})
 
 	If lUf_MG
@@ -2649,6 +2649,15 @@ If Type("oNF:_INFNFE:_IDE:_NFREF")<>"U"
 	EndDo
 EndIf
 
+//INICIO - RECH - IMPORTACAO: Para ImpressЦo da Danfe
+If !Empty(SF1->F1_HAWB) 
+	aRetImp := {}
+	aRetImp := U_UZMsgNF(SF1->F1_HAWB)
+ 	If ValType(aRetImp) == "A"
+    	aEval(aRetImp,{|x| aAdd(aMensagem,x)})
+	EndIf
+EndIf
+//FIM - RECH - IMPORTACAO: Para ImpressЦo da Danfe
 //здддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд©
 //ЁQuadro "RESERVADO AO FISCO"                                             Ё
 //юдддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддды
@@ -3548,7 +3557,7 @@ Local cICMSp     := ""
 Local cICMSs     := ""
 Local cUF		 := ""
 Local cCNPJCPF	 := ""
-Local cLogo      := FisxLogo("1")
+Local cLogo      := 'logo\company\NFE\logo_nfe_'+SubStr(cFilAnt,0,3)+'.bmp'   // Alterado pela Rech
 Local lConverte  := GetNewPar("MV_CONVERT",.F.)
 Local lMv_Logod	 := If( GetNewPar("MV_LOGOD", "N" ) == "S", .T., .F. )
 Local cLogoD	 := ""

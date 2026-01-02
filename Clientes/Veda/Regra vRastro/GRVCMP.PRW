@@ -5,7 +5,7 @@ Grava o registro na tabela complementar
 @type function
 @version  
 @author MCS Tecnologia
-@since 12/9/2025
+@since 01/2/2026
 @param cFilAnt, character, param_description
 @param cDoc, character, param_description
 @param cSerie, character, param_description

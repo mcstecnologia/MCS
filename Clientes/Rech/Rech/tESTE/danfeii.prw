@@ -2,7 +2,7 @@
 #INCLUDE "TBICONN.CH"
 #INCLUDE "COLORS.CH"
 #INCLUDE "RPTDEF.CH"
-#INCLUDE "FWPrintSetup.ch" 
+#INCLUDE "FWPrintSetup.ch"  
 
 #DEFINE IMP_SPOOL 2
 
@@ -4945,6 +4945,14 @@ Static Function PosQuebrVal(cTexto)
 	EndIf
 
 Return nPos
+
+/*INICIO RECH*/
+
+User Function IMPDETNF(oDanfe,oNFe,cAutoriza,cModalidade,oNfeDPEC,cCodAutDPEC,cDtHrRecCab,dDtReceb,aNotas)
+	ImpDet(oDanfe,oNFe,cAutoriza,cModalidade,oNfeDPEC,cCodAutDPEC,cDtHrRecCab,dDtReceb,aNotas,.F.)
+Return
+
+/*FIM RECH*/
 
 //-----------------------------------------------------------------------
 /*/{Protheus.doc} MontaEnd
