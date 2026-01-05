@@ -42,16 +42,19 @@ User Function GRVCMP(cFilAnt, cDoc, cSerie, cEntSai, xEsp)
 
     While (xAlias)->(!Eof())
 
-        Begin Transaction
+        //Begin Transaction
         //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
         //³ Posiciona na SC6 para buscar o C6_XOP                              ³
         //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
 		SC6->(MsSeek(xFilial("SC6")+(xAlias)->D2_PEDIDO+(xAlias)->D2_ITEMPV+(xAlias)->D2_COD))
 
+        dData := fGetSC2(xOrdem)
+
         //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
         //³ Verifica se já existe o registro na tabela de rastreio             ³
         //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
 		If !F0A->(MsSeek(xFilial("F0A")+cEntSai+(xAlias)->D2_SERIE+(xAlias)->D2_DOC))
+
             RecLock("F0A", .T.)
                 F0A->F0A_FILIAL	    := (xAlias)->D2_FILIAL
                 F0A->F0A_ITEM	    := (xAlias)->D2_ITEM
@@ -63,6 +66,10 @@ User Function GRVCMP(cFilAnt, cDoc, cSerie, cEntSai, xEsp)
                 F0A->F0A_COD		:= (xAlias)->D2_COD
                 F0A->F0A_LOTE       := SC6->C6_XOP
                 F0A->F0A_QTDLOT     := SC6->C6_QTDVEN
+                F0A->F0A_FABRIC     := Iif(Empty(dData), dDataBase, dData)
+                F0A->F0A_VALID      := dDataBase + 180
+                F0A->F0A_CODAGR     := SC6->C6_XOP
+                F0A->F0A_SDOC       := (xAlias)->D2_SERIE
             F0A->(MsUnlock())
         Else
             RecLock("F0A", .F.)
@@ -73,7 +80,7 @@ User Function GRVCMP(cFilAnt, cDoc, cSerie, cEntSai, xEsp)
             F0A->(MsUnlock())
         EndIf
 
-        End Transaction
+        //End Transaction
         
         (xAlias)->(dbSkip())
     EndDo 
@@ -84,3 +91,28 @@ User Function GRVCMP(cFilAnt, cDoc, cSerie, cEntSai, xEsp)
     RestArea(aArea)
 
 Return
+
+/*/{Protheus.doc} fGetSC2
+Busca a informação da ordem de produção.
+@type function
+@version  
+@author MCS Tecnologia
+@since 1/2/2026
+@param xOrdem, variant, param_description
+@return variant, return_description
+/*/
+Static Function fGetSC2(xOrdem)
+
+    Local aArea := SC2->(GetArea())
+    Local dData 
+
+    SC2->(dbSelectArea("SC2"))
+    SC2->(dbSetOrder(1))
+
+    If SC2->(dbSeek(xFilial("SC2") + xOrdem))
+        dData := SC2->C2_EMISSAO
+    EndIf
+
+    RestArea(aArea)
+
+Return dData

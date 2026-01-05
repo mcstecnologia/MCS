@@ -1226,6 +1226,7 @@ Local nZ		    := 0
 Local nMaxCod	    := 0
 Local nMaxDes	    := MAXITEMC
 Local nLinhavers    := 0
+Local nMaxItem    	:= MAXITEM  //declarada variável, pois a variável publica não é declarada em alguns casos. **RECH
 Local nMaxItemP2    := MAXITEM // Variável utilizada para tratamento de quantos itens devem ser impressos na página corrente
 Local nTamB5Cod		:= 0
 
