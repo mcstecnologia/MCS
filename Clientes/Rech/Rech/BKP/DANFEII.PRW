@@ -3098,7 +3098,11 @@ aAux := {}
 If Len(aFaturas) > 0
 	For nX := 1 To Len(aFaturas[1]) // Abaixo foi colocado até 18 para Rech
 		If !Empty(Alltrim(aFaturas[1][nX]))
-			aAdd(aAux,{aFaturas[1][nX],aFaturas[2][nX],aFaturas[3][nX]})
+			If Len(aFaturas) > 2 //tratamento para nova função de fatura
+				aAdd(aAux,{aFaturas[1][nX],aFaturas[2][nX],aFaturas[3][nX]})
+			Else 
+				aAdd(aAux,{aFaturas[1][nX],aFaturas[2][nX]})
+			EndIf
 		EndIf
 	Next nX
 EndIf
@@ -3121,7 +3125,9 @@ If Len(aAux) <= 9 // Alteração Rech, se for menor ou igual a 9 parcelas, imprime
 		For nY := 1 To Len(aAux)
 			oDanfe:Say(273,nColuna,aAux[nY][1],oFont08:oFont)
 			oDanfe:Say(281,nColuna,aAux[nY][2],oFont08:oFont)
-			oDanfe:Say(289,nColuna,aAux[nY][3],oFont08:oFont)
+			If Len(aAux) > 2
+				oDanfe:Say(289,nColuna,aAux[nY][3],oFont08:oFont)
+			EndIf
 			nColuna:= nColuna+67
 		Next nY
 	Endif
@@ -3137,12 +3143,41 @@ Else // Alteração rech, se for mais que 9 parcelas, usa uma fonte menor e ajusta
 			For nY := 1 To Len(aAux)
 				oDanfe:Say(273,nColuna,aAux[nY][1],oFont07:oFont)
 				oDanfe:Say(281,nColuna,aAux[nY][2],oFont07:oFont)
-				oDanfe:Say(289,nColuna,aAux[nY][3],oFont07:oFont)
+				If Len(aAux) > 2
+					oDanfe:Say(289,nColuna,aAux[nY][3],oFont07:oFont)
+				EndIf
 				nColuna:= nColuna+50
 			Next nY
 		Endif
 	Next _nx
 EndIf
+
+//Quadro fatura
+aAux := {{{},{},{},{},{},{},{},{},{}}}
+nY := 0
+For nX := 1 To Len(aFaturas)
+	nY++
+	aadd(Atail(aAux)[nY],aFaturas[nX][1])
+	nY++
+	aadd(Atail(aAux)[nY],aFaturas[nX][2])
+	nY++
+	aadd(Atail(aAux)[nY],aFaturas[nX][3])
+	nY++
+	aadd(Atail(aAux)[nY],aFaturas[nX][4])
+	nY++
+	aadd(Atail(aAux)[nY],aFaturas[nX][5])
+	nY++
+	aadd(Atail(aAux)[nY],aFaturas[nX][6])
+	nY++
+	aadd(Atail(aAux)[nY],aFaturas[nX][7])
+	nY++
+	aadd(Atail(aAux)[nY],aFaturas[nX][8])
+	nY++
+	aadd(Atail(aAux)[nY],aFaturas[nX][9])
+	If nY >= 9
+		nY := 0
+	EndIf
+Next nX
 /*
 oDanfe:Say(263,002,"FATURA",oFont08N:oFont)
 oDanfe:Box(265,000,296,068)

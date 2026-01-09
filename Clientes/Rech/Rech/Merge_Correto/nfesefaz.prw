@@ -7977,6 +7977,8 @@ Static Function NfeItem(aProd		, aICMS			, aICMSST	, aIPI			, aPIS	   		, aPISST
 	Local lIdDest		:= .F.
 	Local lCamb			:= .F.
 	Local cDocItemId	:= ''
+	Local nALiqCDA 		:= 0 //RECH
+	Local nValorCDA 	:= 0 //RECH
 
 	DEFAULT aICMS    		:= {}
 	DEFAULT aICMSST  		:= {}
@@ -8076,46 +8078,47 @@ EndIf
 	EndIf
 	cString += NfeTag('<CEST>',ConvType(aProd[41]))
 	cString += NfeTag('<indEscala>',ConvType(aProd[47]))
-	cString += NfeTag('<cBenef>',ConvType(aProd[44]))
+	//cString += NfeTag('<cBenef>',ConvType(aProd[44]))
 
-/// NOVAS TAG - CUSTOMIZAÇÃO AGROCOMPETENCE
-If  cMVEstado == "SC"  .And. cTipo == '1'
+	/// NOVAS TAG - CUSTOMIZAÇÃO AGROCOMPETENCE
+	/// NOVAS TAG - CUSTOMIZAÇÃO AGROCOMPETENCE
+	If  cMVEstado == "SC"  .And. cTipo == '1'
 
-	dbSelectArea("CDA")
-	dbSetOrder(1) //CDA_FILIAL+CDA_TPMOVI+CDA_ESPECI+CDA_FORMUL+CDA_NUMERO+CDA_SERIE+CDA_CLIFOR+CDA_LOJA+CDA_NUMITE+CDA_SEQ+CDA_CODLAN+CDA_CALPRO
-	
-	//cSeekCDA := xFilial("CDA") + 'S' + PadR("SPED",TamSX3("CDA_ESPECI")[1]) + 'S' + SF2->(F2_DOC+F2_SERIE+F2_CLIENTE+F2_LOJA)+aProd[55]	
-	//If CDA->(MsSeek(cSeekCDA))
+		dbSelectArea("CDA")
+		dbSetOrder(1) //CDA_FILIAL+CDA_TPMOVI+CDA_ESPECI+CDA_FORMUL+CDA_NUMERO+CDA_SERIE+CDA_CLIFOR+CDA_LOJA+CDA_NUMITE+CDA_SEQ+CDA_CODLAN+CDA_CALPRO
+		
+		//cSeekCDA := xFilial("CDA") + 'S' + PadR("SPED",TamSX3("CDA_ESPECI")[1]) + 'S' + SF2->(F2_DOC+F2_SERIE+F2_CLIENTE+F2_LOJA)+aProd[55]	
+		//If CDA->(MsSeek(cSeekCDA))
 
-	cSeekCDA := xFilial("CDA") + 'S' + PadR("SPED",TamSX3("CDA_ESPECI")[1]) + 'S' +   SF2->(F2_DOC+F2_SERIE+F2_CLIENTE+F2_LOJA)+aProd[55]	
-	If CDA->(MsSeek(cSeekCDA))
-		While alltrim(cSeekCDA) == alltrim(CDA->(CDA_FILIAL + CDA_TPMOVI + CDA_ESPECI + CDA_FORMUL + CDA_NUMERO + CDA_SERIE + CDA_CLIFOR + CDA_LOJA + CDA_NUMITE))
-			If !Empty(CDA->CDA_CODLAN) .And. Alltrim(CDA->CDA_CODLAN) == "SC10000047"
-				nALiqCDA := CDA->CDA_ALIQ
-				nValorCDA := CDA->CDA_VALOR
-			EndIf
-			CDA->(dbSkip())
-		EndDo
-	
+		cSeekCDA := xFilial("CDA") + 'S' + PadR("SPED",TamSX3("CDA_ESPECI")[1]) + 'S' +   SF2->(F2_DOC+F2_SERIE+F2_CLIENTE+F2_LOJA)+aProd[55]	
+		If CDA->(MsSeek(cSeekCDA))
+			While alltrim(cSeekCDA) == alltrim(CDA->(CDA_FILIAL + CDA_TPMOVI + CDA_ESPECI + CDA_FORMUL + CDA_NUMERO + CDA_SERIE + CDA_CLIFOR + CDA_LOJA + CDA_NUMITE))
+				If !Empty(CDA->CDA_CODLAN) .And. Alltrim(CDA->CDA_CODLAN) == "SC10000047"
+					nALiqCDA := CDA->CDA_ALIQ
+					nValorCDA := CDA->CDA_VALOR
+				EndIf
+				CDA->(dbSkip())
+			EndDo
+		
 
-		cString += NfeTag('<cBenef>',ConvType(""))
-		cString += "<gCred>"
-		cString += 		"<cCredPresumido>" + allTrim(aCredPresum[nX,1]) + "</cCredPresumido>"
-		cString += 		"<pCredPresumido>" + ConvType(aCredPresum[nX,2],8,4)  + "</pCredPresumido>"
-		cString += 		"<vCredPresumido>" + ConvType(aCredPresum[nX,3],16,2)  + "</vCredPresumido>"
-		cString += "</gCred>"
+			cString += NfeTag('<cBenef>',ConvType(""))
+			cString += "<gCred>"
+			cString += 		"<cCredPresumido>" + "SC850065" + "</cCredPresumido>"		
+			cString += 		"<pCredPresumido>" + ConvType(nALiqCDA,8,4)  + "</pCredPresumido>"		
+			cString += 		"<vCredPresumido>" + ConvType(nValorCDA,16,2)  + "</vCredPresumido>"
+			cString += "</gCred>"	
+
+		Else 
+		
+			cString += NfeTag('<cBenef>',ConvType(aProd[44]))
+
+		EndIf
 
 	Else 
-	
+
 		cString += NfeTag('<cBenef>',ConvType(aProd[44]))
 
 	EndIf
-
-Else 
-
-	cString += NfeTag('<cBenef>',ConvType(aProd[44]))
-
-EndIf
 
 
 

@@ -40,7 +40,7 @@ User Function CUSTOMERVENDOR()
         ElseIf cIdPonto == "MODELCOMMITTTS"      
             xOrig := SA2->A2_GRPTRIB
         ElseIf cIdPonto == "MODELCOMMITNTTS"   
-                U_CTRIB01("","",SA2->A2_COD, SA2->A2_LOJA, SA2->A2_GRPTRIB,nOperation,xOrig)
+                U_MCSTRIB()
         ElseIf cIdPonto == "FORMCOMMITTTSPRE"
            
         ElseIf cIdPonto == "FORMCOMMITTTSPOS"

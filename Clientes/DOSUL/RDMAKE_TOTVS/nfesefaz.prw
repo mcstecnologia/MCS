@@ -8006,7 +8006,24 @@ Static Function NfeItem(aProd		, aICMS			, aICMSST	, aIPI			, aPIS	   		, aPISST
 	EndIf
 	cString += NfeTag('<CEST>',ConvType(aProd[41]))
 	cString += NfeTag('<indEscala>',ConvType(aProd[47]))
+	//cString += NfeTag('<cBenef>',ConvType(aProd[44]))
+	//Incio tag cbenef Marcelo Mcs 04/09/2025
+
+	/*If Len(aCredPresum) == 0
 	cString += NfeTag('<cBenef>',ConvType(aProd[44]))
+
+		Elseif Len(aCredPresum)>0  .And. SD2->D2_CLASFIS == "170"
+		cString += NfeTag('<cBenef>',ConvType("SC820044"))
+	EndIF*/
+
+	//Fim tag cbenef Marcelo Mcs 04/09/2025
+
+	/*
+	// CUSTOMIZADO UNITA - CBENEF ////////*/ //MCS 20251201
+	If Substr((alltrim(aCST[1]) + alltrim(aCST[2])),1,2) == "70" 
+		cString += NfeTag('<cBenef>',ConvType("SC820044"))
+	Endif
+	/*Fim tratamento MCS*/
 
 	for nX := 1 to len(aCredPresum)
 		cString += "<gCred>"

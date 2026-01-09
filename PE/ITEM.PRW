@@ -43,7 +43,7 @@ User Function ITEM()
             //ApMsgInfo("2") //primeira chamada
         ElseIf cIdPonto == "MODELCOMMITNTTS"
             //If xFacAuto
-                U_CTRIB01(SB1->B1_COD, SB1->B1_POSIPI, "","","",nOperation,xOrig)
+                U_MCSTRIB()
             //EndIf
             //ApMsgInfo("3") //SEGUNDA CHAMADA
         ElseIf cIdPonto == "FORMCOMMITTTSPRE"

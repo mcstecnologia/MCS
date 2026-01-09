@@ -34,7 +34,7 @@ User Function CRMA980() ///cXXX1,cXXX2,cXXX3,cXXX4,cXXX5,cXXX6
         ElseIf cIDPonto == 'FORMCOMMITTTSPRE'
 
         ElseIf cIDPonto == "MODELCOMMITNTTS"
-            xRet := U_UNICTCLI("","",SA1->A1_COD, SA1->A1_LOJA, SA1->A1_GRPTRIB,nOperation,xOrig,SA1->A1_TIPO,SA1->A1_CONTRIB,SA1->A1_EST,SA1->A1_COD_MUN,SA1->A1_SUFRAMA,SA1->A1_SIMPNAC,SA1->A1_PAIS,.T.)
+            xRet := U_MCSTRIB()
         EndIf
 
 
