@@ -15,7 +15,7 @@ User Function MCSTRIB()
     //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
     If IsInCallStack('U_CRMA980')
         If nOperation == 3
-            fInsertPer("","",SA1->A1_COD, SA1->A1_LOJA, SA1->A1_GRPTRIB,nOperation,SA1->A1_TIPO,SA1->A1_CONTRIB,SA1->A1_EST,SA1->A1_COD_MUN,SA1->A1_SUFRAMA,SA1->A1_SIMPNAC,SA1->A1_PAIS)
+            fInsertPer("","",SA1->A1_COD, SA1->A1_LOJA, SA1->A1_GRPTRIB,nOperation,SA1->A1_TIPO,SA1->A1_CONTRIB,SA1->A1_EST,SA1->A1_COD_MUN,SA1->A1_SUFRAMA,SA1->A1_SIMPNAC,SA1->A1_PAIS,"2")
         ElseIf nOperation == 4 
             //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
             //³ Se for alteração, chama função para excluir                         ³
@@ -24,12 +24,12 @@ User Function MCSTRIB()
             //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
             //³ Após exclusão ou se não existe, faz a inserção                      ³
             //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-            fInsertPer("","",SA1->A1_COD, SA1->A1_LOJA, SA1->A1_GRPTRIB,nOperation,SA1->A1_TIPO,SA1->A1_CONTRIB,SA1->A1_EST,SA1->A1_COD_MUN,SA1->A1_SUFRAMA,SA1->A1_SIMPNAC,SA1->A1_PAIS)
+            fInsertPer("","",SA1->A1_COD, SA1->A1_LOJA, SA1->A1_GRPTRIB,nOperation,SA1->A1_TIPO,SA1->A1_CONTRIB,SA1->A1_EST,SA1->A1_COD_MUN,SA1->A1_SUFRAMA,SA1->A1_SIMPNAC,SA1->A1_PAIS,"2")
         EndIf
     ElseIf IsInCallStack('MATA020')
-        If nOperation == 3
-            fInsertPer("","",SA2->A2_COD, SA2->A2_LOJA, SA2->A2_GRPTRIB,nOperation,SA2->A2_TIPO,SA2->A2_CONTRIB,SA2->A2_EST,SA2->A2_COD_MUN,"",SA2->A2_SIMPNAC,SA2->A2_PAIS)
-        ElseIf nOperation == 4 
+        If INCLUI 
+            fInsertPer("","",SA2->A2_COD, SA2->A2_LOJA, SA2->A2_GRPTRIB,,SA2->A2_TIPO,SA2->A2_CONTRIB,SA2->A2_EST,SA2->A2_COD_MUN,"",SA2->A2_SIMPNAC,SA2->A2_PAIS,"1")
+        ElseIf ALTERA  
             //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
             //³ Se for alteração, chama função para excluir                         ³
             //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
@@ -37,11 +37,11 @@ User Function MCSTRIB()
             //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
             //³ Após exclusão ou se não existe, faz a inserção                      ³
             //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-            fInsertPer("","",SA2->A2_COD, SA2->A2_LOJA, SA2->A2_GRPTRIB,nOperation,SA2->A2_TIPO,SA2->A2_CONTRIB,SA2->A2_EST,SA2->A2_COD_MUN,"",SA2->A2_SIMPNAC,SA2->A2_PAIS)
+            fInsertPer("","",SA2->A2_COD, SA2->A2_LOJA, SA2->A2_GRPTRIB,,SA2->A2_TIPO,SA2->A2_CONTRIB,SA2->A2_EST,SA2->A2_COD_MUN,"",SA2->A2_SIMPNAC,SA2->A2_PAIS,"1")
         EndIf
     Else 
         If INCLUI 
-            fInsertPer(SB1->B1_COD,SB1->B1_POSIPI,"","","","","","","","","","","")
+            fInsertPer(SB1->B1_COD,SB1->B1_POSIPI,"","","","","","","","","","","","3")
         ElseIf ALTERA
             //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
             //³ Se for alteração, chama função para excluir                         ³
@@ -50,10 +50,8 @@ User Function MCSTRIB()
             //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
             //³ Após exclusão ou se não existe, faz a inserção                      ³
             //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-            fInsertPer(SB1->B1_COD,SB1->B1_POSIPI,"","","","","","","","","","","")
+            fInsertPer(SB1->B1_COD,SB1->B1_POSIPI,"","","","","","","","","","","","3")
         EndIf
-
-
     EndIf
 Return 
 
@@ -411,19 +409,26 @@ Query principal para busca dos registros de perfis para inclusão
 @param lRevisa, logical, param_description
 @return variant, return_description
 /*/
-Static Function fInsertPer(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xOper,xTipo,xContri,xEst,xCodMun,xSufr,xSimples,xPais)
+Static Function fInsertPer(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xOper,xTipo,xContri,xEst,xCodMun,xSufr,xSimples,xPais,xTipPer)
 
     Local aPerf         := {}
     Local xAlias        := GetNextAlias()
     Local xAlias2       := GetNextAlias()
     Local xQuery        := ""
     Local xQuery2       := ""
+    Local xQuery3       := ""
     Local lReg1         := .F.
     Local lReg2         := .F.
     Local lReg3         := .F.
     Local lReg4         := .F.
     Local lReg5         := .F.
     Local lReg6         := .F.
+    Local aAreaZZV      := ZZV->(GetArea())
+    Local aAreaZZU      := ZZU->(GetArea())
+    Local aAreaZZT      := ZZT->(GetArea())
+    Local aAreaZZS      := ZZS->(GetArea())
+    Local aAreaZZR      := ZZR->(GetArea())
+    Local aAreaZZX      := ZZX->(GetArea())
     Default xProd       := ""
     Default xPosIpi     := ""
     Default xClieFor    := ""
@@ -438,6 +443,20 @@ Static Function fInsertPer(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xOper,xTipo,xCo
     Default xSimples    := ""
     Default xPais       := ""
 
+    ZZX->(dbSelectArea("ZZX"))
+    ZZV->(dbSelectArea("ZZV"))
+    ZZU->(dbSelectArea("ZZU"))
+    ZZT->(dbSelectArea("ZZT"))
+    ZZS->(dbSelectArea("ZZS"))
+    ZZR->(dbSelectArea("ZZR"))
+
+    ZZX->(dbSetOrder(3))
+    ZZV->(dbSetOrder(3))
+    ZZU->(dbSetOrder(3))
+    ZZT->(dbSetOrder(3))
+    ZZS->(dbSetOrder(4))
+    ZZR->(dbSetOrder(3))
+
     //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
     //³ Query principal para busca dos perfis                               ³
     //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
@@ -450,16 +469,28 @@ Static Function fInsertPer(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xOper,xTipo,xCo
     //³ Guardo a string para concatenar depois                              ³
     //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
     xQuery2 := xQuery
+    xQuery3 := xQuery
     If Empty(xProd)
-        xQuery += "WHERE ZZW_TIPPAR = '" + AllTrim(xTipo) + "' " + chr(13)
-        xQuery += "AND ZZW_CONTRI = '" + AllTrim(xContri) + "' " + chr(13)
-        xQuery += "AND ZZW_SIMPLE ='" + AllTrim(xSimples) + "' " + chr(13)
-        If !Empty(xSufr)
-            xQuery += "AND ZZW_SUFRAM = 'SIM' " + chr(13)
+        If IsInCallStack('U_CRMA980')
+            xQuery += "WHERE ZZW_TIPPAR = '" + AllTrim(xTipo) + "' " + chr(13)
+            xQuery += "AND ZZW_ALIAS = '1' "  + chr(13)
+            xQuery += "AND ZZW_CONTRI = '" + AllTrim(xContri) + "' " + chr(13)
+            xQuery += "AND ZZW_SIMPLE ='" + AllTrim(xSimples) + "' " + chr(13)
+        Else 
+            xQuery += "WHERE ZZW_CONTRI = '" + AllTrim(xContri) + "' " + chr(13)
+            xQuery += "AND ZZW_ALIAS = '2' "  + chr(13)
+            xQuery += "AND ZZW_SIMPLE ='" + AllTrim(xSimples) + "' " + chr(13)
         EndIf
-    Else
-        xQuery += "WHERE ZZW_ALIAS = '3' " + chr(13)
+
+        If Empty(xSufr)
+            xQuery += "AND ZZW_SUFRAM IN ('2','') " + chr(13)
+        Else 
+            xQuery += "AND ZZW_SUFRAM = '1' " + chr(13)
+        EndIf
     EndIf
+    /*Else
+        xQuery += "WHERE ZZW_ALIAS = '3' " + chr(13)
+    EndIf*/
     xQuery += "AND ZZW.D_E_L_E_T_ = ' ' " + chr(13)
     xQuery += "AND ZZY.D_E_L_E_T_ = ' ' " + chr(13)
 
@@ -469,97 +500,174 @@ Static Function fInsertPer(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xOper,xTipo,xCo
 
     While (xAlias)->(!Eof())
 
-        //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-        //³ Concatenar com a query gravada anteriormente                       ³
-        //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-        If (xAlias)->ZZW_REGRA1 == '1' .And. Empty(xProd) .And. !Empty(xGrpTrib) .And. !lReg1
-            xQuery2 += "INNER JOIN "+RetSqlName("ZZX")+ " ZZX " + chr(13)
-            xQuery2 += "ON ZZX_FILIAL = ZZW_FILIAL " + chr(13)
-            xQuery2 += "AND ZZX_COD = ZZW_COD " + chr(13)
-            xQuery2 += "AND ZZX_GRPTRI = '" + AllTrim(xGrpTrib) + "' " + chr(13)
-            xQuery2 += "AND ZZX.D_E_L_E_T_ = ' ' " + chr(13) 
-            lReg1 := .T.
-        EndIf
-        //Tabela que contêm os códigos de municipio
-        If (xAlias)->ZZW_REGRA2 == '1' .And. !Empty(xSufr) .And. Empty(xProd) .And. !lReg2
-            xQuery2 += "INNER JOIN "+RetSqlName("ZZV")+ " ZZV " + chr(13) 
-            xQuery2 += "ON ZZV_FILIAL = ZZW_FILIAL " + chr(13) 
-            xQuery2 += "AND ZZV_COD = ZZW_COD " + chr(13)
-            xQuery2 += "AND ZZV_EST = '" + AllTrim(xEst) + "' " + chr(13)
-            xQuery2 += "AND ZZV_CODMUN = '" + AllTrim(xCodMun) + "' " + chr(13)
-            xQuery2 += "AND ZZV.D_E_L_E_T_ = ' ' " + chr(13)
-            lReg2 := .T.
-        EndIf
-        //Tabela que contem os estados
-        If (xAlias)->ZZW_REGRA3 == '1' .And. Empty(xProd) .And. !lReg3
-            xQuery2 += "INNER JOIN "+RetSqlName("ZZS")+ " ZZS " + chr(13)
-            xQuery2 += "ON ZZS_FILIAL = ZZW_FILIAL " + chr(13)
-            xQuery2 += "AND ZZS_COD = ZZW_COD " + chr(13)
-            xQuery2 += "AND ZZS_UF = '" + AllTrim(xEst) + "' " + chr(13)
-            xQuery2 += "AND ZZS.D_E_L_E_T_ = ' ' " + chr(13)
-            lReg3 := .T.
-        EndIf
-        If (xAlias)->ZZW_REGRA4 == '1' .And. Empty(xProd) .And. !lReg4
-        //Tabela que contem os estados como exceção na regra
-            xQuery2 += "INNER JOIN "+RetSqlName("ZZU")+ " ZZU " + chr(13) 
-            xQuery2 += "ON ZZU_FILIAL = ZZW_FILIAL " + chr(13) 
-            xQuery2 += "AND ZZU_COD = ZZW_COD " + chr(13)
-            xQuery2 += "AND ZZU_EST = '" + AllTrim(xEst) + "' " + chr(13)
-            xQuery2 += "AND ZZU.D_E_L_E_T_ = ' ' " + chr(13)
-            lReg4 := .T.
-        EndIf
-            //Tabela que contem o NCM - perfil produto
-        If (xAlias)->ZZW_REGRA5 == '2' .And. !Empty(xProd) .And. !lReg5
-            xQuery2 += "INNER JOIN "+RetSqlName("ZZT")+ " ZZT " + chr(13) 
-            xQuery2 += "ON ZZT_FILIAL = ZZW_FILIAL " + chr(13) 
-            xQuery2 += "AND ZZT_COD = ZZW_COD " + chr(13)
-            xQuery2 += "AND ZZT_NCM = '" + AllTrim(xPosIpi) + "' " + chr(13)
-            xQuery2 += "AND ZZT.D_E_L_E_T_ = ' ' " + chr(13)
-            lReg5 := .T.
-        EndIf
+        If Empty(xQuery2)
+            xQuery2 := xQuery3
+        EndIf 
 
-        If (xAlias)->ZZW_REGRA5 == '1' .And. !Empty(xProd) .And. !lReg6
-            xQuery2 += "INNER JOIN "+RetSqlName("ZZR")+ " ZZR " + chr(13) 
-            xQuery2 += "ON ZZR_FILIAL = ZZW_FILIAL " + chr(13) 
-            xQuery2 += "AND ZZR_COD = ZZW_COD " + chr(13)
-            xQuery2 += "AND ZZR_NCM <> ZZT_NCM " + chr(13)
-            xQuery2 += "AND ZZR_NCM = '" + AllTrim(xPosIpi) + "' " + chr(13)
-            xQuery2 += "AND ZZR.D_E_L_E_T_ = ' ' " + chr(13)
-            lReg6 := .T.
+        If (xAlias)->ZZW_REGRA1 == '2' .And. (xAlias)->ZZW_REGRA2 == '2' .And. (xAlias)->ZZW_REGRA3 == '2' .And. (xAlias)->ZZW_REGRA4 == '2' .And. (xAlias)->ZZW_REGRA5 == '2'
+            aadd(aPerf,{(xAlias)->ZZY_CODPER})
+        Else 
+            If Empty(xProd)
+                //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+                //³ Grupos tributários                                                  ³
+                //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+                If !Empty(xGrpTrib) .And. (xAlias)->ZZW_REGRA1 == '1'
+                    If ZZX->(dbSeek(xFilial("ZZX") + (xAlias)->ZZW_COD + AllTrim(xGrpTrib))) 
+                        xQuery2 += "INNER JOIN "+RetSqlName("ZZX")+ " ZZX " + chr(13)
+                        xQuery2 += "ON ZZX_FILIAL = ZZW_FILIAL " + chr(13)
+                        xQuery2 += "AND ZZX_COD = ZZW_COD " + chr(13)
+                        xQuery2 += "AND ZZX_GRPTRI = '" + AllTrim(xGrpTrib) + "' " + chr(13)
+                        //xQuery2 += "AND ZZX.D_E_L_E_T_ = ' ' " + chr(13) 
+                        lReg1 := .T.
+                    Else 
+                        lReg1 := .F.
+                    EndIf
+                EndIf
+                //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+                //³ Municipios iguais                                                  ³
+                //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+                If !Empty(xEst) .And. (xAlias)->ZZW_REGRA2 == '1'
+                    If ZZV->(dbSeek(xFilial("ZZV") + (xAlias)->ZZW_COD + AllTrim(xEst) + AllTrim(xCodMun)))
+                        xQuery2 += "INNER JOIN "+RetSqlName("ZZV")+ " ZZV " + chr(13) 
+                        xQuery2 += "ON ZZV_FILIAL = ZZW_FILIAL " + chr(13) 
+                        xQuery2 += "AND ZZV_COD = ZZW_COD " + chr(13)
+                        xQuery2 += "AND ZZV_EST = '" + AllTrim(xEst) + "' " + chr(13)
+                        xQuery2 += "AND ZZV_CODMUN = '" + AllTrim(xCodMun) + "' " + chr(13)
+                        //xQuery2 += "AND ZZV.D_E_L_E_T_ = ' ' " + chr(13) 
+                        lReg2 := .T.
+                    Else 
+                        lReg2 := .F.
+                    EndIf
+                EndIf
+                //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+                //³ Municipio exceção                                                   ³
+                //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+                If !Empty(xEst) .And. (xAlias)->ZZW_REGRA3 == '1' 
+                    If ZZS->(dbSeek(xFilial("ZZS") + (xAlias)->ZZW_COD + AllTrim(xEst)))//retirar se não der certo
+                        If ZZS->(dbSeek(xFilial("ZZS") + (xAlias)->ZZW_COD + AllTrim(xEst) + AllTrim(xCodMun))) //AJUSTAR
+                            lReg4 := .F.
+                        Else
+                            xQuery2 += "INNER JOIN "+RetSqlName("ZZS")+ " ZZS " + chr(13)
+                            xQuery2 += "ON ZZS_FILIAL = ZZW_FILIAL " + chr(13)
+                            xQuery2 += "AND ZZS_COD = ZZW_COD " + chr(13)
+                            xQuery2 += "AND ZZS_UF <> '" + AllTrim(xEst) + "' " + chr(13)
+                            xQuery2 += "AND ZZS_CODMUN <> '" + AllTrim(xCodMun) + "' " + chr(13)
+                            //xQuery2 += "AND ZZS.D_E_L_E_T_ = ' ' " + chr(13) 
+                            lReg4 := .T.
+                        EndIf
+                    Else 
+                        lRet4 := .F.
+                    EndIf
+                EndIf
+                //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+                //³ Estados exceção                                                     ³
+                //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+                If !Empty(xEst) .And. (xAlias)->ZZW_REGRA4 == '1' //.And. lReg4 == .T. .Or. ZZS->ZZS_UF <> ' '
+                    If ZZU->(dbSeek(xFilial("ZZU") + (xAlias)->ZZW_COD + AllTrim(xEst)))
+                        xQuery2 += "INNER JOIN "+RetSqlName("ZZU")+ " ZZU " + chr(13) 
+                        xQuery2 += "ON ZZU_FILIAL = ZZW_FILIAL " + chr(13) 
+                        xQuery2 += "AND ZZU_COD = ZZW_COD " + chr(13)
+                        xQuery2 += "AND ZZU_EST = '" + AllTrim(xEst) + "' " + chr(13)
+                       // xQuery2 += "AND ZZU.D_E_L_E_T_ = ' ' " + chr(13) 
+                        lReg3 := .T.
+                    Else 
+                        lReg3 := .F.
+                    EndIf
+                Else 
+                     lReg4 := .F.
+                EndIf
+
+            Else 
+                //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+                //³ NCM Igual                                                           ³
+                //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+                If !Empty(xPosIpi) 
+                    If ZZT->(dbSeek(xFilial("ZZT") + (xAlias)->ZZW_COD + AllTrim(xPosIpi)))
+                        xQuery2 += "INNER JOIN "+RetSqlName("ZZT")+ " ZZT " + chr(13) 
+                        xQuery2 += "ON ZZT_FILIAL = ZZW_FILIAL " + chr(13) 
+                        xQuery2 += "AND ZZT_COD = ZZW_COD " + chr(13)
+                        xQuery2 += "AND ZZT_NCM = '" + AllTrim(xPosIpi) + "' " + chr(13)
+                        //xQuery2 += "AND ZZT.D_E_L_E_T_ = ' ' " + chr(13) 
+                        lReg5 := .T.
+                    Else 
+                        lReg5 := .F.
+                    EndIf
+                EndIf
+
+                //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+                //³ Municipio exceção                                                   ³
+                //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+                If !lReg5 .And. !Empty(xPosIpi) .And. (xAlias)->ZZW_REGRA5 == '1'
+                    If ZZS->(dbSeek(xFilial("ZZS") + (xAlias)->ZZW_COD + AllTrim(xEst) + AllTrim(xCodMun)))
+                        lReg6 := .F.
+                    Else 
+                        xQuery2 += "INNER JOIN "+RetSqlName("ZZR")+ " ZZR " + chr(13) 
+                        xQuery2 += "ON ZZR_FILIAL = ZZW_FILIAL " + chr(13) 
+                        xQuery2 += "AND ZZR_COD = ZZW_COD " + chr(13)
+                        xQuery2 += "AND ZZR_NCM <> ZZT_NCM " + chr(13)
+                        xQuery2 += "AND ZZR_NCM = '" + AllTrim(xPosIpi) + "' " + chr(13)
+                        //xQuery2 += "AND ZZR.D_E_L_E_T_ = ' ' " + chr(13)
+                        lReg6 := .T.
+                    EndIf
+                Else 
+                     lReg6 := .F.
+                EndIf
+            EndIf
+            If Empty(xProd)
+                xQuery2 += "WHERE ZZW_TIPPAR = '" + AllTrim(xTipo) + "' " + chr(13)
+                xQuery2 += "AND ZZW_CONTRI = '" + AllTrim(xContri) + "' " + chr(13)
+                xQuery2 += "AND ZZW_SIMPLE ='" + AllTrim(xSimples) + "' " + chr(13)      
+                If Empty(xSufr)
+                    xQuery2 += "AND ZZW_SUFRAM IN ('2','') " + chr(13)
+                Else 
+                    xQuery2 += "AND ZZW_SUFRAM = '1' " + chr(13)
+                EndIf
+            EndIf
+            If Len(aPerf) == 0
+                xQuery2 += "AND ZZW.D_E_L_E_T_ = ' ' " + chr(13)
+                xQuery2 += "AND ZZY.D_E_L_E_T_ = ' ' " + chr(13)
+                If lReg1
+                    xQuery2 += "AND ZZX.D_E_L_E_T_ = ' ' " + chr(13) 
+                ElseIf lReg2
+                    xQuery2 += "AND ZZV.D_E_L_E_T_ = ' ' " + chr(13)
+                ElseIf lReg4 
+                    xQuery2 += "AND ZZS.D_E_L_E_T_ = ' ' " + chr(13)
+                ElseIf lReg3 
+                    xQuery2 += "AND ZZU.D_E_L_E_T_ = ' ' " + chr(13)
+                ElseIf lReg5 
+                    xQuery2 += "AND ZZT.D_E_L_E_T_ = ' ' " + chr(13)
+                ElseIf lReg6 
+                   xQuery2 += "AND ZZR.D_E_L_E_T_ = ' ' " + chr(13)
+                EndIf
+            EndIf
         EndIf
+        
+        MpSysOpenQuery(xQuery2, xAlias2)
+
+        (xAlias2)->(dbGoTop())
+
+        If (xAlias2)->(!Eof())
+            If lReg6 .Or. lReg5 .Or. lReg4 .Or. lReg3 .Or. lReg2 .Or. lReg1
+                lReg1 := .F.
+                lReg2 := .F.
+                lReg3 := .F.
+                lReg4 := .F.
+                lReg5 := .F.
+                lReg6 := .F.
+                aadd(aPerf,{(xAlias2)->ZZY_CODPER})
+            EndIf
+        EndIf
+        xQuery2 := ""
+        (xAlias2)->(dbSkip())
 
     (xAlias)->(dbSkip()) 
 
-    If lReg6 .Or. lReg5 .Or. lReg4 .Or. lReg3 .Or. lReg2 .Or. lReg1 
-        xQuery2 += "AND ZZW.D_E_L_E_T_ = ' ' " + chr(13)
-        xQuery2 += "AND ZZY.D_E_L_E_T_ = ' ' " + chr(13) 
-    EndIf
+    EndDo 
 
-    EndDo  
-        
-    MpSysOpenQuery(xQuery2, xAlias2)
-
-    (xAlias2)->(dbGoTop())
-
-    //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-    //³ Percorre todos os perfis                                            ³
-    //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-    While (xAlias2)->(!Eof())
-
-        //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-        //³ Adicionando o perfil encontrado no array                             ³
-        //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-        aadd(aPerf,{(xAlias2)->ZZY_CODPER})
-    
-    (xAlias2)->(dbSkip())
-
-    EndDo
- 
     //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
     //³ Fechando os alias                                                   ³
     //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
     (xAlias)->(dbCloseArea())
-    (xAlias2)->(dbCloseArea())
 
     //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
     //³ Se perfil encontrado, envia conforme o tipo                        ³
@@ -573,8 +681,15 @@ Static Function fInsertPer(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xOper,xTipo,xCo
             fExecAutoConf(xProd,'','',aPerf,'04','3',4)
         EndIf
     Else 
-        fGravaZZZ("",'','0','2',"Registro " + Iif(Empty(xProd),xClieFor+xLoja,xProd) + " não gravado, verifique o cadastro original produto/cliente/fornecedor ou o cadastro das regras")
+        fGravaZZZ("",'',xTipPer,'2',"Registro " + Iif(Empty(xProd),xClieFor+xLoja,xProd) + " não gravado, verifique o cadastro original produto/cliente/fornecedor ou o cadastro das regras")
     EndIf
+
+    RestArea(aAreaZZV) 
+    RestArea(aAreaZZU)     
+    RestArea(aAreaZZT)   
+    RestArea(aAreaZZS)    
+    RestArea(aAreaZZR)   
+    RestArea(aAreaZZX) 
 
 
 Return
@@ -638,3 +753,27 @@ Static Function fDeletPerf(xProd,xClieFor,xLoja,xTpPart)
     EndIf 
 
 Return 
+
+/*/{Protheus.doc} MCSDEBUG
+Ativa o modo debug para query
+@type function
+@version  
+@author MCS Tecnologia
+@since 1/9/2026
+@param xConteudo, variant, param_description
+@return variant, return_description
+/*/
+Static Function MCSDEBUG(xConteudo)
+
+	Local oDlgDebug
+	Local oConteudo
+
+    If !IsBlind()
+	    DEFINE MSDIALOG oDlgDebug TITLE "Modo Debug ativo - Querys Utilizadas" FROM 000,000 TO 500,850 OF oMainWnd PIXEL
+
+	    @ 040,005 GET   oConteudo 		VAR xConteudo OF Memo SIZE 415,189 PIXEL WHEN (.F.)
+
+	    ACTIVATE DIALOG oDlgDebug CENTERED
+    EndIf
+
+Return

@@ -89,20 +89,10 @@ Static Function ModelDef()
     Local aRelacF	:= {}
     Local aRelacG	:= {}
     Local aRelacH	:= {}
-    Local aGAtilhos := {}
-    Local bVldPos := {|| U_ValReg01()} //Validação ao clicar no Confirmar
-
-    aAdd(aGatilhos, FWStruTriggger( ;
-        "ZZV_CODMUN",;                              //Campo Origem
-        "ZZV_DESC",;                                //Campo Destino
-        "POSICIONE('CC2',1,xFilial('CC2') + ZZV_EST + ZZV_CODMUN,'CC2_MUN')",;           //Regra de Preenchimento
-        .F.,;                                       //Irá Posicionar?
-        "",;                                        //Alias de Posicionamento
-        0,;                                         //Índice de Posicionamento
-        '',;                                        //Chave de Posicionamento
-        NIL,;                                       //Condição para execução do gatilho
-        "01");                                      //Sequência do gatilho
-    )
+    Local aGat      := {}
+    Local aGat1     := {}
+    Local bVldPos   := {|| U_ValReg01()} //Validação ao clicar no Confirmar
+    Local bLinePost := {|| u_ValGrid1()} // Validação na grid
 
     //Montando a string para relação das tabelas
     cRelacB := 'xFilial("ZZY")'
@@ -143,13 +133,23 @@ Static Function ModelDef()
     oStruF:SetProperty('ZZT_COD',    MODEL_FIELD_WHEN,    FwBuildFeature(STRUCT_FEATURE_WHEN,    '.F.'))
     oStruG:SetProperty('ZZS_COD',    MODEL_FIELD_WHEN,    FwBuildFeature(STRUCT_FEATURE_WHEN,    '.F.'))
     oStruH:SetProperty('ZZR_COD',    MODEL_FIELD_WHEN,    FwBuildFeature(STRUCT_FEATURE_WHEN,    '.F.'))
+    oStruA:SetProperty('ZZW_CONTRI'   , MODEL_FIELD_WHEN, {||  (oModel:GetValue ('MCSCONFA',"ZZW_ALIAS")=="3") })
+    oStruA:SetProperty('ZZW_TIPPAR'   , MODEL_FIELD_WHEN, {||  (oModel:GetValue ('MCSCONFA',"ZZW_ALIAS")=="3") })
+    oStruA:SetProperty('ZZW_SUFRAM'   , MODEL_FIELD_WHEN, {||  (oModel:GetValue ('MCSCONFA',"ZZW_ALIAS")=="3") })
+    oStruA:SetProperty('ZZW_SIMPLE'   , MODEL_FIELD_WHEN, {||  (oModel:GetValue ('MCSCONFA',"ZZW_ALIAS")=="3") })
 
+    //	Triggers
+    aGat := FwStruTrigger("ZZV_CODMUN","ZZV_DESC",'Posicione("CC2",1,xFilial("CC2") + M->ZZV_EST+M->ZZV_CODMUN,"CC2_MUN" )',.F.,,,)
+	oStruD:AddTrigger(aGat[1],aGat[2],aGat[3],aGat[4])
+
+    aGat1:= FwStruTrigger("ZZS_CODMUN","ZZS_DESC",'Posicione("CC2",1,xFilial("CC2") + M->ZZS_UF+M->ZZS_CODMUN,"CC2_MUN" )',.F.,,,)
+	oStruG:AddTrigger(aGat1[1],aGat1[2],aGat1[3],aGat1[4]) 
 
     // Adiciona ao modelo uma estrutura de formul?io de edi?o por grid
-    oModel:AddGrid( 'ZZYDETAIL'		, 'ZZWMASTER'	, oStruB, /*bLinePre*/, /*bLinePost*/, /*bPreVal*/, /*bPosVal*/, /*BLoad*/ )
+    oModel:AddGrid( 'ZZYDETAIL'     , 'ZZWMASTER'   , oStruB, /*bLinePre*/, /*bLinePost*/, /*bPreVal*/, /*bPosVal*/, /*BLoad*/ )
     oModel:AddGrid( 'ZZXDETAIL'		, 'ZZWMASTER'	, oStruC, /*bLinePre*/, /*bLinePost*/, /*bPreVal*/, /*bPosVal*/, /*BLoad*/ )
     oModel:AddGrid( 'ZZVDETAIL'		, 'ZZWMASTER'	, oStruD, /*bLinePre*/, /*bLinePost*/, /*bPreVal*/, /*bPosVal*/, /*BLoad*/ )
-    oModel:AddGrid( 'ZZUDETAIL'		, 'ZZWMASTER'	, oStruE, /*bLinePre*/, /*bLinePost*/, /*bPreVal*/, /*bPosVal*/, /*BLoad*/ )
+    oModel:AddGrid( 'ZZUDETAIL'		, 'ZZWMASTER'	, oStruE, /*bLinePre*/, /*bLinePost, /*bPreVal*/, /*bPosVal*/, /*BLoad*/ )
     oModel:AddGrid( 'ZZTDETAIL'		, 'ZZWMASTER'	, oStruF, /*bLinePre*/, /*bLinePost*/, /*bPreVal*/, /*bPosVal*/, /*BLoad*/ )
     oModel:AddGrid( 'ZZSDETAIL'		, 'ZZWMASTER'	, oStruG, /*bLinePre*/, /*bLinePost*/, /*bPreVal*/, /*bPosVal*/, /*BLoad*/ )
     oModel:AddGrid( 'ZZRDETAIL'		, 'ZZWMASTER'	, oStruH, /*bLinePre*/, /*bLinePost*/, /*bPreVal*/, /*bPosVal*/, /*BLoad*/ )
@@ -182,11 +182,11 @@ Static Function ModelDef()
 
     // Adiciona a descricao do Componente do Modelo de Dados
     oModel:GetModel( 'ZZWMASTER' ):SetDescription("Montagem da regra") 
-    oModel:GetModel( 'ZZYDETAIL' ):SetDescription( "Perfis realcionados" )
+    oModel:GetModel( 'ZZYDETAIL' ):SetDescription( "Perfis relacionados" )
     oModel:GetModel( 'ZZXDETAIL' ):SetDescription( "Suframa" )
-    oModel:GetModel( 'ZZVDETAIL' ):SetDescription( "Código Municípios (Suframa)" )
-    oModel:GetModel( 'ZZSDETAIL' ):SetDescription( "UF" )
-    oModel:GetModel( 'ZZUDETAIL' ):SetDescription( "UF Exceção" )
+    oModel:GetModel( 'ZZVDETAIL' ):SetDescription( "Município Igual (==)" )
+    oModel:GetModel( 'ZZSDETAIL' ):SetDescription( "Município Diferente (<>)" )
+    oModel:GetModel( 'ZZUDETAIL' ):SetDescription( "Uf Exceção" )
     oModel:GetModel( 'ZZTDETAIL' ):SetDescription( "NCM Iguais (==)" )
     oModel:GetModel( 'ZZRDETAIL' ):SetDescription( "NCM Diferentes (<>)" )
 
@@ -199,6 +199,7 @@ Static Function ModelDef()
     oModel:GetModel("ZZTDETAIL"):SetOptional(.T.)
     oModel:GetModel("ZZSDETAIL"):SetOptional(.T.)
     oModel:GetModel("ZZRDETAIL"):SetOptional(.T.)
+
 
 Return (oModel)
 
@@ -219,7 +220,7 @@ Static Function ViewDef()
     Local oStruD      := FwFormStruct(2, 'ZZV',{|x| Alltrim(x) + ";" $ "ZZV_EST;ZZV_CODMUN;ZZV_DESC;"})
     Local oStruE      := FwFormStruct(2, 'ZZU',{|x| Alltrim(x) + ";" $ "ZZU_EST;"})
     Local oStruF      := FwFormStruct(2, 'ZZT',{|x| Alltrim(x) + ";" $ "ZZT_NCM;"})
-    Local oStruG      := FwFormStruct(2, 'ZZS',{|x| Alltrim(x) + ";" $ "ZZS_UF;"})
+    Local oStruG      := FwFormStruct(2, 'ZZS',{|x| Alltrim(x) + ";" $ "ZZS_UF;ZZS_CODMUN;ZZS_DESC;"})
     Local oStruH      := FwFormStruct(2, 'ZZR',{|x| Alltrim(x) + ";" $ "ZZR_NCM;"})
     Local oModel      := FwLoadModel("MCSCONF")
     Local oView       := Nil
@@ -231,6 +232,9 @@ Static Function ViewDef()
     Local cEnvDet4    := "ZZTDETAIL"
     Local cEnvDet5    := "ZZSDETAIL"
     Local cEnvDet6    := "ZZRDETAIL"   
+
+    /*oStruA:AddGroup( 'GRUPO01', OemToAnsi(STR0003), '', 2 ) // "Definição da Alíquota"
+    oStruA:AddGroup( 'GRUPO02', OemToAnsi(STR0004), '', 2 ) // "Aliquota Informada Manualmente"*/
 
     oStruB:SetProperty("ZZY_CODPER", MVC_VIEW_LOOKUP, {|| McsF3()})
     // INDICA O MODELO DA VIEW
@@ -259,11 +263,11 @@ Static Function ViewDef()
     oView:CreateFolder( 'PASTA_INFERIOR','INFERIOR' )
     // Cria pastas nas folders
     oView:AddSheet('PASTA_SUPERIOR', 'ABA_INI'  ,  'Parâmetros para configuração')
-    oView:AddSheet('PASTA_INFERIOR', 'ABA_PRIN' , 'Perfis realcionados')
+    oView:AddSheet('PASTA_INFERIOR', 'ABA_PRIN' , 'Perfis relacioandos')
     oView:AddSheet('PASTA_INFERIOR', 'ABA_SEGU' , 'Grupos Tributários')
-    oView:AddSheet('PASTA_INFERIOR', 'ABA_TERC' , 'Código Municipio (Suframa)')
-    oView:AddSheet('PASTA_INFERIOR', 'ABA_QUAR' , 'UF')
-    oView:AddSheet('PASTA_INFERIOR', 'ABA_QUIN' , 'UF Exceção')
+    oView:AddSheet('PASTA_INFERIOR', 'ABA_TERC' , 'Município Igual (==)')
+    oView:AddSheet('PASTA_INFERIOR', 'ABA_QUAR' , 'Município Diferente (<>)')
+    oView:AddSheet('PASTA_INFERIOR', 'ABA_QUIN' , 'Uf Exceção')
     oView:AddSheet('PASTA_INFERIOR', 'ABA_SEXT' , 'NCM Iguais (==)')
     oView:AddSheet('PASTA_INFERIOR', 'ABA_SETI' , 'NCM Diferentes (<>)')
 
@@ -271,9 +275,9 @@ Static Function ViewDef()
     oView:CreateHorizontalBox( 'Parâmetros' ,100, /*owner*/, /*lUsePixel*/, 'PASTA_SUPERIOR', 'ABA_INI')
     oView:CreateHorizontalBox( 'Perfis' ,100, /*owner*/, /*lUsePixel*/, 'PASTA_INFERIOR', 'ABA_PRIN')
     oView:CreateHorizontalBox( 'Grupos Tributários' ,100, /*owner*/, /*lUsePixel*/, 'PASTA_INFERIOR', 'ABA_SEGU')
-    oView:CreateHorizontalBox( 'Municípios' ,100, /*owner*/, /*lUsePixel*/, 'PASTA_INFERIOR', 'ABA_TERC')
-    oView:CreateHorizontalBox( 'Estados' ,100, /*owner*/, /*lUsePixel*/, 'PASTA_INFERIOR', 'ABA_QUAR')
-    oView:CreateHorizontalBox( 'Exceção' ,100, /*owner*/, /*lUsePixel*/, 'PASTA_INFERIOR', 'ABA_QUIN')
+    oView:CreateHorizontalBox( 'Municípios Iguais' ,100, /*owner*/, /*lUsePixel*/, 'PASTA_INFERIOR', 'ABA_TERC')
+    oView:CreateHorizontalBox( 'Municípios Diferentes' ,100, /*owner*/, /*lUsePixel*/, 'PASTA_INFERIOR', 'ABA_QUAR')
+    oView:CreateHorizontalBox( 'Uf Exceção' ,100, /*owner*/, /*lUsePixel*/, 'PASTA_INFERIOR', 'ABA_QUIN')
     oView:CreateHorizontalBox( 'Ncm Igual' ,100, /*owner*/, /*lUsePixel*/, 'PASTA_INFERIOR', 'ABA_SEXT')
     oView:CreateHorizontalBox( 'Ncm Diferente' ,100, /*owner*/, /*lUsePixel*/, 'PASTA_INFERIOR', 'ABA_SETI')
 
@@ -281,18 +285,18 @@ Static Function ViewDef()
     oView:SetOwnerView('VIEW_ZZW','Parâmetros')
     oView:SetOwnerView('VIEW_ZZY','Perfis')
     oView:SetOwnerView('VIEW_ZZX','Grupos Tributários')
-    oView:SetOwnerView('VIEW_ZZV','Municípios')
-    oView:SetOwnerView('VIEW_ZZS','Estados')
-    oView:SetOwnerView('VIEW_ZZU','Exceção')
+    oView:SetOwnerView('VIEW_ZZV','Municípios Iguais')
+    oView:SetOwnerView('VIEW_ZZS','Municípios Diferentes')
+    oView:SetOwnerView('VIEW_ZZU','Uf Exceção')
     oView:SetOwnerView('VIEW_ZZT','Ncm Igual')
     oView:SetOwnerView('VIEW_ZZR','Ncm Diferente')
 
     // Liga a identificacao do componente
     oView:EnableTitleView("VIEW_ZZY","Perfis")
     oView:EnableTitleView("VIEW_ZZX","Grupos Tributários")
-    oView:EnableTitleView("VIEW_ZZV","Municípios")
-    oView:EnableTitleView("VIEW_ZZS","Estados")
-    oView:EnableTitleView("VIEW_ZZU","Exceção")
+    oView:EnableTitleView("VIEW_ZZV","Municípios Iguais")
+    oView:EnableTitleView("VIEW_ZZS","Municípios Diferentes")
+    oView:EnableTitleView("VIEW_ZZU","Uf Exceção")
     oView:EnableTitleView("VIEW_ZZT","Ncm Igual")
     oView:EnableTitleView("VIEW_ZZR","Ncm Diferente")
 
@@ -326,35 +330,144 @@ Return xConsulta
 Valida na confirmação a regra 02 e regra 03
 @type function
 @version  
-@author Rodrigo
+@author MCS Tecnologia
 @since 1/8/2026
 @return variant, return_description
 /*/
 User Function ValReg01()
 
     Local oModel     := FWModelActive()
+    Local xRegra1    := oModel:GetValue('ZZWMASTER', 'ZZW_REGRA1')
     Local xRegra2    := oModel:GetValue('ZZWMASTER', 'ZZW_REGRA2')
     Local xRegra3    := oModel:GetValue('ZZWMASTER', 'ZZW_REGRA3')
+    Local xRegra4    := oModel:GetValue('ZZWMASTER', 'ZZW_REGRA4')
+    Local xRegra5    := oModel:GetValue('ZZWMASTER', 'ZZW_REGRA5')
+    Local xAlias     := oModel:GetValue('ZZWMASTER', 'ZZW_ALIAS')
     Local xUf01      := oModel:GetValue('ZZUDETAIL', 'ZZU_EST')
     Local xUf02      := oModel:GetValue('ZZSDETAIL', 'ZZS_UF')
+    Local xUf03      := oModel:GetValue('ZZVDETAIL', 'ZZV_EST')
     Local xNcm1      := oModel:GetValue('ZZTDETAIL', 'ZZT_NCM')
     Local xNcm2      := oModel:GetValue('ZZRDETAIL', 'ZZR_NCM')
+    Local xGrup      := oModel:GetValue('ZZXDETAIL', 'ZZX_GRPTRI')
+    Local oModelZZV  := oModel:GetModel('ZZVDETAIL')
+    Local oModelZZT  := oModel:GetModel('ZZTDETAIL')
+    Local oModelZZR  := oModel:GetModel('ZZRDETAIL')
+    Local oModelZZS  := oModel:GetModel('ZZSDETAIL')
+    Local oModelZZX  := oModel:GetModel('ZZXDETAIL')
+    Local oModelZZU  := oModel:GetModel('ZZUDETAIL')
+    Local xMessage01 := "Ajuste os campos das regras ou as informações contidas na aba correspondente"
+    //Local xMessage02 := "Ajuste os campos Aba Município igual e Diferente e Aba UF com valores diferentes"
     Local lRet       := .T.
-     
-    If xRegra2 == xRegra3
-        lRet := .F.
-        Help("",1,"MCSCONF",,"Não é permitido configurar a Regra 02 e Regra 03 com os mesmos valores",1)
+
+    //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+    //³ Valida se foi habilitada as duas abas, não deixando seguir          ³
+    //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+    If !Empty(xUf02) .And. !Empty(xUf03) .And. (!oModelZZU:IsDeleted()) .And. (!oModelZZS:IsDeleted())
+        If xRegra2 == xRegra3
+            lRet := .F.
+            Help(,, "MCSCONF", , "Não é permitido configurar o campo Aba Município Igual e Municio Diferentes como 1=Sim.", 1, 0, , , , , , {})
+        EndIf
     EndIf
 
-    If xUf01 == xUf02
-        lRet := .F.
-        Help("",1,"MCSCONF",,"Não é permitido configurar a mesma UF para a aba de UF e Exceção",1)
+    //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+    //³ A mesma NCM não pode estar contida nas duas abas                    ³
+    //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+    If !Empty(xNcm1) .And. !Empty(xNcm2) .And. xAlias == '3' .And. (!oModelZZT:IsDeleted())
+        If AllTrim(xNcm1) == AllTrim(xNcm2)
+            lRet := .F.
+            Help("",1,"MCSCONF",,"Não é permitido configurar a mesma NCM para a aba de NCM Igual e NCM Diferente",1)
+        EndIf
     EndIf
 
-    If AllTrim(xNcm1) == AllTrim(xNcm2)
+    //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+    //³Valida se a aba de municipios está preenchida se não é utilizada     ³
+    //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+    If xRegra1 == '2' .And. !Empty(xGrup) .And. (!oModelZZX:IsDeleted())
+        Help(,, "MCSCONF", , "Campo Grp Tributo marcado como 2 - Não, Aba Grupos Tributários não pode ser preenchida.", 1, 0, , , , , , {xMessage01})
         lRet := .F.
-        Help("",1,"MCSCONF",,"Não é permitido configurar a mesma NCM para a aba de NCM Igual e NCM Diferente",1)
-    EndIf
-     
+    EndIf 
+
+    If xRegra1 == '1' .And. Empty(xGrup) .And. (!oModelZZX:IsDeleted())
+        Help(,, "MCSCONF", , "Campo Grp Tributo marcado como 1 - Sim, Aba Grupos Tributários não pode ficar em branco.", 1, 0, , , , , , {xMessage01})
+        lRet := .F.
+    EndIf 
+
+    If xRegra2 == '2' .And. !Empty(xUf03) .And. (!oModelZZV:IsDeleted())
+        Help(,, "MCSCONF", , "Campo Aba Município marcado como 2 - Não, Aba Município não pode ser preenchida.", 1, 0, , , , , , {xMessage01})
+        lRet := .F.
+    EndIf  
+
+    If xRegra2 == '1' .And. Empty(xUf03) .And. (!oModelZZV:IsDeleted())
+        Help(,, "MCSCONF", , "Campo Aba Município marcado como 1 - Sim, Aba Município não pode ficar em branco.", 1, 0, , , , , , {xMessage01})
+        lRet := .F.
+    EndIf  
+
+    If xRegra3 == '2' .And. !Empty(xUf02) .And. (!oModelZZS:IsDeleted())
+        Help(,, "MCSCONF", , "Campo Aba Município Dif marcado como 2 - Não, Aba Município Diferente não pode ser preenchida.", 1, 0, , , , , , {xMessage01})
+        lRet := .F.
+    EndIf 
+
+    If xRegra3 == '1' .And. Empty(xUf02) .And. (!oModelZZS:IsDeleted())
+        Help(,, "MCSCONF", , "Campo Aba Município Dif marcado como 1 - Sim, Aba Município Diferente não pode ficar em branco.", 1, 0, , , , , , {xMessage01})
+        lRet := .F.
+    EndIf   
+
+    If xRegra4 == '2' .And. !Empty(xUf01) .And. (!oModelZZU:IsDeleted())
+        Help(,, "MCSCONF", , "Campo Uf Exceção marcado como 2 - Não, Aba Uf Exceção não pode ser preenchida.", 1, 0, , , , , , {xMessage01})
+        lRet := .F.
+    EndIf 
+
+    If xRegra4 == '1' .And. Empty(xUf01) .And. (!oModelZZU:IsDeleted())
+        Help(,, "MCSCONF", , "Campo Uf Exceção marcado como 1 - Não, Aba Uf Exceção não pode ficar em branco.", 1, 0, , , , , , {xMessage01})
+        lRet := .F.
+    EndIf 
+
+    If xRegra5 == '2' .And. !Empty(xNcm2) .And. (!oModelZZS:IsDeleted())
+        Help(,, "MCSCONF", , "Campo Ncm Dif marcado como 2 - Não, Aba NCM Diferente não pode ser preenchida.", 1, 0, , , , , , {xMessage01})
+        lRet := .F.
+    EndIf 
+
+    If xRegra5 == '1' .And. Empty(xNcm2) .And. (!oModelZZS:IsDeleted())
+        Help(,, "MCSCONF", , "Campo Ncm Dif marcado como 1 - Sim, Aba NCM Diferente não pode ficar em branco.", 1, 0, , , , , , {xMessage01})
+        lRet := .F.
+    EndIf 
+
 Return lRet
+
+/*/{Protheus.doc} MCSGATIL
+Gatilhos da rotina
+@type function
+@version  
+@author MCS Tecnologia
+@since 1/12/2026
+@param nCampo, numeric, param_description
+@return variant, return_description
+/*/
+User Function MCSGATIL(nCampo)
+
+    Local cCampo := ""
+    Local cRetorno := 0 
+    Default nCampo := 2
+
+    If nCampo == 1  
+        If INCLUI
+            xRetorno := Posicione("CC2",1,xFilial("CC2") + M->ZZV_EST+M->ZZV_CODMUN,'CC2_MUN' )   
+        Else 
+            xRetorno := Posicione("CC2",1,xFilial("CC2") + ZZV->ZZV_EST+ZZV->ZZV_CODMUN,'CC2_MUN' ) 
+        EndIf    
+    ElseIf 	nCampo == 2 
+        If INCLUI
+            xRetorno := Posicione("CC2",1,xFilial("CC2") + M->ZZS_UF+M->ZZS_CODMUN,'CC2_MUN' )   
+        Else 
+            xRetorno := Posicione("CC2",1,xFilial("CC2") + ZZS->ZZS_UF+ZZS->ZZS_CODMUN,'CC2_MUN' ) 
+        EndIf       
+
+    ElseIf 	nCampo == 3 
+
+
+    ElseIf 	nCampo == 4 
+
+    EndIf
+	
+Return(xRetorno)
 

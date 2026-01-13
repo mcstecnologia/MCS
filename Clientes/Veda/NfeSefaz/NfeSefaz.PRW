@@ -1,6 +1,7 @@
 #INCLUDE "PROTHEUS.CH"
 #INCLUDE "COLORS.CH"
 #INCLUDE "TBICONN.CH"
+#Include "topconn.ch" //vedamotors
 
 Static lSpedCodOnu	:= nil
 Static lNT23004		:= nil
@@ -14175,3 +14176,63 @@ static function getEICTpNFEnt(cTipoNFEnt, cNFOri, cSerOri, cFornece, cLojaEnt, c
 	EndIf
 
 return cTipoNFEnt
+
+//-----------------------------------------------------------------------
+/*/{Protheus.doc} FiltEst
+
+Retorna o produto, numero da solicitação de compra do cliente e sequencia dessa solicitação.
+
+@param		cNota      String que contém o número da nota.
+
+@param		cCliente   String que contém o código do cliente.
+
+@param		cLoja	   String que contém o código da loja.
+
+@return     cRetorno   Possui a concatenação dos produtos e número da solicitação de compra do cliente.
+                       
+@author Willian Wamser
+@since 20/05/2021
+@version 1.0 
+/*/
+//-----------------------------------------------------------------------
+//vedamotors - inicio
+Static Function fConsPcSC6(cNota,cCliente,cLoja)
+
+	Local cQuery:=""
+	Local cRetorno:=""
+
+	cQuery+=" SELECT "
+	cQuery+="   C6_PRODUTO, "
+	cQuery+="   C6_NUMPCOM, "
+	cQuery+="   C6_ITEMPC "
+	cQuery+=" FROM "
+	cQuery+="  "+RetSqlTab("SC6")
+	cQuery+=" 	INNER JOIN "+RetSqlTab("SD2")+" ON "
+	cQuery+=" 		D2_PEDIDO=C6_NUM AND "+RetSqlFil("SD2")+ " AND D2_COD=C6_PRODUTO AND D2_DOC='"+cNota+"' AND D2_CLIENTE='"+cCliente+"' AND D2_LOJA='"+cLoja+"' "
+	cQuery+=" WHERE "
+	cQuery+=" "+RetSqlFil("SC6")+ "	"
+	cQuery+=" 	AND "
+	cQuery+=" 	C6_CLI='"+cCliente+"' "
+	cQuery+=" 	AND "
+	cQuery+=" 	C6_LOJA='"+cLoja+"' "
+
+	If Select("QRYSC6") <> 0
+		QRYSC6->(dbCloseArea())
+	End
+
+	cQuery := ChangeQuery(cQuery)
+	TCQUERY cQuery NEW ALIAS "QRYSC6"
+
+	While QRYSC6->(!Eof())
+
+		cRetorno+="\"+AllTrim(QRYSC6->C6_PRODUTO)+"\"+AllTrim(QRYSC6->C6_NUMPCOM)
+
+		QRYSC6->(Dbskip())
+	EndDo
+	
+	If(Len(cRetorno)>0)
+		cRetorno:=substr(cRetorno,2,Len(cRetorno))
+	EndIf
+
+Return cRetorno
+//vedamotors - fim
