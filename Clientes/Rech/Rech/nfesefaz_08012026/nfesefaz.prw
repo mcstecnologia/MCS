@@ -9633,10 +9633,10 @@ Static Function NfeItem(aProd		, aICMS			, aICMSST	, aIPI			, aPIS	   		, aPISST
 		// Imposto Seletivo
 		cString += oXmlRefTri:GetXmlIs(cDocItemId, oNfTciIntg)
 
-		//If SF1->F1_TIPO == C //RECH
+		If SF1->F1_TIPO <> 'C' //nota de complemento não pode gerar TAG de IBS e CBS - RECH
 			//Imposto sobre bens e serviço e/ou contributos sobre bens e serviços
 			cString += oXmlRefTri:GetXmlIbsCbs(cDocItemId, oNfTciIntg)
-		//EndIf
+		EndIf
 	endif
 
 	If lMvPisCofD  .And. aDest[9] == 'PR'  // Lei Est. PR 17.127/12 informar todos os impostos na Danfe

@@ -10,48 +10,57 @@ Recebe os dados do PE e trata para gravar o execauto do perfil de cliente;
 /*/
 User Function MCSTRIB()
 
+    Local lAtv := SuperGetMV("MV_XATVMCS",.F.,.T.)
+
     //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-    //³ Caso venha do processo de inclusão, grava registro                   ³
+    //³ Somente segue se o parâmetro estiver true                           ³
     //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-    If IsInCallStack('U_CRMA980')
-        If nOperation == 3
-            fInsertPer("","",SA1->A1_COD, SA1->A1_LOJA, SA1->A1_GRPTRIB,nOperation,SA1->A1_TIPO,SA1->A1_CONTRIB,SA1->A1_EST,SA1->A1_COD_MUN,SA1->A1_SUFRAMA,SA1->A1_SIMPNAC,SA1->A1_PAIS,"2")
-        ElseIf nOperation == 4 
-            //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-            //³ Se for alteração, chama função para excluir                         ³
-            //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-            fDeletPerf("",SA1->A1_COD, SA1->A1_LOJA,'2') 
-            //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-            //³ Após exclusão ou se não existe, faz a inserção                      ³
-            //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-            fInsertPer("","",SA1->A1_COD, SA1->A1_LOJA, SA1->A1_GRPTRIB,nOperation,SA1->A1_TIPO,SA1->A1_CONTRIB,SA1->A1_EST,SA1->A1_COD_MUN,SA1->A1_SUFRAMA,SA1->A1_SIMPNAC,SA1->A1_PAIS,"2")
+    If lAtv
+
+        //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+        //³ Caso venha do processo de inclusão, grava registro                   ³
+        //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+        If IsInCallStack('U_CRMA980')
+            If nOperation == 3
+                fInsertPer("","",SA1->A1_COD, SA1->A1_LOJA, SA1->A1_GRPTRIB,nOperation,SA1->A1_TIPO,SA1->A1_CONTRIB,SA1->A1_EST,SA1->A1_COD_MUN,SA1->A1_SUFRAMA,SA1->A1_SIMPNAC,SA1->A1_PAIS,"2")
+            ElseIf nOperation == 4 
+                //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+                //³ Se for alteração, chama função para excluir                         ³
+                //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+                fDeletPerf("",SA1->A1_COD, SA1->A1_LOJA,'2') 
+                //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+                //³ Após exclusão ou se não existe, faz a inserção                      ³
+                //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+                fInsertPer("","",SA1->A1_COD, SA1->A1_LOJA, SA1->A1_GRPTRIB,nOperation,SA1->A1_TIPO,SA1->A1_CONTRIB,SA1->A1_EST,SA1->A1_COD_MUN,SA1->A1_SUFRAMA,SA1->A1_SIMPNAC,SA1->A1_PAIS,"2")
+            EndIf
+        ElseIf IsInCallStack('MATA020')
+            If INCLUI 
+                fInsertPer("","",SA2->A2_COD, SA2->A2_LOJA, SA2->A2_GRPTRIB,,SA2->A2_TIPO,SA2->A2_CONTRIB,SA2->A2_EST,SA2->A2_COD_MUN,"",SA2->A2_SIMPNAC,SA2->A2_PAIS,"1")
+            ElseIf ALTERA  
+                //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+                //³ Se for alteração, chama função para excluir                         ³
+                //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+                fDeletPerf("",SA1->A1_COD, SA1->A1_LOJA,'1') 
+                //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+                //³ Após exclusão ou se não existe, faz a inserção                      ³
+                //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+                fInsertPer("","",SA2->A2_COD, SA2->A2_LOJA, SA2->A2_GRPTRIB,,SA2->A2_TIPO,SA2->A2_CONTRIB,SA2->A2_EST,SA2->A2_COD_MUN,"",SA2->A2_SIMPNAC,SA2->A2_PAIS,"1")
+            EndIf
+        Else 
+            If INCLUI 
+                fInsertPer(SB1->B1_COD,SB1->B1_POSIPI,"","","","","","","","","","","","3")
+            ElseIf ALTERA
+                //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+                //³ Se for alteração, chama função para excluir                         ³
+                //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+                fDeletPerf(SB1->B1_COD,"","") 
+                //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+                //³ Após exclusão ou se não existe, faz a inserção                      ³
+                //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+                fInsertPer(SB1->B1_COD,SB1->B1_POSIPI,"","","","","","","","","","","","3")
+            EndIf
         EndIf
-    ElseIf IsInCallStack('MATA020')
-        If INCLUI 
-            fInsertPer("","",SA2->A2_COD, SA2->A2_LOJA, SA2->A2_GRPTRIB,,SA2->A2_TIPO,SA2->A2_CONTRIB,SA2->A2_EST,SA2->A2_COD_MUN,"",SA2->A2_SIMPNAC,SA2->A2_PAIS,"1")
-        ElseIf ALTERA  
-            //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-            //³ Se for alteração, chama função para excluir                         ³
-            //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-            fDeletPerf("",SA1->A1_COD, SA1->A1_LOJA,'1') 
-            //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-            //³ Após exclusão ou se não existe, faz a inserção                      ³
-            //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-            fInsertPer("","",SA2->A2_COD, SA2->A2_LOJA, SA2->A2_GRPTRIB,,SA2->A2_TIPO,SA2->A2_CONTRIB,SA2->A2_EST,SA2->A2_COD_MUN,"",SA2->A2_SIMPNAC,SA2->A2_PAIS,"1")
-        EndIf
-    Else 
-        If INCLUI 
-            fInsertPer(SB1->B1_COD,SB1->B1_POSIPI,"","","","","","","","","","","","3")
-        ElseIf ALTERA
-            //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-            //³ Se for alteração, chama função para excluir                         ³
-            //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-            fDeletPerf(SB1->B1_COD,"","") 
-            //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-            //³ Após exclusão ou se não existe, faz a inserção                      ³
-            //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-            fInsertPer(SB1->B1_COD,SB1->B1_POSIPI,"","","","","","","","","","","","3")
-        EndIf
+
     EndIf
 Return 
 
@@ -460,7 +469,7 @@ Static Function fInsertPer(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xOper,xTipo,xCo
     //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
     //³ Query principal para busca dos perfis                               ³
     //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-    xQuery := "SELECT ZZW_COD, ZZY_CODPER, ZZW_TIPPAR, ZZW_CONTRI, ZZW_SUFRAM, ZZW_SIMPLE, ZZW_REGRA1, ZZW_REGRA2, ZZW_REGRA3, ZZW_REGRA4, ZZW_REGRA5"  + chr(13)
+    xQuery := "SELECT ZZW_COD, ZZY_CODPER, ZZW_TIPPAR, ZZW_CONTRI, ZZW_SUFRAM, ZZW_SIMPLE, ZZW_REGRA1, ZZW_REGRA2, ZZW_REGRA3, ZZW_REGRA4, ZZW_REGRA5, ZZW_REGRA6 "  + chr(13)
     xQuery += "FROM " + RetSqlName("ZZW") + " ZZW " + chr(13)
     xQuery += "INNER JOIN "+RetSqlName("ZZY")+ " ZZY " + chr(13)
     xQuery += "ON ZZY_FILIAL = ZZW_FILIAL " + chr(13) 
@@ -487,10 +496,9 @@ Static Function fInsertPer(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xOper,xTipo,xCo
         Else 
             xQuery += "AND ZZW_SUFRAM = '1' " + chr(13)
         EndIf
-    EndIf
-    /*Else
+    Else
         xQuery += "WHERE ZZW_ALIAS = '3' " + chr(13)
-    EndIf*/
+    EndIf
     xQuery += "AND ZZW.D_E_L_E_T_ = ' ' " + chr(13)
     xQuery += "AND ZZY.D_E_L_E_T_ = ' ' " + chr(13)
 
@@ -504,7 +512,7 @@ Static Function fInsertPer(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xOper,xTipo,xCo
             xQuery2 := xQuery3
         EndIf 
 
-        If (xAlias)->ZZW_REGRA1 == '2' .And. (xAlias)->ZZW_REGRA2 == '2' .And. (xAlias)->ZZW_REGRA3 == '2' .And. (xAlias)->ZZW_REGRA4 == '2' .And. (xAlias)->ZZW_REGRA5 == '2'
+        If (xAlias)->ZZW_REGRA1 == '2' .And. (xAlias)->ZZW_REGRA2 == '2' .And. (xAlias)->ZZW_REGRA3 == '2' .And. (xAlias)->ZZW_REGRA4 == '2' .And. (xAlias)->ZZW_REGRA5 == '2' .And. (xAlias)->ZZW_REGRA6 == '2'
             aadd(aPerf,{(xAlias)->ZZY_CODPER})
         Else 
             If Empty(xProd)
@@ -515,7 +523,7 @@ Static Function fInsertPer(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xOper,xTipo,xCo
                     If ZZX->(dbSeek(xFilial("ZZX") + (xAlias)->ZZW_COD + AllTrim(xGrpTrib))) 
                         xQuery2 += "INNER JOIN "+RetSqlName("ZZX")+ " ZZX " + chr(13)
                         xQuery2 += "ON ZZX_FILIAL = ZZW_FILIAL " + chr(13)
-                        xQuery2 += "AND ZZX_COD = ZZW_COD " + chr(13)
+                        xQuery2 += "AND ZZX_COD = '" +(xAlias)->ZZW_COD + "' " + chr(13)
                         xQuery2 += "AND ZZX_GRPTRI = '" + AllTrim(xGrpTrib) + "' " + chr(13)
                         //xQuery2 += "AND ZZX.D_E_L_E_T_ = ' ' " + chr(13) 
                         lReg1 := .T.
@@ -530,7 +538,7 @@ Static Function fInsertPer(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xOper,xTipo,xCo
                     If ZZV->(dbSeek(xFilial("ZZV") + (xAlias)->ZZW_COD + AllTrim(xEst) + AllTrim(xCodMun)))
                         xQuery2 += "INNER JOIN "+RetSqlName("ZZV")+ " ZZV " + chr(13) 
                         xQuery2 += "ON ZZV_FILIAL = ZZW_FILIAL " + chr(13) 
-                        xQuery2 += "AND ZZV_COD = ZZW_COD " + chr(13)
+                        xQuery2 += "AND ZZV_COD = '" +(xAlias)->ZZW_COD + "' " + chr(13)
                         xQuery2 += "AND ZZV_EST = '" + AllTrim(xEst) + "' " + chr(13)
                         xQuery2 += "AND ZZV_CODMUN = '" + AllTrim(xCodMun) + "' " + chr(13)
                         //xQuery2 += "AND ZZV.D_E_L_E_T_ = ' ' " + chr(13) 
@@ -549,7 +557,7 @@ Static Function fInsertPer(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xOper,xTipo,xCo
                         Else
                             xQuery2 += "INNER JOIN "+RetSqlName("ZZS")+ " ZZS " + chr(13)
                             xQuery2 += "ON ZZS_FILIAL = ZZW_FILIAL " + chr(13)
-                            xQuery2 += "AND ZZS_COD = ZZW_COD " + chr(13)
+                            xQuery2 += "AND ZZS_COD = '" +(xAlias)->ZZW_COD + "' " + chr(13)
                             xQuery2 += "AND ZZS_UF <> '" + AllTrim(xEst) + "' " + chr(13)
                             xQuery2 += "AND ZZS_CODMUN <> '" + AllTrim(xCodMun) + "' " + chr(13)
                             //xQuery2 += "AND ZZS.D_E_L_E_T_ = ' ' " + chr(13) 
@@ -566,7 +574,7 @@ Static Function fInsertPer(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xOper,xTipo,xCo
                     If ZZU->(dbSeek(xFilial("ZZU") + (xAlias)->ZZW_COD + AllTrim(xEst)))
                         xQuery2 += "INNER JOIN "+RetSqlName("ZZU")+ " ZZU " + chr(13) 
                         xQuery2 += "ON ZZU_FILIAL = ZZW_FILIAL " + chr(13) 
-                        xQuery2 += "AND ZZU_COD = ZZW_COD " + chr(13)
+                        xQuery2 += "AND ZZU_COD = '" +(xAlias)->ZZW_COD + "' " + chr(13)
                         xQuery2 += "AND ZZU_EST = '" + AllTrim(xEst) + "' " + chr(13)
                        // xQuery2 += "AND ZZU.D_E_L_E_T_ = ' ' " + chr(13) 
                         lReg3 := .T.
@@ -581,11 +589,11 @@ Static Function fInsertPer(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xOper,xTipo,xCo
                 //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
                 //³ NCM Igual                                                           ³
                 //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-                If !Empty(xPosIpi) 
+                If !Empty(xPosIpi) .And. (xAlias)->ZZW_REGRA6 == '1'
                     If ZZT->(dbSeek(xFilial("ZZT") + (xAlias)->ZZW_COD + AllTrim(xPosIpi)))
                         xQuery2 += "INNER JOIN "+RetSqlName("ZZT")+ " ZZT " + chr(13) 
                         xQuery2 += "ON ZZT_FILIAL = ZZW_FILIAL " + chr(13) 
-                        xQuery2 += "AND ZZT_COD = ZZW_COD " + chr(13)
+                        xQuery2 += "AND ZZT_COD = '" +(xAlias)->ZZW_COD + "' " + chr(13)
                         xQuery2 += "AND ZZT_NCM = '" + AllTrim(xPosIpi) + "' " + chr(13)
                         //xQuery2 += "AND ZZT.D_E_L_E_T_ = ' ' " + chr(13) 
                         lReg5 := .T.
@@ -603,7 +611,7 @@ Static Function fInsertPer(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xOper,xTipo,xCo
                     Else 
                         xQuery2 += "INNER JOIN "+RetSqlName("ZZR")+ " ZZR " + chr(13) 
                         xQuery2 += "ON ZZR_FILIAL = ZZW_FILIAL " + chr(13) 
-                        xQuery2 += "AND ZZR_COD = ZZW_COD " + chr(13)
+                        xQuery2 += "AND ZZR_COD = '" +(xAlias)->ZZW_COD + "' " + chr(13)
                         xQuery2 += "AND ZZR_NCM <> ZZT_NCM " + chr(13)
                         xQuery2 += "AND ZZR_NCM = '" + AllTrim(xPosIpi) + "' " + chr(13)
                         //xQuery2 += "AND ZZR.D_E_L_E_T_ = ' ' " + chr(13)
@@ -614,7 +622,8 @@ Static Function fInsertPer(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xOper,xTipo,xCo
                 EndIf
             EndIf
             If Empty(xProd)
-                xQuery2 += "WHERE ZZW_TIPPAR = '" + AllTrim(xTipo) + "' " + chr(13)
+                xQuery2 += "WHERE ZZW_COD = '" +(xAlias)->ZZW_COD + "' " + chr(13) 
+                xQuery2 += "AND ZZW_TIPPAR = '" + AllTrim(xTipo) + "' " + chr(13)
                 xQuery2 += "AND ZZW_CONTRI = '" + AllTrim(xContri) + "' " + chr(13)
                 xQuery2 += "AND ZZW_SIMPLE ='" + AllTrim(xSimples) + "' " + chr(13)      
                 If Empty(xSufr)
@@ -622,6 +631,9 @@ Static Function fInsertPer(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xOper,xTipo,xCo
                 Else 
                     xQuery2 += "AND ZZW_SUFRAM = '1' " + chr(13)
                 EndIf
+            Else 
+                xQuery2 += "WHERE ZZW_COD = '" +(xAlias)->ZZW_COD + "' " + chr(13)
+                xQuery2 += "AND ZZW_ALIAS = '3' " + chr(13)
             EndIf
             If Len(aPerf) == 0
                 xQuery2 += "AND ZZW.D_E_L_E_T_ = ' ' " + chr(13)

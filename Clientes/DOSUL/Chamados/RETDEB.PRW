@@ -9,9 +9,10 @@ Retorna a conta débito
 @since 12/24/2025
 @return variant, return_description
 /*/
-User Function RETDEB()
+User Function RETDEB(xLanPad,xSequen)
 
-    Local aArea := CT5->(GetArea("CT5"))
+    Local aArea  := CT5->(GetArea("CT5"))
+    Local xConta := ""
 
     //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ?
     //? Abro a CT5 pois ela não vem posicionada                          ?
@@ -20,10 +21,10 @@ User Function RETDEB()
     CT5->(dbSetOrder(1))
 
     //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ?
-    //? Faço Seek usando a CTK, pois é uma tabela posicioando com a LP usada ?
+    //? Faço Seek posicionando na CT5, pois não vem posicionado               ?
     //?ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ?
-    If CT5->(dbSeek(xFilial("CT5")+CTK->CTK_LP+CTK->CTK_LPSEQ))
-        xConta := AllTrim(SubStr(CT5->CT5_DEBITO,1,1))
+    If CT5->(dbSeek(xFilial("CT5")+xLanPad+xSequen))
+        xConta := AllTrim(SubStr(&(CT5->CT5_DEBITO),1,1))
     EndIf
 
     RestArea(aArea)
@@ -38,12 +39,13 @@ Retorna conta crédito
 @since 12/24/2025
 @return variant, return_description
 /*/
-User Function RETCRED()
+User Function RETCRED(xLanPad,xSequen)
 
-    Local aArea := CT5->(GetArea("CT5"))
+    Local aArea  := CT5->(GetArea("CT5"))
+    Local xConta := ""
 
     //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ?
-    //? Abro a CT5 pois ela não vem posicionada                          ?
+    //? Faço Seek posicionando na CT5, pois não vem posicionado          ?
     //?ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ?
     CT5->(dbSelectArea("CT5"))
     CT5->(dbSetOrder(1))
@@ -51,8 +53,8 @@ User Function RETCRED()
     //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ?
     //? Faço Seek usando a CTK, pois é uma tabela posicioando com a LP usada ?
     //?ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ?
-    If CT5->(dbSeek(xFilial("CT5")+CTK->CTK_LP+CTK->CTK_LPSEQ))
-        xConta := AllTrim(SubStr(CT5->CT5_CREDITO,1,1))
+    If CT5->(dbSeek(xFilial("CT5")+xLanPad+xSequen))
+        xConta := AllTrim(SubStr(&(CT5->CT5_CREDITO),1,1))
     EndIf
     
     RestArea(aArea)
