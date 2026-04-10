@@ -1111,43 +1111,40 @@ Return
 */
 
 Static Function fGeraNota(aPedidos,lJob)
+****************************************
+Local aSaveSC5:=SC5->(GetArea())
+Local aSaveSC9:=SC9->(GetArea())
+Default lJob:=.F.
 
-	****************************************
-	Local aSaveSC5			:=SC5->(GetArea())
-	Local aSaveSC9			:=SC9->(GetArea())
+aSort(aPedidos,,,{|x, y| x[1]+x[2]+x[3] < y[1]+y[2]+y[3]})
 
+Private __cNSerie := "1"
 
-	Default lJob:=.F.
+//+------------------------------------------------+
+//|            Geração da nota fiscal              |
+//+------------------------------------------------+
 
-	aSort(aPedidos,,,{|x, y| x[1]+x[2]+x[3] < y[1]+y[2]+y[3]})
+//Conout("Chamada Inicio geração NF "+FunName()+"  "+Time())
+FWLogMsg("INFO", /*cTransactionId*/, "VED172", /*cCategory*/, /*cStep*/, /*cMsgId*/,"Chamada Inicio geração NF "+FunName()+"  "+Time(), /*nMensure*/, /*nElapseTime*/, /*aMessage*/)
+cNFiscal := MaPvlNfs(aPedidos,__cNSerie,.F.,.F.,.F.,.T.,.F.,0,0,.T.,.F.,"")
+//Conout("Chamada Final geração NF "+FunName()+"  "+Time())
+FWLogMsg("INFO", /*cTransactionId*/, "VED172", /*cCategory*/, /*cStep*/, /*cMsgId*/,"Chamada Final geração NF "+FunName()+"  "+Time(), /*nMensure*/, /*nElapseTime*/, /*aMessage*/)
 
-	Private __cNSerie := "1"
-
-	//+------------------------------------------------+
-	//|            Geração da nota fiscal              |
-	//+------------------------------------------------+
-
-	//Conout("Chamada Inicio geração NF "+FunName()+"  "+Time())
-	FWLogMsg("INFO", /*cTransactionId*/, "VED172", /*cCategory*/, /*cStep*/, /*cMsgId*/,"Chamada Inicio geração NF "+FunName()+"  "+Time(), /*nMensure*/, /*nElapseTime*/, /*aMessage*/)
-	cNFiscal := MaPvlNfs(aPedidos,__cNSerie,.F.,.F.,.F.,.T.,.F.,0,0,.T.,.F.,"")
-	//Conout("Chamada Final geração NF "+FunName()+"  "+Time())
-	FWLogMsg("INFO", /*cTransactionId*/, "VED172", /*cCategory*/, /*cStep*/, /*cMsgId*/,"Chamada Final geração NF "+FunName()+"  "+Time(), /*nMensure*/, /*nElapseTime*/, /*aMessage*/)
-
-	If Empty(cNFiscal)
-		dbUnlockAll()
-		If !lJob
-			cRet := "Não foi possível faturar o pedido!"
-			MostraErro()
-		Else
-			//Conout( "Não foi possível faturar o pedido!"+aPedidos[1][1]+" Função "+FunName()+" Hora "+Time())
-			FWLogMsg("INFO", /*cTransactionId*/, "VED172", /*cCategory*/, /*cStep*/, /*cMsgId*/,"Não foi possível faturar o pedido!"+aPedidos[1][1]+" Função "+FunName()+" Hora "+Time(), /*nMensure*/, /*nElapseTime*/, /*aMessage*/)
-		Endif
+If Empty(cNFiscal)
+	dbUnlockAll()
+	If !lJob
+		cRet := "Não foi possível faturar o pedido!"
+		MostraErro()
 	Else
-		fInsertZ11(aPedidos) //Verifico se usuário quer imprimir a nota mais tarde e jogo os dados na Z11010
-	EndIf
+		//Conout( "Não foi possível faturar o pedido!"+aPedidos[1][1]+" Função "+FunName()+" Hora "+Time())
+		FWLogMsg("INFO", /*cTransactionId*/, "VED172", /*cCategory*/, /*cStep*/, /*cMsgId*/,"Não foi possível faturar o pedido!"+aPedidos[1][1]+" Função "+FunName()+" Hora "+Time(), /*nMensure*/, /*nElapseTime*/, /*aMessage*/)
+	Endif
+Else
+	fInsertZ11(aPedidos) //Verifico se usuário quer imprimir a nota mais tarde e jogo os dados na Z11010
+EndIf
 
-	RestArea(aSaveSC5)
-	RestArea(aSaveSC9)
+RestArea(aSaveSC5)
+RestArea(aSaveSC9)
 
 Return cNFiscal
 
@@ -2367,5 +2364,3 @@ Static Function fInsertZ11(aPedidos)
 	EndDo
 
 Return
-
-

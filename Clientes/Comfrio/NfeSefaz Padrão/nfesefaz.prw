@@ -1,7 +1,6 @@
 #INCLUDE "PROTHEUS.CH"
 #INCLUDE "COLORS.CH"
 #INCLUDE "TBICONN.CH"
-#Include "topconn.ch" //vedamotors
 
 Static lSpedCodOnu	:= nil
 Static lNT23004		:= nil
@@ -214,7 +213,6 @@ User Function XmlNfeSef(cTipo,cSerie,cNota,cClieFor,cLoja,cNotaOri,cSerieOri)
 	Local cFilDev		:= ""		//Guarda filial de devolução
 	Local cTpGar		:= SuperGetMV("MV_LJTPGAR",,"GE")
 	Local cFieldMsg		:= ""
-Local _cRedesp		:= "" // Vedamotors
 	Local cSpecie		:= ""
 	Local cChCupom		:= ""
 	Local cDevMerc		:= "" //Identifica devolução de mercadoria que não foi entregue ao destinatário em atendimento ao Artigo 453, I, do RICMS/2000 SP)
@@ -342,7 +340,6 @@ Local _cRedesp		:= "" // Vedamotors
 	Local lNFPTER		:= GetNewPar("MV_NFPTER",.T.)
 	Local lComplDev		:= .F.		   	  					         //Utilizado para identificar quando for uma nota de complemento de IPI de uma devulução.
 	Local lChvCdd		:= .F.
-
 	Local lIpiOutr      := .F.
 
 	Local lIpiDev   	:= GetNewPar("MV_IPIDEV",.F.)   	        //Apenas para devolução de compra de IPI (nota de saída). T-Séra gerado na tag vIPI e destacado no campo//VALOR IPI do cabeçalho do danfe. F-Será gerado na tag vIPIDevol e destacado nas informações complementares do danfe.
@@ -376,8 +373,6 @@ Local _cRedesp		:= "" // Vedamotors
 	Local lVfecpst		:= SF3->(FieldPos("F3_VFECPST")) >0
 	Local lSb1CT		:= SB1->(FieldPos("B1_X_CT")) >0
 	Local lHistTab	    := existFunc("NotaVinc") .And. SuperGetMv("MV_HISTTAB",.F.,.F.) .And. AliasIndic('AIF')
-
-
 	Local lMvImpFecp	:= GetNewPar("MV_IMPFECP",.F.)	                // Imprime FECP
 	Local lOrgaoPub		:= GetNewPar("MV_NFORGPU",.F.)				//NF-e de remessa nas operações de aquisição de órgão público, com entrega em outro órgão público (RICMS SP)
 	//AJUSTE SINIEF 13, DE 26 DE JULHO DE 2013
@@ -504,7 +499,6 @@ Local _cRedesp		:= "" // Vedamotors
 	Local cTpNf 		:= ""
 	Local nValIcmsC 	:= 0
 	Local cNcmProd      := ""
-	Local lGeraCob		:= .F.
 	Local lCobValida   	:= .T.
 	Local dCrtNT2025 	:= CtoD("01/09/2025")
 	local lAchouSL1		:= .F. // Indica se achou o registra da venda na SL1 (SIGALOJA)
@@ -521,13 +515,9 @@ Local _cRedesp		:= "" // Vedamotors
 	local aCredPresum	:= {}
 	Local lBloq			:= .F.
 	local cIeDest		:= ""
-
-	//VEDA
-	//-- ERPServ - Ativa/Desativa uso do A1_EMAISV
 	Local lMVEASY		:= SuperGetMV("MV_EASY") == "S"
 	Local dPrevEntrega  := CTOD("")
 	Local lPrevEntrega	:= SF2->(FieldPos("F2_DTENTR")) > 0
-	Local cMailCli := ""
 	// Configurador de Tributos
 	Local nRedICMS		:= 0
 	Local cSitICMSN		:= ""
@@ -600,13 +590,6 @@ Local _cRedesp		:= "" // Vedamotors
 	Private oXmlRefTri  := nil
 	Private lRefTribCo	:= dDataBase >= dDataRTC
 	Private lExisteDkn	:= FwAliasInDic('DKN') 
-	Private nTotNota	:= 0 	//vedamotors
-	Private cPed	:= "" 		//vedamotors
-	Private nPesoL	:= 0 		//vedamotors
-	Private nPBruto	:= 0 		//vedamotors
-	Private nVolume1	:= 0 	//vedamotors
-	Private cEspecie1	:= "" 	//vedamotors     
-	Private aYama      	:= {} 	// vedamotors
 
 	If FunName() == "SPEDNFSE"
 		DEFAULT cTipo   := PARAMIXB[1]
@@ -921,7 +904,6 @@ Local _cRedesp		:= "" // Vedamotors
 					MsSeek(xFilial("SA1")+SF2->F2_CLIENTE+SF2->F2_LOJA)
 					aadd(aDest,AllTrim(SA1->A1_CGC))
 					aadd(aDest,SA1->A1_NOME)
-					aadd(aDest,AllTrim(SA1->A1_NOME) + " (" + AllTrim(SA1->A1_COD) + ")") /// VedaMotors
 					aadd(aDest,FisGetEnd(SA1->A1_END,SA1->A1_EST)[1])
 					If "/" $ FisGetEnd(SA1->A1_END,SA1->A1_EST)[3]
 						aadd(aDest,IIF(FisGetEnd(SA1->A1_END,SA1->A1_EST)[3]<>"",FisGetEnd(SA1->A1_END,SA1->A1_EST)[3],"SN"))
@@ -940,12 +922,6 @@ Local _cRedesp		:= "" // Vedamotors
 					aadd(aDest,SA1->A1_CEP)
 					aadd(aDest,Alltrim(SA1->A1_DDD)+SA1->A1_TEL)
 					aadd(aDest,SA1->A1_INSCRM)
-					//VEDA
-					//-- ERPServ - Ativa/Desativa uso do A1_EMAISV 
-					cMailCli := AllTrim(SA1->A1_EMAIL)
-					If lA1EMAISV .And. FieldPos("A1_EMAISV") > 0 .And. !Empty(AllTrim(SA1->A1_EMAISV))
-						cMailCli += ";" + AllTrim(SA1->A1_EMAISV)
-					EndIf
 					aadd(aDest,SA1->A1_EMAIL)
 
 					If !Upper(SA1->A1_EST) == "EX"
@@ -1464,7 +1440,6 @@ Local _cRedesp		:= "" // Vedamotors
 						aadd(aTransp,SA4->A4_MUN)
 						aadd(aTransp,Upper(SA4->A4_EST)	)
 						aadd(aTransp,SA4->A4_EMAIL	)
-					    aadd(aTransp,ALLTRIM(SA4->A4_EMAIL)+";"+SuperGetMV("VD_INTLUPE",.F.,"embarcadornfe@lupeon.com.br"))       //// VedaMotors integração LupenOn
 
 						If len(aCampoCnpj) > 0 .and. !Empty(SA4->A4_CGC) .and. ASCAN(aCampoCnpj, { |x| allTrim(x) == "C5_TRANSP" .or. allTrim(x) == "F2_TRANSP" }) > 0
 							aadd(aCnpjPart,{AllTrim(SA4->A4_CGC)})
@@ -1512,25 +1487,6 @@ Local _cRedesp		:= "" // Vedamotors
 						EndIf
 					EndIf
 
-					// Vedamotors início
-					dbSelectArea("SC5")
-					dbSetOrder(1)
-		
-						if !Empty(SF2->F2_REDESP) 
-							SA4->(dbSetOrder(1))
-							SA4->(dbSeek(xFilial("SA4")+SF2->F2_REDESP))
-			
-							_cRedesp := "Transportador do redespacho:  " + alltrim(SA4->A4_NOME)
-							_cRedesp += " - Endereco: " + alltrim(SA4->A4_END)
-							_cRedesp += " - Muncípio: " + alltrim(SA4->A4_MUN)
-							_cRedesp += " - " + alltrim(SA4->A4_EST)
-							_cRedesp += " - CNPJ: " + alltrim(SA4->A4_CGC)
-						
-							cMensCli += " "
-							cMensCli += _cRedesp + " " 
-						endif						
-			
-					// Vedamotors final
 					If GetNewPar("MV_SUFRAMA",.F.) .And. !empty(aDest[15])
 						cMensFis += "Código Suframa: "+alltrim(aDest[15])+"."
 					Endif
@@ -1898,19 +1854,6 @@ Local _cRedesp		:= "" // Vedamotors
 
 					//////////////////////////////////////////////
 
-					// Vedamotors - 25/08/09  Allan
-					cTab	:= "ZA"
-					IF SF2->F2_ICMSRET>0
-						dbSelectArea("SA1")
-						dbSetOrder(1)
-						MsSeek(xFilial("SA1")+SF2->F2_CLIENTE+SF2->F2_LOJA)
-						DbSelectArea("SX5")
-						DbSetORder(1)
-						If DbSeek(xFilial("SX5")+cTab+SA1->A1_EST)
-							cIST := AllTrim(SX5->X5_DESCRI)
-						EndIf
-					EndIf
-					// Fim - Vedamotors			
 					If lNfCupZero
 						RestArea(aAreaSF2)
 					EndIf
@@ -2031,7 +1974,6 @@ Local _cRedesp		:= "" // Vedamotors
 							ElseIf lDevSimpl .And. SA2->A2_SIMPNAC == "1"
                         		lIcmDevol := .F.
 							endif
-					
 						else
 							lIcmSTDev	:= lIcmSTDevOri
 							lIcmDevol	:= lIcmDevolOri	
@@ -2634,29 +2576,6 @@ Local _cRedesp		:= "" // Vedamotors
 								dbSetOrder(1)
 								MsSeek(xFilial("SC6")+(cAliasSD2)->D2_PEDIDO+(cAliasSD2)->D2_ITEMPV+(cAliasSD2)->D2_COD)
 
-								/// Inicio - Vedamotors
-								
-								If At(AllTrim(SC5->C5_NUM),cPed)==0
-									If Empty(cPed)
-										cPed:=AllTrim(SC5->C5_NUM)
-									Else               
-										cPed+=","+AllTrim(SC5->C5_NUM)
-									EndIf
-								Endif
-
-								If nPesoL <= 0
-									nPesoL:=SF2->F2_PLIQUI
-								EndIf
-								If nPBruto <= 0
-									nPBruto:=SF2->F2_PBRUTO
-								EndIf
-								If nVolume1 <= 0
-									nVolume1:=SF2->F2_VOLUME1
-								EndIf
-								If Empty(cEspecie1)
-									cEspecie1:=SF2->F2_ESPECI1
-								EndIf
-								// Fim - Vedamotors
 
 								cTpCliente:= Alltrim(SF2->F2_TIPOCLI)
 								//Para nota sobre cupom deve ser
@@ -2697,16 +2616,6 @@ Local _cRedesp		:= "" // Vedamotors
 										endif
 									EndIf
 								EndIf
-								/// Inicio - VedaMotors
-								If !Empty(SF2->F2_REDESP) .and. !("Redespacho:" $ cMensFis)
-									cTransRed := Posicione("SA4",1,xFilial("SA4")+SF2->F2_REDESP,"A4_NOME")
-									cFoneRed  := Posicione("SA4",1,xFilial("SA4")+SF2->F2_REDESP,"A4_TEL")
-									cRedesp := "Redespacho: " + AllTrim(cTransRed) + " " + AllTrim(cFoneRed)
-									If !AllTrim(cRedesp) $ cMensFis
-										cMensFis += Space(1) + AllTrim(cRedesp)
-									EndIf
-								EndIf
-								/// Fim - VedaMotors
 								If !Empty( cNumNfCup )
 									//Tratamento para nota sobre Cupom
 									aAreaSF2  	:= SF2->(GetArea())
@@ -2941,15 +2850,6 @@ Local _cRedesp		:= "" // Vedamotors
 									aadd(aPedCom,{})
 								EndIf
 
-								//Vedamotors 21/10/2010  Incluso Array aYama com dados especificos da yamaha Allan
-								if Alltrim((cAliasSD2)->D2_CLIENTE)$'27791/23257'
-									_cYama:=POSICIONE("SZG",1,xFilial("SZG")+(cAliasSD2)->D2_COD,"ZG_CODPRO")
-									_cYama:="\"+Alltrim(_cYama)+"\#"+AllTrim(SC6->C6_PEDCLI)+"\"
-								else
-									_cYama:=''
-								EndIf
-								aadd(aYama, {_cYama,Len(aProd)+1})
-								//Fim Vedamotors
 								//Conforme Decreto RICM, N 43.080/2002 valido somente em MG deduzir o
 								//imposto dispensado na operação
 								nDescRed := 0
@@ -2983,8 +2883,7 @@ Local _cRedesp		:= "" // Vedamotors
 
 								//Incluido o tratamento pelo fato do SIGALOJA e o VENDA DIRETA nao gravar
 								//o campo D2_DESCON, quando e' dado desconto no total da venda.
-                        //COMENTADO VEDAMOTORS
-						/*If lNfCup .Or. (cAliasSD2)->D2_ORIGLAN $ "VD|LO"
+								If lNfCup .Or. (cAliasSD2)->D2_ORIGLAN $ "VD|LO"
 
 									lVLojaDir := .T.
 
@@ -3024,7 +2923,7 @@ Local _cRedesp		:= "" // Vedamotors
 										*/
 											// Se o valor do desconto for igual significa que soemente teve desconto no item
 											// Nesse caso pode seguir a mesma regra do faturamente e pegar direto do D2_DESCON
-										/*	If nTDescIt = SF2->F2_DESCONT
+											If nTDescIt = SF2->F2_DESCONT
 												lLjDescIt	:= .T.
 											Endif
 										EndIf
@@ -3051,8 +2950,7 @@ Local _cRedesp		:= "" // Vedamotors
 											nDescIcm:=0
 										EndIf
 									EndIF
-							EndIf*/
-					   //FIM COMENTARIO VEDAMOTORS
+								EndIf
 
 								//Tratamento para verificar se o produto e controlado por terceiros (IDENTB6)
 								//e a partir do tipo do pedido (Cliente ou Fornecedor) verifica  se existe
@@ -3060,8 +2958,9 @@ Local _cRedesp		:= "" // Vedamotors
 								//Caso haja a amarraca, o codigo e descricao do produto, assumem o conteudo da SA7 ou SA5
 
 								cCodProd  := (cAliasSD2)->D2_COD
-								//cDescProd := IIF(Empty(SC6->C6_DESCRI),SB1->B1_DESC,SC6->C6_DESCRI) 
-								cDescProd := SB1->B1_DESC //vedamotors
+								// Alteração para buscar a descrição do cadastro do produto com 40 caracteres - Evailton 28.10.24	            
+								//cDescProd := IIF(Empty(SC6->C6_DESCRI),SB1->B1_DESC,SC6->C6_DESCRI)
+								cDescProd := IIF(Empty(SB1->B1_DESC),SC6->C6_DESCRI,SB1->B1_DESC) 
 
 								If !Empty((cAliasSD2)->D2_IDENTB6) .And. lNFPTER
 									If SC5->C5_TIPO == "N"
@@ -3308,16 +3207,16 @@ Local _cRedesp		:= "" // Vedamotors
 
 								aadd(aProd,	{Len(aProd)+1,;
 									cCodProd,;
-							    	IIf(Val(SB1->B1_YCODEAN)==0,"",StrZero(Val(SB1->B1_YCODEAN),Len(Alltrim(SB1->B1_YCODEAN)),0)),;//VEDAMOTORS//IIf(Val(SB1->B1_CODBAR)==0,"",StrZero(Val(SB1->B1_CODBAR),Len(Alltrim(SB1->B1_CODBAR)),0)),;
+									IIf(Val(SB1->B1_CODBAR)==0,"",StrZero(Val(SB1->B1_CODBAR),Len(Alltrim(SB1->B1_CODBAR)),0)),;
 									cDescProd,;
 									SB1->B1_POSIPI,;//Retirada validação do parametro MV_CAPPROD, de acordo com a NT2014/004 não é mais possível informar o capítulo do NCM
 									SB1->B1_EX_NCM,;
 									cD2Cfop,;
-									SB1->B1_UM,;
-									(cAliasSD2)->D2_QUANT,;
-									IIF(!((cAliasSD2)->D2_TIPO$"IP" .Or. ((cAliasSD2)->D2_TIPO $ "D" .And. cTpOrig == "P")) ,IIF(!(lMvNFLeiZF), (cAliasSD2)->D2_TOTAL+nDesconto+(cAliasSD2)->D2_DESCZFR-nDesVrIcms, (cAliasSD2)->D2_TOTAL+nDesconto+(cAliasSD2)->D2_DESCZFR - ((cAliasSD2)->D2_DESCZFP+(cAliasSD2)->D2_DESCZFC+nDesVrIcms)),IIF(((cAliasSD2)->D2_TIPO=="I" .And. SF4->F4_AJUSTE == "S" .And. "RESSARCIMENTO" $ Upper(cNatOper) .And. "RESSARCIMENTO" $ Upper(cDescProd)),(cAliasSD2)->D2_TOTAL,0)),;
-									retUn2UM( lNoImp2UM, lImp2UM, cCFOPExp, Alltrim((cAliasSD2)->D2_CF), cUmDipi, SB1->B1_UM ),;
-									retQtd2UM( lNoImp2UM, lImp2UM, cCFOPExp, Alltrim((cAliasSD2)->D2_CF), nConvDip, (cAliasSD2)->D2_QUANT, SB1->B1_TIPCONV ),;
+									IIF(SB1->B1_ZZTPESO == "V",SB1->B1_SEGUM,SB1->B1_UM),;// aProd[08] - Comercial(<uCom>): Segunda unidade de medida (CX) para peso variavel
+									IIF(SB1->B1_ZZTPESO == "V",SC6->C6_UNSVEN,(cAliasSD2)->D2_QUANT),;// aProd[09] - Comercial(<qCom>): Qtd Segunda unidade de medida (CX) para peso variavel
+									IIF(!((cAliasSD2)->D2_TIPO$"IP" .Or. ((cAliasSD2)->D2_TIPO $ "D" .And. cTpOrig == "P")) ,IIF(!(lMvNFLeiZF),(cAliasSD2)->D2_TOTAL+nDesconto+(cAliasSD2)->D2_DESCZFR-nDesVrIcms,(cAliasSD2)->D2_TOTAL+nDesconto+(cAliasSD2)->D2_DESCZFR - ((cAliasSD2)->D2_DESCZFP+(cAliasSD2)->D2_DESCZFC+nDesVrIcms)),IIF(((cAliasSD2)->D2_TIPO=="I" .And. SF4->F4_AJUSTE == "S" .And. "RESSARCIMENTO" $ Upper(cNatOper) .And. "RESSARCIMENTO" $ Upper(cDescProd)),(cAliasSD2)->D2_TOTAL,0)),;
+									retUn2UM( lNoImp2UM, lImp2UM, cCFOPExp, Alltrim((cAliasSD2)->D2_CF), cUmDipi, SB1->B1_UM ),; // aProd[11] - Tributável(<uTrib>) - Unidade de medida 
+									retQtd2UM( lNoImp2UM, lImp2UM, cCFOPExp, Alltrim((cAliasSD2)->D2_CF), nConvDip, (cAliasSD2)->D2_QUANT, SB1->B1_TIPCONV ),; // aProd[12] - Tributável(<qTrib>)
 									(cAliasSD2)->D2_VALFRE,;
 									(cAliasSD2)->D2_SEGURO,;
 									(nDesconto+nDescIcm+nDescRed+nDescNfDup+nDescFis),;
@@ -3490,8 +3389,6 @@ Local _cRedesp		:= "" // Vedamotors
 							else
 								aadd(aExp,{})
 							endif
-							
-					
 
 							If AliasIndic("CD6")  .And. CD6->(FieldPos("CD6_QTAMB")) > 0 .And. CD6->(FieldPos("CD6_UFCONS")) > 0  .And. CD6->(FieldPos("CD6_BCCIDE")) > 0 .And. CD6->(FieldPos("CD6_VALIQ")) > 0 .And. CD6->(FieldPos("CD6_VCIDE")) > 0
 								aCombMono := {}
@@ -4173,6 +4070,8 @@ Local _cRedesp		:= "" // Vedamotors
 												aAdd (aIEST, F0L->F0L_INSCR)					  	//01 - IE_ST DIFAL
 												aAdd (aIEST,iif(aDest[14]<> nil,aDest[14],"" ))	//IE Dest.
 											EndIf
+									Else
+										u_cfconout ("Tabela F0L não está presente - execute o UPDSIGAFIS")
 										EndIf
 									EndIf
 								EndIf
@@ -4215,14 +4114,6 @@ Local _cRedesp		:= "" // Vedamotors
 					EndDo
 
 
-					/// Inicio - VedaMotors
-					If !Empty(cPed) 
-						If Len(cMensCli) > 0 .And. SubStr(cMensFis, Len(cMensCli), 1) <> " "
-							cMensCli += " "
-						EndIf
-						cMensCli += AllTrim("Pedido(s):"+cPed)
-					EndIf
-					// Fim - VedaMotors
 					//Tratamento para incluir a mensagem em informacoes adicionais do Suframa
 					If !Empty(aDest[15])
 						// Msg Zona Franca de Manaus / ALC
@@ -4412,20 +4303,6 @@ Local _cRedesp		:= "" // Vedamotors
 				aadd(aNota,SF1->F1_CODA1U)
 				aadd(aNota,dPrevEntrega)
 				aadd(aNota,SF1->F1_TPCOMPL)
-				// Inicio - Vedamotors
-				If nPesoL <= 0
-					nPesoL:=SF1->F1_PLIQUI
-				EndIf
-				If nPBruto <= 0
-					nPBruto:=SF1->F1_PBRUTO
-				EndIf
-				If nVolume1 <= 0
-					nVolume1:=SF1->F1_VOLUME1
-				EndIf
-				If Empty(cEspecie1)
-					cEspecie1:=SF1->F1_ESPECI1
-				EndIf
-			// Fim - Vedamotors	
 				If SF1->F1_TIPO $ "DB" .or. (SF1->F1_TIPO == "5" .and. SF1->F1_TPCOMPL <> "1") //D-Devolucao / B-Beneficiamento / 5-Credito com 1
 					dbSelectArea("SA1")
 					dbSetOrder(1)
@@ -4484,9 +4361,6 @@ Local _cRedesp		:= "" // Vedamotors
 							aadd(aEntrega,SA1->A1_MUN)
 							aadd(aEntrega,Upper(SA1->A1_EST))
 							aadd(aEntrega,SA1->A1_NOME)
-							// Vedamotors - 25/08/09 Allan
-							aadd(aEntrega,AllTrim(SA1->A1_NOME) + " (" + AllTrim(SA1->A1_COD) + ")")
-							// Fim - Vedamotors
 							aadd(aEntrega,Iif(!Empty(SA1->A1_INSCR),VldIE(SA1->A1_INSCR,.T.,.F.),""))
 							aadd(aEntrega,Alltrim(SA1->A1_CEP))
 							aadd(aEntrega,IIF(Empty(SA1->A1_PAIS),"1058"  ,Posicione("SYA",1,xFilial("SYA")+SA1->A1_PAIS,"YA_SISEXP")))
@@ -4606,10 +4480,7 @@ Local _cRedesp		:= "" // Vedamotors
 							MsSeek(xFilial("SA1")+SF1->F1_FORNECE+SF1->F1_LOJA)
 						EndIf
 						aadd(aDest,AllTrim(SA1->A1_CGC))
-					    // Vedamotors - 25/08/09 Allan
-					    aadd(aDest,AllTrim(SA1->A1_NOME) + " (" + AllTrim(SA1->A1_COD) + ")")
-					   // Fim - Vedamotors
-					   //aadd(aDest,SA1->A1_NOME) //vedamotors
+						aadd(aDest,SA1->A1_NOME)
 						aadd(aDest,MyGetEnd(SA1->A1_END,"SA1")[1])
 
 						If MyGetEnd(SA1->A1_END,"SA1")[2]<>0
@@ -5006,8 +4877,7 @@ Local _cRedesp		:= "" // Vedamotors
 					aadd(aTransp,SA4->A4_END)
 					aadd(aTransp,SA4->A4_MUN)
 					aadd(aTransp,Upper(SA4->A4_EST)	)
-					//aadd(aTransp,SA4->A4_EMAIL	) //vedamotors
-					aadd(aTransp,AllTrim(SA4->A4_EMAIL)+";"+SuperGetMV("VD_INTLUPE",.F.,"embarcadornfe@lupeon.com.br")	)  /// //// VedaMotors integração LupenOn
+					aadd(aTransp,SA4->A4_EMAIL	)
 					
 					If len(aCampoCnpj) > 0 .and. !Empty(SA4->A4_CGC) .and. ASCAN(aCampoCnpj, { |x| UPPER(x) == "F1_TRANSP" }) > 0 
 						aadd(aCnpjPart,{AllTrim(SA4->A4_CGC)})
@@ -5757,11 +5627,6 @@ Local _cRedesp		:= "" // Vedamotors
 						Endif
 					EndIf
 
-					// vedamotors - inicio
-					If !(SF1->F1_OBS1+ " " + SF1->F1_OBS2 + " " + SF1->F1_OBS3 +" "+ SF1->F1_OBS4 $ cMensCli)
-						cMensCli += SF1->F1_OBS1+ " " + SF1->F1_OBS2 + " " + SF1->F1_OBS3 +" "+ SF1->F1_OBS4
-					EndIf
-					// vedamotors - fim
 					If lVinc .and. !Empty(aNfVinc)
 						aADD(aItemVinc,{ATail(aNfVinc)[1]})
 					Else
@@ -5908,10 +5773,6 @@ Local _cRedesp		:= "" // Vedamotors
 					EndIf
 					aAdd(aInfoItem,{(cAliasSD1)->D1_PEDIDO,(cAliasSD1)->D1_ITEMPC,(cAliasSD1)->D1_TES,(cAliasSD1)->D1_ITEM})
 
-					//Vedamotors 21/10/2010  Incluso Array aYama com dados especificos da yamaha Allan
-					_cYama:=''
-					aadd(aYama, {_cYama,Len(aProd)+1})
-					//Fim Vedamotors
 					//Tratamento para que o valor de ICMS ST venha a compor o valor da tag vOutros quando for uma nota de Devolução, impedindo que seja gerada a rejeição 610.
 					nIcmsST := 0
 					If (!lIcmSTDev .And. (cAliasSD1)->D1_TIPO == "D" .And. SubStr((cAliasSD1)->D1_CLASFIS,2,2) $ '10#30#70#90') .Or. (Alltrim((cAliasSD1)->D1_CF) $ cMVCFOPREM) .Or. (!lIcmSTDev .And. lComplDev .And. (cAliasSD1)->D1_TIPO == "I" )
@@ -5926,19 +5787,6 @@ Local _cRedesp		:= "" // Vedamotors
 					//da SA7 ou SA5															   ³
 					//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
 
-					//vedamotors inicio
-					If lNfCup .Or. (cAliasSD2)->D2_ORIGLAN == "VD"
-						nDesconto := Round((cAliasSD2)->D2_QUANT*(cAliasSD2)->D2_PRUNIT,2)+((cAliasSD2)->D2_VALACRS)-(cAliasSD2)->D2_TOTAL
-					//Else 
-					//	nDesconto := (cAliasSD2)->D2_DESCON            	
-					//
-					//	If	SD2->(FieldPos("D2_DESCICM"))<>0
-					//						
-					//		nDescIcm := ( IIF(SF4->F4_AGREG == "D",(cAliasSD2)->D2_DESCICM,0) )
-					//						
-					//	EndIF
-					EndIf
-					// Vedamotors final	
 
 					cCodProd	:= (cAliasSD1)->D1_COD
 					cTpNf		:= (cAliasSD1)->D1_TIPO
@@ -7066,20 +6914,6 @@ Local _cRedesp		:= "" // Vedamotors
 
 	//Geracao do arquivo XML
 	If !Empty(aNota)
-				//Tratamento para que o valor de ValII venha compor o total da nota quando o parametro MV_EIC0064 for = .T. 
-			IF(SF1->F1_TIPO <> "C") //Vedamotors - Só soma o valor II quando NÃO for nota complementar.
-										If len(aDI)> 0
-											For nX := 1 To Len(aDI)
-												IF  Len(aDI[nX])> 0
-													IF Len(aDI[nX][14]) > 0 .and. lEIC0064 .and. cTipoNFEnt == '6' //Ajuste aprovado pelo EIC issue DSERTSS1-20542
-														aTotal[02]+= aDI[nX][14][03]
-													ElseIf Len(aDI[nX][19]) > 0 .and. lEIC0064
-														aTotal[02]+= aDI[nX][19][03]   //ValIIaDI
-													EndIf
-												EndIf
-											Next
-										EndIf
-			EndIf //Vedamotors		
 
 		If FunName() <> "SPEDNFSE"
 
@@ -8207,20 +8041,6 @@ Static Function NfeItem(aProd		, aICMS			, aICMSST	, aIPI			, aPIS	   		, aPISST
 	//Se a segunda unidade de medida estiver "B5_2CODBAR" estiver preenchido leva ele  para nfe.
 	//senão verifica se a unidade comercial e diferente da tributaria para considerar o mesmo valor da cEan se for igual.
 	cEantrib	:= IIF(!Empty(aProd[45]),aProd[45], iif( aProd[08] <> aProd[11],"",cEan))
-	//cEantrib	:= IIF(!Empty(aProd[45]),aProd[45], iif( aProd[08] <> aProd[11],"",cEan)) vedamotors
-	cEantrib	:= IIF(!Empty(aProd[45]),aProd[45], iif( aProd[08] <> aProd[11],If(!Empty(cEan),"SEM GTIN",""),cEan))   /// VedaMotors
-
-	/// vedamotors
-	IF cTipo == '0'
-	cEan:="SEM GTIN"
-	cEantrib:="SEM GTIN"
-	ENDIF  
-
-	If cEantrib=="SEM GTIN"
-	cEan:="SEM GTIN"
-	Endif       
-
-	//fim customizacao Vedamotors
 
 	//Validação para controle das tags que deverão ser preenchidas apenas nas operações não destinadas a consumidor final RS
 	lRetEfet := (cMVEstado == "RS" .and. cIndFinal == '0') .or. cMVEstado <> "RS"
@@ -8370,9 +8190,7 @@ Static Function NfeItem(aProd		, aICMS			, aICMSST	, aIPI			, aPIS	   		, aPISST
 		cString += '<UFDesemb>'+ConvType(aDI[05][03])+ '</UFDesemb>'
 		cString += '<dtDesemb>'+ConvType(aDI[06][03])+ '</dtDesemb>'
 		cString += '<viaTransp>'+ConvType(aDI[18][03],2)+ '</viaTransp>'
-		If SF1->F1_TIPO <> "C" //Vedamotors - Gera a tag <AFRMM> somente quando não for nota complementar
-			cString += NfeTag('<AFRMM>',ConvType(aDI[19][3],15,2))
-		EndIF//Vedamotors
+		cString += NfeTag('<AFRMM>',ConvType(aDI[19][3],15,2))
 		cString += '<intermedio>'+ConvType(aDI[20][03],1)+ '</intermedio>'
 		cString += NfeTag('<CNPJ>',ConvType(aDI[21][3],14))
 		cString += NfeTag('<UfTerceiro>',ConvType(aDI[22][3],2))		
@@ -9995,22 +9813,9 @@ Static Function NfeItem(aProd		, aICMS			, aICMSST	, aIPI			, aPIS	   		, aPISST
 		cMensFecp := NfeMFECOP(aProd[43],aDest[9],"2",aICMS,aICMSST,cVerAmb)
 	EndIf
 
-//Vedamotors - Adicionado array aYama
-/*
-cMsgFciVEDA:=""
-If !Empty(aFCI)
-	cMsgFciVEDA	:= "Resolucao do Senado Federal nº 13/12, Numero da FCI "  +Alltrim(aFCI[01]) + "."
-EndIf
-*/
-
-// Fim Veda
-
 	cMensBenef := retmsgcbenef(SM0->M0_ESTENT,aProd,aBenef)
 
-//Vedamotors - Adicionado array aYama
 	cString += '<infadprod>'+AllTrim(ConvType(aProd[25],500)+cMensDeson+cDedIcm+cCrgTrib+cMensFecp+cMsgMonofa+' '+aProd[52]+' '+cMensBenef)+'</infadprod>'
-	cString += '<infadprod>'+If(len(aYama)>0,Alltrim(aYama[1]),"")+AllTrim(ConvType(aProd[25],500)+cMensDeson+cDedIcm+cCrgTrib+cMensFecp+cMsgMonofa+' '+aProd[52]+' '+cMensBenef)+'</infadprod>' //vedamotors
-// Fim Veda
 
 	/*-------------------------------------------------------------------
 	Grupo det/obsItem (VA01) - pode ter obsCont (VA02) e obsFisco (VA05)
@@ -10268,8 +10073,6 @@ ElseIf lGeraTags .And. Len(aVeiculo)>0
 			cString += NfeTag('<RNTC>',ConvType(aVeiculo[03]))
 		cString += '</veicTransp>'
 EndIf
-// Vedamotors - 25/08/09
-/*
 For nX := 1 To Len(aVol)		
 	cString += '<vol>'
 		cString += NfeTag('<qVol>',ConvType(aVol[nX][02]))
@@ -10285,17 +10088,6 @@ For nX := 1 To Len(aVol)
 		//cString += '<nLacre>'+aVol[07]+'</nLacre>'
 	cString += '</vol>'
 Next nX
-*/
-cString += '<vol>'
-cString += NfeTag('<qVol>',ConvType(nVolume1))
-cString += NfeTag('<esp>' ,ConvType(cEspecie1,15,0))
-cString += NfeTag('<marca>' ,'Vedamotors')
-cString += NfeTag('<nVol>' ,Subs(cPed,1,30))   
-////cString += NfeTag('<nVol>' ,cPed)
-cString += NfeTag('<pesoL>' ,ConvType(nPesoL,15,3))
-cString += NfeTag('<pesoB>' ,ConvType(nPBruto,15,3))
-cString += '</vol>'
-// Fim - Vedamotors
 cString += '</transp>'
 Return(cString)
 
@@ -10415,7 +10207,7 @@ Local lProdItem			:= .F.	//Define se esta configurado para gerar a mensagem da L
 Local lEECFAT			:= SuperGetMv("MV_EECFAT")
 Local lEIC0064			:= GetNewPar("MV_EIC0064",.F.)
 Local lMsnOk    		:= .F.
-Local cInfYamaha:="" //vedamotors
+
 
 DEFAULT cAnfavea		:= ""
 DEFAULT aPedido 		:= {}
@@ -10557,16 +10349,6 @@ If Len(cMsgCli)>0 .and. !Empty(cMsgCli)
 		EndIf
 	Endif
 EndIf
-//vedamotors - inicio - INFORMAÇÃO COMPLEMENTAR ORDENS DE COMPRA YAMAHA
-
-If(AllTrim(SF2->F2_CLIENTE)=='27791')
-
-	cInfYamaha:="Ord. Compra: "+fConsPcSC6(SF2->F2_DOC,SF2->F2_CLIENTE,SF2->F2_LOJA)
-	cString+=cInfYamaha
-
-EndIf
-
-//vedamotors - fim - INFORMAÇÃO COMPLEMENTAR ORDENS DE COMPRA YAMAHA
 // controle da CDD
 If lChvCdd  .and. Len(aNfVCdd) > 0
 	aNfVinc := aNfVCdd
@@ -10666,16 +10448,14 @@ For nX := 1 To Len(aProd)
 		EndIf
 	EndIf
 Next
-If nValII > 0    .and. SF1->F1_TIPO <> "C" //Vedamotors - Apenas sai informação complementar de II quando a nota NÃO for complementar.
-	If nValII > 0
-		If lEasy .And. IIF(!GetNewPar("MV_SPEDEND",.F.),ConvType(SM0->M0_ESTCOB),ConvType(SM0->M0_ESTENT)) == "SP" .and. lEIC0064
-			cString += ("Valor total do Imposto de Importacao : R$ " + ConvType(nValII,15,2))
-			cString += (" .O valor do Imposto de Importacao nao esta embutido no valor dos produtos, somente ao valor total da NF-e.")
-		Else
-			cString += ("Valor total do Imposto de Importacao : R$ " + ConvType(nValII,15,2))
-		EndIf
-	Endif
-Endif //Vedamotors
+If nValII > 0
+	If lEasy .And. IIF(!GetNewPar("MV_SPEDEND",.F.),ConvType(SM0->M0_ESTCOB),ConvType(SM0->M0_ESTENT)) == "SP" .and. lEIC0064
+		cString += ("Valor total do Imposto de Importacao : R$ " + ConvType(nValII,15,2))
+		cString += (" .O valor do Imposto de Importacao nao esta embutido no valor dos produtos, somente ao valor total da NF-e.")
+	Else
+		cString += ("Valor total do Imposto de Importacao : R$ " + ConvType(nValII,15,2))
+	EndIf
+Endif
 
 If Len(aRet) > 0 .And. lImpRet
 	cString += "Retencoes: "
@@ -12332,52 +12112,26 @@ Static Function retQtd2UM( lNoImp2UM, lImp2UM, cCFOPExp, cCFOP, nCONVDIP, nQUANT
 	Default nQUANT		:= 0
 	Default cTpConv		:= "M"
 
-	lNfMltDIPI:=SuperGetMV("NFEMLTDIPI",.F.,"/C/D/")// vedamotors
 	nReturn := nQUANT
 
 	// Tratamento para operacoes dentro do País
 	If lNoImp2UM
 		If ( Left(cCFOP,1) $ "7" ) .Or. ( cCFOP $ cCFOPExp )
 			If nCONVDIP > 0
-
-				//Vedamotors - Inicio
-				If(lNfMltDIPI)
-					nReturn := ( nCONVDIP * nQUANT )
-				Else
 				If cTpConv == "M"
 					nReturn := ( nCONVDIP * nQUANT )
 				Else
 					nReturn := ( nQUANT / nCONVDIP )
 				Endif
-				Endif
-				//Vedamotors - Fim
-			Else
-        		nReturn := nQUANT
 			Endif
 		Endif
 	Else
 		If nCONVDIP > 0
-			/*vedamotors
 			If cTpConv == "M"
 				nReturn := ( nCONVDIP * nQUANT )
 			Else
 				nReturn := ( nQUANT / nCONVDIP )
 			Endif
-			vedamotors*/
-
-			//Vedamotors - Inicio
-			If(lNfMltDIPI)
-				nReturn := ( nCONVDIP * nQUANT )
-			Else
-				If cTpConv == "M"
-					nReturn := ( nCONVDIP * nQUANT )
-				Else
-					nReturn := ( nQUANT / nCONVDIP )
-				Endif
-			Endif
-			//Vedamotors - Fim
-		Else
-        	nReturn := nQUANT
 		Endif
 	Endif
 
@@ -14476,64 +14230,6 @@ Static Function RetValEIC64( aDI, lEIC0064, lTpNFEn6 )
 
 Return nValor
 
-/*/{Protheus.doc} FiltEst
-
-Retorna o produto, numero da solicitação de compra do cliente e sequencia dessa solicitação.
-
-@param		cNota      String que contém o número da nota.
-
-@param		cCliente   String que contém o código do cliente.
-
-@param		cLoja	   String que contém o código da loja.
-
-@return     cRetorno   Possui a concatenação dos produtos e número da solicitação de compra do cliente.
-                       
-@author Willian Wamser
-@since 20/05/2021
-@version 1.0 
-/*/
-//-----------------------------------------------------------------------
-//vedamotors - inicio
-Static Function fConsPcSC6(cNota,cCliente,cLoja)
-
-	Local cQuery:=""
-	Local cRetorno:=""
-
-	cQuery+=" SELECT "
-	cQuery+="   C6_PRODUTO, "
-	cQuery+="   C6_NUMPCOM, "
-	cQuery+="   C6_ITEMPC "
-	cQuery+=" FROM "
-	cQuery+="  "+RetSqlTab("SC6")
-	cQuery+=" 	INNER JOIN "+RetSqlTab("SD2")+" ON "
-	cQuery+=" 		D2_PEDIDO=C6_NUM AND "+RetSqlFil("SD2")+ " AND D2_COD=C6_PRODUTO AND D2_DOC='"+cNota+"' AND D2_CLIENTE='"+cCliente+"' AND D2_LOJA='"+cLoja+"' "
-	cQuery+=" WHERE "
-	cQuery+=" "+RetSqlFil("SC6")+ "	"
-	cQuery+=" 	AND "
-	cQuery+=" 	C6_CLI='"+cCliente+"' "
-	cQuery+=" 	AND "
-	cQuery+=" 	C6_LOJA='"+cLoja+"' "
-
-	If Select("QRYSC6") <> 0
-		QRYSC6->(dbCloseArea())
-	End
-
-	cQuery := ChangeQuery(cQuery)
-	TCQUERY cQuery NEW ALIAS "QRYSC6"
-
-	While QRYSC6->(!Eof())
-
-		cRetorno+="\"+AllTrim(QRYSC6->C6_PRODUTO)+"\"+AllTrim(QRYSC6->C6_NUMPCOM)
-
-		QRYSC6->(Dbskip())
-	EndDo
-	
-	If(Len(cRetorno)>0)
-		cRetorno:=substr(cRetorno,2,Len(cRetorno))
-	EndIf
-
-Return cRetorno
-//vedamotors - fim
 //-----------------------------------------------------------------------
 /*/{Protheus.doc}  Function setOtherInfo
 	Função para alimnetar no Objeto Json os dados cadastrais necessarios para criar as condicoes no motor da reforma tributaria

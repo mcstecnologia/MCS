@@ -300,6 +300,8 @@ Static Function fBuscaConta(xCnta)
     Local xPar4     := SuperGetMV("IN_DEPAR04", .F., "")
     Local xPar5     := SuperGetMV("IN_DEPAR05", .F., "")
     Local xPar6     := SuperGetMV("IN_DEPAR06", .F., "")
+    Local xPar7     := SuperGetMV("IN_DEPAR07", .F., "")
+    Local xPar8     := SuperGetMV("IN_DEPAR08", .F., "")
     Local nPos      := 0
     Local xConta    := ""
     Local aArea     := CT1->(GetArea())
@@ -316,35 +318,45 @@ Static Function fBuscaConta(xCnta)
     //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
     //³ Verifica e busca a conta contábil correta dentro dos parâmetros
     //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-    If xCnta $ xPar1
+    If ';' + xCnta $ ';' + xPar1
         nPos := At(xCnta, xPar1)
         If nPos > 0
             xConta := SubStr(xPar1,nPos+Len(xCnta)+1,10)
         EndIf
-    ElseIf xCnta $ xPar2
+    ElseIf ';' + xCnta $ ';' + xPar2
         nPos := At(xCnta, xPar2)
         If nPos > 0
             xConta := SubStr(xPar2,nPos+Len(xCnta)+1,10)
         EndIf
-    ElseIf xCnta $ xPar3
+    ElseIf ';' + xCnta $ ';' + xPar3
         nPos := At(xCnta, xPar3)
         If nPos > 0
             xConta := SubStr(xPar3,nPos+Len(xCnta)+1,10)
         EndIf
-    ElseIf xCnta $ xPar4
+    ElseIf ';' + xCnta $ ';' + xPar4
         nPos := At(xCnta, xPar4)
         If nPos > 0
             xConta := SubStr(xPar4,nPos+Len(xCnta)+1,10)
         EndIf
-    ElseIf xCnta $ xPar5
+    ElseIf ';' + xCnta $ ';' + xPar5
         nPos := At(xCnta, xPar5)
         If nPos > 0
             xConta := SubStr(xPar5,nPos+Len(xCnta)+1,10)
         EndIf
-    ElseIf xCnta $ xPar6
+    ElseIf ';' + xCnta $ ';' + xPar6
         nPos := At(xCnta, xPar6)
         If nPos > 0
             xConta := SubStr(xPar6,nPos+Len(xCnta)+1,10)
+        EndIf
+    ElseIf ';' + xCnta $ ';' + xPar7
+        nPos := At(xCnta, xPar7)
+        If nPos > 0
+            xConta := SubStr(xPar7,nPos+Len(xCnta)+1,10)
+        EndIf
+    ElseIf ';' + xCnta $ ';' + xPar8
+        nPos := At(xCnta, xPar8)
+        If nPos > 0
+            xConta := SubStr(xPar8,nPos+Len(xCnta)+1,10)
         EndIf
     EndIf
 
