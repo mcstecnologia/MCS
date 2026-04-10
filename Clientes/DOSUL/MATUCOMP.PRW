@@ -88,7 +88,8 @@ User Function MATUCOMP()
 				Else
 					lGeraCDT := .T.
 					RecLock("CDD",.F.)
-					CDD->CDD_IFCOMP := cInfComplem						
+					CDD->CDD_IFCOMP := cInfComplem	
+					CDD->CDD_CHVNFE := cChvNfe     //Chave eletronica referenciada					
 					CDD->(MsUnlock())
 																	
 				EndIf
@@ -98,7 +99,14 @@ User Function MATUCOMP()
 
 			SD1->(DbSkip())
 		
-		End
+		EndDO
+
+		//旼컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴커
+    	//� Se for NFCom, envia para fun豫o de grava豫o
+    	//읕컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴켸	
+		If SF1->F1_ESPECIE == 'NFCOM'
+			U_GRVSFX(SF1->F1_DOC, SF1->F1_SERIE, SF1->F1_FORNECE, SF1->F1_LOJA)
+		EndIf
 		
 	EndIf
 	

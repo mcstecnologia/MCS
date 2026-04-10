@@ -22,7 +22,7 @@ User Function MCSTRIB()
         //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
         If IsInCallStack('U_CRMA980')
             If nOperation == 3
-                fInsertPer("","",SA1->A1_COD, SA1->A1_LOJA, SA1->A1_GRPTRIB,nOperation,SA1->A1_TIPO,SA1->A1_CONTRIB,SA1->A1_EST,SA1->A1_COD_MUN,SA1->A1_SUFRAMA,SA1->A1_SIMPNAC,SA1->A1_PAIS,"2")
+                fInsertPer("","","",SA1->A1_COD, SA1->A1_LOJA, SA1->A1_GRPTRIB,nOperation,SA1->A1_TIPO,SA1->A1_CONTRIB,SA1->A1_EST,SA1->A1_COD_MUN,SA1->A1_SUFRAMA,SA1->A1_SIMPNAC,SA1->A1_PAIS,"2")
             ElseIf nOperation == 4 
                 //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
                 //³ Se for alteração, chama função para excluir                         ³
@@ -31,7 +31,7 @@ User Function MCSTRIB()
                 //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
                 //³ Após exclusão ou se não existe, faz a inserção                      ³
                 //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-                fInsertPer("","",SA1->A1_COD, SA1->A1_LOJA, SA1->A1_GRPTRIB,nOperation,SA1->A1_TIPO,SA1->A1_CONTRIB,SA1->A1_EST,SA1->A1_COD_MUN,SA1->A1_SUFRAMA,SA1->A1_SIMPNAC,SA1->A1_PAIS,"2")
+                fInsertPer("","","",SA1->A1_COD, SA1->A1_LOJA, SA1->A1_GRPTRIB,nOperation,SA1->A1_TIPO,SA1->A1_CONTRIB,SA1->A1_EST,SA1->A1_COD_MUN,SA1->A1_SUFRAMA,SA1->A1_SIMPNAC,SA1->A1_PAIS,"2")
             EndIf
         ElseIf IsInCallStack('MATA020')
             If INCLUI 
@@ -44,11 +44,11 @@ User Function MCSTRIB()
                 //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
                 //³ Após exclusão ou se não existe, faz a inserção                      ³
                 //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-                fInsertPer("","",SA2->A2_COD, SA2->A2_LOJA, SA2->A2_GRPTRIB,,SA2->A2_TIPO,SA2->A2_CONTRIB,SA2->A2_EST,SA2->A2_COD_MUN,"",SA2->A2_SIMPNAC,SA2->A2_PAIS,"1")
+                fInsertPer("","","",SA2->A2_COD, SA2->A2_LOJA, SA2->A2_GRPTRIB,,SA2->A2_TIPO,SA2->A2_CONTRIB,SA2->A2_EST,SA2->A2_COD_MUN,"",SA2->A2_SIMPNAC,SA2->A2_PAIS,"1")
             EndIf
         Else 
             If INCLUI 
-                fInsertPer(SB1->B1_COD,SB1->B1_POSIPI,"","","","","","","","","","","","3")
+                fInsertPer(SB1->B1_COD,SB1->B1_POSIPI,SB1->B1_ORIGEM,"","",AllTrim(SB1->B1_GRTRIB),"","","","","","","","","3")
             ElseIf ALTERA
                 //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
                 //³ Se for alteração, chama função para excluir                         ³
@@ -57,7 +57,7 @@ User Function MCSTRIB()
                 //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
                 //³ Após exclusão ou se não existe, faz a inserção                      ³
                 //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-                fInsertPer(SB1->B1_COD,SB1->B1_POSIPI,"","","","","","","","","","","","3")
+                fInsertPer(SB1->B1_COD,SB1->B1_POSIPI,SB1->B1_ORIGEM,"","",AllTrim(SB1->B1_GRTRIB),"","","","","","","","","3")
             EndIf
         EndIf
 
@@ -77,7 +77,7 @@ Execauto para gravação do perfil
 /*/
 Static Function fExecAutoConf(xProd,xClieFor,xLoja,aPerf,xTipOpf,xTpPart,nOp)
 
-    Local oModel as object
+    //Local oModel as object
     Local lOk       := .F.
     Local aArea     := F20->(GetArea())
     LOcal aAreaF22  := F22->(GetArea())
@@ -88,6 +88,7 @@ Static Function fExecAutoConf(xProd,xClieFor,xLoja,aPerf,xTipOpf,xTpPart,nOp)
     Local x         := 0
     Local y         := 0
     Local aMsg      := {}
+    Local aRet      := {}
 
     If nOp == 4
 
@@ -96,90 +97,103 @@ Static Function fExecAutoConf(xProd,xClieFor,xLoja,aPerf,xTipOpf,xTpPart,nOp)
         //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
         F20->(dbSelectArea("F20"))
         F20->(dbSetOrder(1))
+        F20->(dbSelectArea("F22"))
+        F20->(dbSetOrder(1))
+
+        //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+        //³ Tratando caso tenha perfil repetido                                 ³
+        //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+        For x := 1 to Len(aPerf)
+            If ascan(aRet,aPerf[x][1]) == 0 
+                aadd(aRet,aPerf[x][1]) 
+            Endif     
+        Next x  
 
         //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
         //³ Laço para passar por todos os perfis                                ³
         //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-        For x := 1 to Len(aPerf)
+        For x := 1 to Len(aRet)
 
-            If F20->(MsSeek(xFilial("F20") + aPerf[x][1] + xTipOpf))
+            If F20->(MsSeek(xFilial("F20") + aRet[x] + xTipOpf))
         
                 //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-                //³ Pega o modelo                                                       ³
+                //³ 02 perfil Cli/For 04 Produto                                        ³
                 //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-                If Empty(xClieFor)
-                    oModel := FwLoadModel("FISA166") 
-                Else 
-                    oModel := FwLoadModel("FISA164") 
-                EndIf 
+                If xTipOpf == '02'     
 
-                //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-                //³ Apenas na alteração                                                 ³
-                //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-                oModel:SetOperation(nOp)
-                oModel:Activate() // ativo o modelo
-            
-                //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-                //³ Adiciona os registros                                               ³
-                //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-                If Empty(xClieFor)
-                    oModel:GetModel("FISA166PRODUTO"):AddLine()
-                    //oModel:SetValue("FISA166PRODUTO", "F24_FILIAL", FwCodFil())
-                    oModel:SetValue("FISA166PRODUTO", "F24_CODIGO", aPerf[x][1])
-                    oModel:SetValue("FISA166PRODUTO", "F24_CDPROD", xProd)
-                    oModel:SetValue("FISA166PRODUTO", "F24_TIPOPF", xTipOpf)
-                Else
-                    oModel:GetModel("FISA164PARTICIPANTE"):AddLine()
-                    oModel:SetValue("FISA164PARTICIPANTE", "F22_CODIGO", aPerf[x][1])
-                    oModel:SetValue("FISA164PARTICIPANTE", "F22_TPPART", xTpPart)
-                    oModel:SetValue("FISA164PARTICIPANTE", "F22_CLIFOR", xClieFor)
-                    oModel:SetValue("FISA164PARTICIPANTE", "F22_LOJA"  , xLoja)
-                    oModel:SetValue("FISA164PARTICIPANTE", "F22_TIPOPF", xTipOpf)
-                EndIf 
-        
-                If oModel:VldData()
-                    oModel:CommitData()
-                    lOk := .T.
-                    If !Empty(xClieFor)    
-                        Conout("Cliente " + AllTrim(xClieFor) + " loja " + AllTrim(xLoja) + " inserido no perfil " + AllTrim(aPerf[x][1]) )
-                        //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-                        //³ Grava log com o registro gerado no rootpath                         ³
-                        //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-                        aadd(aMsg,{AllTrim(aPerf[x][1]) +"|"+AllTrim(F20->F20_DESC) +"|" + xClieFor+xLoja + "| Perfil CLiente-Fornecedor"+"|"+"Registro Incluído"})
-                        //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-                        //³ Grava o registro na tabela de conferencia                          ³
-                        //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-                        If lPar 
-                            fGravaZZZ(aPerf[x][1],xClieFor+xLoja,xTpPart,'1',"Registro Incluído",F20->F20_DESC)
-                        EndIf
-                    Else 
-                        Conout("Produto " + AllTrim(xProd) + " inserido no perfil " + AllTrim(aPerf[x][1]) )
-                        //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-                        //³ Grava log com o registro gerado no rootpath                         ³
-                        //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-                        aadd(aMsg,{AllTrim(aPerf[x][1]) +"||"+AllTrim(F20->F20_DESC)+ "|" + xProd + " |Perfil Produto" +"|"+ "Registro Incluído"})
-                        //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-                        //³ Grava o registro na tabela de conferencia                          ³
-                        //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-                        If lPar 
-                            fGravaZZZ(aPerf[x][1],xProd,xTpPart,'1',"Registro Incluído",F20->F20_DESC)
-                        EndIf
+                    If !F22->(MsSeek(xFilial("F22") + aRet[x] + xTipOpf + xClieFor + xLoja))
+
+                        Begin Transaction
+
+                            If RecLock('F22',.T.)
+                                F22->F22_CODIGO := aRet[x]
+                                F22->F22_TPPART := xTpPart
+                                F22->F22_CLIFOR := xClieFor
+                                F22->F22_LOJA   := xLoja
+                                F22->F22_TIPOPF := xTipOpf                               
+                                F22->(MsUnlock())
+                            
+                                Conout("Cliente " + AllTrim(xClieFor) + " loja " + AllTrim(xLoja) + " inserido no perfil " + AllTrim(aRet[x]) )
+                                //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+                                //³ Grava log com o registro gerado no rootpath                         ³
+                                //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+                                aadd(aMsg,{AllTrim(aRet[x]) +"|"+AllTrim(F20->F20_DESC) +"|" + xClieFor+xLoja + "| Perfil CLiente-Fornecedor"+"|"+"Registro Incluído"})
+                                //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+                                //³ Grava o registro na tabela de conferencia                          ³
+                                //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+                                If lPar 
+                                    fGravaZZZ(aRet[x],xClieFor+xLoja,xTpPart,'1',"Registro Incluído",F20->F20_DESC)
+                                EndIf
+                            Else 
+                                xCod := xClieFor+xLoja
+                                If lPar
+                                    fGravaZZZ(aRet[x],'',xTpPart,'2',"Registro " + xCod + " não gravado, verificar perfil",F20->F20_DESC)
+                                EndIf
+
+                            EndIf
+
+                        End Transaction
 
                     EndIf
+
                 Else
-                    //VarInfo("",oModel:GetErrorMessage())
-                    If !Empty(xClieFor) 
-                        xCod := Iif(xTipOpf == '3',xProd,xClieFor+xLoja)
-                        If lPar
-                            fGravaZZZ(aPerf[x][1],'',xTpPart,'2',"Registro " + xCod + " não gravado, verificar perfil",F20->F20_DESC)
-                        EndIf
-                    Else 
+
+                    If !F24->(MsSeek(xFilial("F24") + aRet[x] + xProd))
+
+                        Begin Transaction
+
+                            If RecLock('F24',.T.)
+                                F24->F24_CODIGO := aRet[x]
+                                F24->F24_CDPROD := xProd
+                                F24->F24_TIPOPF := xTipOpf
+                                F24->(MsUnlock())
+
+                                Conout("Produto " + AllTrim(xProd) + " inserido no perfil " + AllTrim(aRet[x]) )
+                                //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+                                //³ Grava log com o registro gerado no rootpath                         ³
+                                //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+                                aadd(aMsg,{AllTrim(aRet[x]) +"||"+AllTrim(F20->F20_DESC)+ "|" + xProd + " |Perfil Produto" +"|"+ "Registro Incluído"})
+                                //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+                                //³ Grava o registro na tabela de conferencia                          ³
+                                //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+                                If lPar 
+                                    fGravaZZZ(aRet[x],xProd,xTpPart,'1',"Registro Incluído",F20->F20_DESC)
+                                EndIf
+                            Else
+                                xCod := xProd
+                                    If lPar
+                                        fGravaZZZ(aRet[x],'',xTpPart,'2',"Registro " + xCod + " não gravado, verificar perfil",F20->F20_DESC)
+                                    EndIf
+                            EndIf
+
+                        End Transaction
 
                     EndIf
+
                 EndIf
-                oModel:DeActivate()
+
             EndIf
-            
+
         Next x
 
         If Len(aMsg) > 0 .And. lLog
@@ -201,10 +215,16 @@ Static Function fExecAutoConf(xProd,xClieFor,xLoja,aPerf,xTipOpf,xTpPart,nOp)
 
            F20->(MsSeek(xFilial("F20") + aPerf[x][1] + xTipOpf))
 
+            //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+            //³ 02 perfil de cliente/fornecedor, 04 perfil de produto               ³
+            //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
            If xTipOpf == '02'
                F22->(dbSelectArea("F22"))
                F22->(dbSetOrder(1))
 
+                //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+                //³ Percorrendo e fazendo a deleção                                     ³
+                //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
                For y := 1 to Len(aPerf)
                   If F22->(MsSeek(xFilial("F22") + aPerf[y][1] + xTpPart + xClieFor + xLoja))
                      RecLock("F22",.F.)
@@ -296,32 +316,45 @@ Tabela para exibir os registros integrados ao configurador
 /*/
 User Function fMonitor()
 
-    Local cTabela     := "ZZZ" 
-    Local aArea       := (cTabela)->(GetArea())
+    Local cTabela     := SuperGetMV("MV_XTABLOG",.F.,"ZZZ")
+    Local aArea       := {}
     Private aCores    := {}
-    Private cCadastro := "Monitor Gravação Perfil - Configurador Tributos"
+    Private cCadastro := ""
     Private aRotina   := {}
-     
-    //Montando o Array aRotina, com funções que serão mostradas no menu
-    aAdd(aRotina,{"Pesquisar"           ,   "AxPesqui"          , 0, 1})
-    aAdd(aRotina,{"Visualizar"          ,   "AxVisual"          , 0, 2})
-    aadd(aRotina,{"Legenda"             ,   "U_MON0002()"       , 0, 9})
-    
-    //Montando as cores da legenda
-    aAdd(aCores,{"ZZZ_SITUAC == '1' ", "BR_VERDE"    })
-    aAdd(aCores,{"ZZZ_SITUAC == '2' ", "BR_VERMELHO" })
-     
-    //Selecionando a tabela e ordenando
-    DbSelectArea(cTabela)
-    (cTabela)->(DbSetOrder(1))
-     
-    //Montando o Browse
-    mBrowse(6, 1, 22, 75, cTabela , , , , , , aCores )
-     
-    //Encerrando a rotina
-    (cTabela)->(DbCloseArea())
-    
-    RestArea(aArea)
+
+
+    //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+    //³ Verifica se a tabela existe no dicionário                          ³
+    //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+    If ExisteSX2(cTabela)
+        aArea       := (cTabela)->(GetArea())
+        aCores    := {}
+        cCadastro := "Monitor Gravação Perfil - Configurador Tributos"
+        aRotina   := {}
+        
+        //Montando o Array aRotina, com funções que serão mostradas no menu
+        aAdd(aRotina,{"Pesquisar"           ,   "AxPesqui"          , 0, 1})
+        aAdd(aRotina,{"Visualizar"          ,   "AxVisual"          , 0, 2})
+        aadd(aRotina,{"Legenda"             ,   "U_MON0002()"       , 0, 9})
+        
+        //Montando as cores da legenda
+        aAdd(aCores,{"AllTrim(ZZZ_SITUAC) == '1' ", "BR_VERDE"    })
+        aAdd(aCores,{"AllTrim(ZZZ_SITUAC) == '2' ", "BR_VERMELHO" })
+        
+        //Selecionando a tabela e ordenando
+        DbSelectArea(cTabela)
+        (cTabela)->(DbSetOrder(1))
+        
+        //Montando o Browse
+        mBrowse(6, 1, 22, 75, cTabela , , , , , , aCores )
+        
+        //Encerrando a rotina
+        (cTabela)->(DbCloseArea())
+        
+        RestArea(aArea)
+    Else 
+        Help(,, "MCSCONF", , "Tabela de monitoramento não encontrada no dicionário", 1, 0, , , , , , {"Execute o UPDMCS() para criação da tabela"})
+    EndIf
     
 Return
 
@@ -358,41 +391,59 @@ Ggrava os registros na ZZZ
 /*/
 Static Function fGravaZZZ(xCodPer,xCodPro,xTipo,xStatus,xMessage,xDesc)
 
+    Local xTabela := SuperGetMV("MV_XTABLOG",.F.,"ZZZ")
+    Local aArea   := {}
+    Local xTab    := ""
     Default xDesc := ""
 
-    ChkFile("ZZZ")
-
-    Local aArea := ZZZ->(GetArea())
-    Local xTab  := ""
-
     //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-    //³ Verifica o tipo de gravação para setar a tabela correta            ³
+    //³ Verifica se a tabela existe no dicionário                          ³
     //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-    Do Case 
-        Case xTipo == '1'
-            xTab := "SA2"
-        Case xTipo == '2'
-            xTab := "SA1"
-        Otherwise
-            xTab := "SB1"
-    EndCase
+    If ExisteSX2(xTabela)
 
-    //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-    //³ Executa o reclock                                                   ³
-    //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-    RecLock("ZZZ", .T.)
-        ZZZ->ZZZ_FILIAL := FWxFilial('ZZZ')
-        ZZZ->ZZZ_CHAVE  := xCodPro
-        ZZZ->ZZZ_SITUAC := xStatus
-        ZZZ->ZZZ_ALIAS  := xTab
-        ZZZ->ZZZ_PERFIL := xCodPer
-        ZZZ->ZZZ_DATA   := dDataBase
-        ZZZ->ZZZ_ACAO   := xMessage
-        ZZZ->ZZZ_USER   := UsrRetName(__cUserId)
-        ZZZ->ZZZ_DESC   := xDesc
-    ZZZ->(MsUnlock())
+        ChkFile(xTabela)
 
-    RestArea(aArea)
+        aArea := &(xTabela+"->"+"(GetArea())")
+
+        //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+        //³ Verifica o tipo de gravação para setar a tabela correta            ³
+        //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+        Do Case 
+            Case xTipo == '1'
+                xTab := "SA2"
+            Case xTipo == '2'
+                xTab := "SA1"
+            Otherwise
+                xTab := "SB1"
+        EndCase
+
+        //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+        //³ Executa o reclock - executando em macro &                          ³
+        //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+        RecLock(xTabela, .T.)
+            &(xTabela+"->"+xTabela+"_FILIAL") := FWxFilial(xTabela)
+            &(xTabela+"->"+xTabela+"_CHAVE")  := xCodPro
+            &(xTabela+"->"+xTabela+"_SITUAC") := xStatus
+            &(xTabela+"->"+xTabela+"_ALIAS")  := xTab
+            &(xTabela+"->"+xTabela+"_PERFIL") := xCodPer
+            &(xTabela+"->"+xTabela+"_DATA")   := dDataBase
+            &(xTabela+"->"+xTabela+"_ACAO")   := xMessage
+            &(xTabela+"->"+xTabela+"_USER")   := UsrRetName(__cUserId)
+            &(xTabela+"->"+xTabela+"_DESC")   := xDesc
+
+            //ZZZ->ZZZ_CHAVE  := xCodPro
+            //ZZZ->ZZZ_SITUAC := xStatus
+            //ZZZ->ZZZ_ALIAS  := xTab
+            //ZZZ->ZZZ_PERFIL := xCodPer
+            //ZZZ->ZZZ_DATA   := dDataBase
+            /*ZZZ->ZZZ_ACAO   := xMessage
+            ZZZ->ZZZ_USER   := UsrRetName(__cUserId)
+            ZZZ->ZZZ_DESC   := xDesc*/
+        &(xTabela+"->"+"(MsUnlock())")
+
+        RestArea(aArea)
+
+    EndIf
 
 Return
 
@@ -419,7 +470,7 @@ Query principal para busca dos registros de perfis para inclusão
 @param lRevisa, logical, param_description
 @return variant, return_description
 /*/
-Static Function fInsertPer(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xOper,xTipo,xContri,xEst,xCodMun,xSufr,xSimples,xPais,xTipPer)
+Static Function fInsertPer(xProd,xPosIpi,xOrig,xClieFor,xLoja,xGrpTrib,xOper,xTipo,xContri,xEst,xCodMun,xSufr,xSimples,xPais,xTipPer)
 
     Local aPerf         := {}
     Local xAlias        := GetNextAlias()
@@ -433,6 +484,7 @@ Static Function fInsertPer(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xOper,xTipo,xCo
     Local lReg4         := .F.
     Local lReg5         := .F.
     Local lReg6         := .F.
+    Local lReg7         := .F.
     Local aAreaZZV      := ZZV->(GetArea())
     Local aAreaZZU      := ZZU->(GetArea())
     Local aAreaZZT      := ZZT->(GetArea())
@@ -470,7 +522,7 @@ Static Function fInsertPer(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xOper,xTipo,xCo
     //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
     //³ Query principal para busca dos perfis                               ³
     //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-    xQuery := "SELECT ZZW_COD, ZZY_CODPER, ZZW_TIPPAR, ZZW_CONTRI, ZZW_SUFRAM, ZZW_SIMPLE, ZZW_REGRA1, ZZW_REGRA2, ZZW_REGRA3, ZZW_REGRA4, ZZW_REGRA5, ZZW_REGRA6 "  + chr(13)
+    xQuery := "SELECT ZZW_COD, ZZY_CODPER, ZZW_TIPPAR, ZZW_CONTRI, ZZW_SUFRAM, ZZW_SIMPLE, ZZW_REGRA1, ZZW_REGRA2, ZZW_REGRA3, ZZW_REGRA4, ZZW_REGRA5, ZZW_REGRA6, ZZW_REGRA7 "  + chr(13)
     xQuery += "FROM " + RetSqlName("ZZW") + " ZZW " + chr(13)
     xQuery += "INNER JOIN "+RetSqlName("ZZY")+ " ZZY " + chr(13)
     xQuery += "ON ZZY_FILIAL = ZZW_FILIAL " + chr(13) 
@@ -484,12 +536,28 @@ Static Function fInsertPer(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xOper,xTipo,xCo
         If IsInCallStack('U_CRMA980')
             xQuery += "WHERE ZZW_TIPPAR = '" + AllTrim(xTipo) + "' " + chr(13)
             xQuery += "AND ZZW_ALIAS = '1' "  + chr(13)
-            xQuery += "AND ZZW_CONTRI = '" + AllTrim(xContri) + "' " + chr(13)
-            xQuery += "AND ZZW_SIMPLE ='" + AllTrim(xSimples) + "' " + chr(13)
+            If Empty(xContri) .Or. xContri == '2'
+                xQuery += "AND ZZW_CONTRI IN ('2','') " + chr(13)
+            Else 
+                xQuery += "AND ZZW_CONTRI = '1' " + chr(13)
+            EndIf
+            If Empty(xSimples) .Or. xSimples == '2'
+                xQuery += "AND ZZW_SIMPLE IN ('2','') " + chr(13)
+            Else 
+                xQuery += "AND ZZW_SIMPLE = '1' " + chr(13)
+            EndIf
         Else 
-            xQuery += "WHERE ZZW_CONTRI = '" + AllTrim(xContri) + "' " + chr(13)
+            If Empty(xContri) .Or. xContri == '2'
+                xQuery += "AND ZZW_CONTRI IN ('2','') " + chr(13)
+            Else 
+                xQuery += "AND ZZW_CONTRI = '1' " + chr(13)
+            EndIf
             xQuery += "AND ZZW_ALIAS = '2' "  + chr(13)
-            xQuery += "AND ZZW_SIMPLE ='" + AllTrim(xSimples) + "' " + chr(13)
+            If Empty(xSimples) .Or. xSimples == '2'
+                xQuery += "AND ZZW_SIMPLE IN ('2','') " + chr(13)
+            Else 
+                xQuery += "AND ZZW_SIMPLE = '1' " + chr(13)
+            EndIf
         EndIf
 
         If Empty(xSufr)
@@ -515,7 +583,7 @@ Static Function fInsertPer(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xOper,xTipo,xCo
         //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
         //³ Caso nenhuma aba seja usada, já grava no array o perfil encontrado   ³
         //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-        If (xAlias)->ZZW_REGRA1 == '2' .And. (xAlias)->ZZW_REGRA2 == '2' .And. (xAlias)->ZZW_REGRA3 == '2' .And. (xAlias)->ZZW_REGRA4 == '2' .And. (xAlias)->ZZW_REGRA5 == '2' .And. (xAlias)->ZZW_REGRA6 == '2'
+        If (xAlias)->ZZW_REGRA1 <> '1' .And. (xAlias)->ZZW_REGRA2 <> '1' .And. (xAlias)->ZZW_REGRA3 <> '1' .And. (xAlias)->ZZW_REGRA4 <> '1' .And. (xAlias)->ZZW_REGRA5 <> '1' .And. (xAlias)->ZZW_REGRA6 <> '1' .And. (xAlias)->ZZW_REGRA7 <> '1'
             aadd(aPerf,{(xAlias)->ZZY_CODPER})
         Else 
             If Empty(xProd)
@@ -555,19 +623,19 @@ Static Function fInsertPer(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xOper,xTipo,xCo
                 //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
                 If !Empty(xEst) .And. (xAlias)->ZZW_REGRA3 == '1' 
                     If ZZS->(dbSeek(xFilial("ZZS") + (xAlias)->ZZW_COD + AllTrim(xEst)))//retirar se não der certo
-                        If ZZS->(dbSeek(xFilial("ZZS") + (xAlias)->ZZW_COD + AllTrim(xEst) + AllTrim(xCodMun))) //AJUSTAR
-                            lReg4 := .F.
+                        If ZZS->(dbSeek(xFilial("ZZS") + (xAlias)->ZZW_COD +  AllTrim(xEst) + AllTrim(xCodMun))) //AJUSTAR
+                            lReg3 := .F.
                         Else
                             xQuery2 += "INNER JOIN "+RetSqlName("ZZS")+ " ZZS " + chr(13)
                             xQuery2 += "ON ZZS_FILIAL = ZZW_FILIAL " + chr(13)
                             xQuery2 += "AND ZZS_COD = '" +(xAlias)->ZZW_COD + "' " + chr(13)
-                            xQuery2 += "AND ZZS_UF <> '" + AllTrim(xEst) + "' " + chr(13)
+                            xQuery2 += "AND ZZS_UF = '" + AllTrim(xEst) + "' " + chr(13)
                             xQuery2 += "AND ZZS_CODMUN <> '" + AllTrim(xCodMun) + "' " + chr(13)
-                            //xQuery2 += "AND ZZS.D_E_L_E_T_ = ' ' " + chr(13) 
-                            lReg4 := .T.
+                            //xQuery2 += "AND ZZS.D_E_L_E_T_ = ' ' " + chr(13) */
+                            lReg3 := .T.
                         EndIf
                     Else 
-                        lRet4 := .F.
+                       lReg3 := .F.
                     EndIf
                 EndIf
                 //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
@@ -580,15 +648,28 @@ Static Function fInsertPer(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xOper,xTipo,xCo
                         xQuery2 += "AND ZZU_COD = '" +(xAlias)->ZZW_COD + "' " + chr(13)
                         xQuery2 += "AND ZZU_EST = '" + AllTrim(xEst) + "' " + chr(13)
                        // xQuery2 += "AND ZZU.D_E_L_E_T_ = ' ' " + chr(13) 
-                        lReg3 := .T.
+                        lReg4 := .T.
                     Else 
-                        lReg3 := .F.
+                        lReg4 := .F.
                     EndIf
-                Else 
-                     lReg4 := .F.
+                EndIf
+            Else 
+                //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+                //³ Grupos tributários                                                  ³
+                //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+                If !Empty(xGrpTrib) .And. (xAlias)->ZZW_REGRA1 == '1'
+                    If ZZX->(dbSeek(xFilial("ZZX") + (xAlias)->ZZW_COD + AllTrim(xGrpTrib))) 
+                        xQuery2 += "INNER JOIN "+RetSqlName("ZZX")+ " ZZX " + chr(13)
+                        xQuery2 += "ON ZZX_FILIAL = ZZW_FILIAL " + chr(13)
+                        xQuery2 += "AND ZZX_COD = '" +(xAlias)->ZZW_COD + "' " + chr(13)
+                        xQuery2 += "AND ZZX_GRPTRI = '" + AllTrim(xGrpTrib) + "' " + chr(13)
+                        //xQuery2 += "AND ZZX.D_E_L_E_T_ = ' ' " + chr(13) 
+                        lReg1 := .T.
+                    Else 
+                        lReg1 := .F.
+                    EndIf
                 EndIf
 
-            Else 
                 //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
                 //³ NCM Igual                                                           ³
                 //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
@@ -606,7 +687,7 @@ Static Function fInsertPer(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xOper,xTipo,xCo
                 EndIf
 
                 //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-                //³ Municipio exceção                                                   ³
+                //³ NCM exceção                                                       ³
                 //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
                 If !lReg5 .And. !Empty(xPosIpi) .And. (xAlias)->ZZW_REGRA5 == '1'
                     If ZZS->(dbSeek(xFilial("ZZS") + (xAlias)->ZZW_COD + AllTrim(xEst) + AllTrim(xCodMun)))
@@ -623,6 +704,21 @@ Static Function fInsertPer(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xOper,xTipo,xCo
                 Else 
                      lReg6 := .F.
                 EndIf
+
+                //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+                //³ Origem do produto                                                    ³
+                //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+                If !Empty(xOrig) .And. (xAlias)->ZZW_REGRA7 == '1'
+                    If ZZQ->(dbSeek(xFilial("ZZQ") + (xAlias)->ZZW_COD + AllTrim(xOrig)))
+                        xQuery2 += "INNER JOIN "+RetSqlName("ZZQ")+ " ZZQ " + chr(13) 
+                        xQuery2 += "ON ZZQ_FILIAL = ZZW_FILIAL " + chr(13) 
+                        xQuery2 += "AND ZZQ_COD = '" +(xAlias)->ZZW_COD + "' " + chr(13)
+                        xQuery2 += "AND ZZQ_ORIGEM = '" + AllTrim(xOrig) + "' " + chr(13)
+                        lReg7 := .T.
+                    Else 
+                        lReg7 := .F.
+                    EndIf
+                EndIf
             EndIf
             //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
             ///³ Somente produto                                                   ³
@@ -630,8 +726,16 @@ Static Function fInsertPer(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xOper,xTipo,xCo
             If Empty(xProd)
                 xQuery2 += "WHERE ZZW_COD = '" +(xAlias)->ZZW_COD + "' " + chr(13) 
                 xQuery2 += "AND ZZW_TIPPAR = '" + AllTrim(xTipo) + "' " + chr(13)
-                xQuery2 += "AND ZZW_CONTRI = '" + AllTrim(xContri) + "' " + chr(13)
-                xQuery2 += "AND ZZW_SIMPLE ='" + AllTrim(xSimples) + "' " + chr(13)      
+                If Empty(xContri) .Or. xContri == '2'
+                    xQuery2 += "AND ZZW_CONTRI IN ('2','') " + chr(13)
+                Else
+                    xQuery2 += "AND ZZW_CONTRI = '" + AllTrim(xContri) + "' " + chr(13)
+                EndIf
+                If Empty(xSimples) .Or. xSimples == '2'
+                    xQuery2 += "AND ZZW_SIMPLE IN ('2','') " + chr(13)
+                Else
+                    xQuery2 += "AND ZZW_SIMPLE ='" + AllTrim(xSimples) + "' " + chr(13) 
+                EndIf     
                 If Empty(xSufr)
                     xQuery2 += "AND ZZW_SUFRAM IN ('2','') " + chr(13)
                 Else 
@@ -651,14 +755,16 @@ Static Function fInsertPer(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xOper,xTipo,xCo
                     xQuery2 += "AND ZZX.D_E_L_E_T_ = ' ' " + chr(13) 
                 ElseIf lReg2
                     xQuery2 += "AND ZZV.D_E_L_E_T_ = ' ' " + chr(13)
-                ElseIf lReg4 
-                    xQuery2 += "AND ZZS.D_E_L_E_T_ = ' ' " + chr(13)
                 ElseIf lReg3 
+                    xQuery2 += "AND ZZS.D_E_L_E_T_ = ' ' " + chr(13)
+                ElseIf lReg4 
                     xQuery2 += "AND ZZU.D_E_L_E_T_ = ' ' " + chr(13)
                 ElseIf lReg5 
                     xQuery2 += "AND ZZT.D_E_L_E_T_ = ' ' " + chr(13)
                 ElseIf lReg6 
                    xQuery2 += "AND ZZR.D_E_L_E_T_ = ' ' " + chr(13)
+                ElseIf lReg7 
+                   xQuery2 += "AND ZZQ.D_E_L_E_T_ = ' ' " + chr(13)
                 EndIf
             EndIf
         EndIf
@@ -667,22 +773,23 @@ Static Function fInsertPer(xProd,xPosIpi,xClieFor,xLoja,xGrpTrib,xOper,xTipo,xCo
 
         (xAlias2)->(dbGoTop())
 
-        If (xAlias2)->(!Eof())
+        While (xAlias2)->(!Eof())
             //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
             //³ Se encontrou alguma regra, faz o processo de gravação do array     ³
             //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-            If lReg6 .Or. lReg5 .Or. lReg4 .Or. lReg3 .Or. lReg2 .Or. lReg1
-                lReg1 := .F.
-                lReg2 := .F.
-                lReg3 := .F.
-                lReg4 := .F.
-                lReg5 := .F.
-                lReg6 := .F.
+            If lReg7 .Or. lReg6 .Or. lReg5 .Or. lReg4 .Or. lReg3 .Or. lReg2 .Or. lReg1
                 aadd(aPerf,{(xAlias2)->ZZY_CODPER})
             EndIf
-        EndIf
+            (xAlias2)->(dbSkip())
+        EndDo
+        lReg1 := .F.
+        lReg2 := .F.
+        lReg3 := .F.
+        lReg4 := .F.
+        lReg5 := .F.
+        lReg6 := .F. 
+        lReg7 := .F.
         xQuery2 := ""
-        (xAlias2)->(dbSkip())
 
     (xAlias)->(dbSkip()) 
 

@@ -1,0 +1,392 @@
+#include "msobject.ch"
+#include "totvs.framework.treports.integratedprovider.th"
+#include "tlpp-core.th"
+#include "tlpp-rest.th"
+
+//namespace totvs.protheus.fiscal.fis.treportsintegratedprovider
+namespace custom.fiscal.fis.integratedprovider
+@totvsFrameworkTReportsIntegratedProvider(active=.T.,team="SIGAFIS", tables="SFT,SA1,SB1,SF4,F2D,F2B,SYS_USR,CJ3,SD2,SD1",;
+name="mcsConTribSmartviewBusinessObject", country="BRA", initialRelease="12.1.2310")
+//-------------------------------------------------------------------
+
+//-------------------------------------------------------------------  
+
+class mcsConTribSmartviewBusinessObject from totvs.framework.treports.integratedprovider.IntegratedProvider
+	data nPageSize as integer
+
+	public method new() as object
+	public method getData() as object
+	public method getSchema() as object
+endclass
+
+//-------------------------------------------------------------------
+/*{Protheus.doc} new
+Método de instância da classe 
+@return object: self 
+@author eduardo.melo
+@since 31/07/2023
+*/
+//-------------------------------------------------------------------   
+method new() class mcsConTribSmartviewBusinessObject
+
+	_Super:new()
+
+    self:appendArea("Teste")
+    self:setDisplayName("MCS CUSTOM")
+    self:setDescription("Consulta CONSULTA")
+return self
+
+//-------------------------------------------------------------------
+/*{Protheus.doc} getData
+Retorna os dados do objeto de negócio 
+@param nPage, numérico, indica a página atual do relatório
+@param oFilter, objeto, contém o filtro do TReports 
+@return object: self:oData 
+@author eduardo.melo
+@since 27/10/2023
+*/
+//-------------------------------------------------------------------   
+method getData(nPage as numeric, oFilter as object) as object class mcsConTribSmartviewBusinessObject
+
+	Local xQuery     := "" as character
+	local jParams    := NIL
+	Local xBase      := TcGetDb()
+	Local aCampos    := {}
+
+	aAdd(aCampos, "F2_USERLGI")
+    aAdd(aCampos, "F1_USERLGI")
+
+	//definindo a quantidade máxima por página (default 100)
+	self:setPageSize(500)
+
+	xQuery := "SELECT " + chr(13)
+	xQuery += "    CASE WHEN FT_TIPOMOV = 'S' THEN 'SAIDA' ELSE 'ENTRADA' END AS MOVIMENTO, " + chr(13)
+	xQuery += "    FT_FILIAL as FILIAL, " + chr(13)
+	If xBase == 'ORACLE'
+		xQuery += "    TO_DATE(FT_ENTRADA, 'YYYYMMDD') as DT_ENTRADA, " + chr(13)
+		xQuery += "    TO_DATE(FT_EMISSAO, 'YYYYMMDD') as DT_EMISSAO, " + chr(13)
+	Else 
+		xQuery += "    CAST(FT_ENTRADA AS DATE) DT_ENTRADA, " + chr(13)
+		xQuery += "    CAST(FT_EMISSAO AS DATE) DT_EMISSAO, " + chr(13)
+	EndIf
+	xQuery += "    FT_DTCANC as DT_CANCELAMENTO, " + chr(13)
+	xQuery += "    FT_NFISCAL as NOTA_FISCAL, " + chr(13)
+	xQuery += "    FT_SERIE as SERIE, " + chr(13) 
+	xQuery += "    FT_CHVNFE as CHAVE_ELETRONICA, " + chr(13)
+	xQuery += "    CASE " + chr(13)
+	xQuery += "         WHEN ( FT_TIPOMOV ='S') " + chr(13)
+	If xBase == 'ORACLE'
+		xQuery += "            THEN ( SELECT F3_CODRSEF FROM " + RetSqlName("SF3") + " SF3 WHERE rownum = 1 AND F3_FILIAL = FT_FILIAL AND F3_NFISCAL = FT_NFISCAL AND F3_SERIE = FT_SERIE AND F3_CLIEFOR = FT_CLIEFOR AND F3_LOJA = FT_LOJA AND F3_CFO >= '5000' AND SF3.D_E_L_E_T_ <> '*') " + chr(13)
+	Else 
+		xQuery += "            THEN ( SELECT F3_CODRSEF FROM " + RetSqlName("SF3") + " SF3 WHERE TOP 1 * AND F3_FILIAL = FT_FILIAL AND F3_NFISCAL = FT_NFISCAL AND F3_SERIE = FT_SERIE AND F3_CLIEFOR = FT_CLIEFOR AND F3_LOJA = FT_LOJA AND F3_CFO >= '5000' AND SF3.D_E_L_E_T_ <> '*') " + chr(13)
+	EndIf
+	xQuery += "         WHEN ( FT_TIPOMOV ='E' ) " + chr(13)
+	If xBase == 'ORACLE'
+		xQuery += "             THEN ( SELECT F3_CODRSEF FROM " + RetSqlName("SF3") + " SF3 WHERE rownum = 1 AND F3_FILIAL = FT_FILIAL AND F3_NFISCAL = FT_NFISCAL AND F3_SERIE = FT_SERIE AND F3_CLIEFOR = FT_CLIEFOR AND F3_LOJA = FT_LOJA AND F3_CFO < '5000' AND SF3.D_E_L_E_T_ <> '*') " + chr(13)
+	Else
+		xQuery += "             THEN ( SELECT F3_CODRSEF FROM " + RetSqlName("SF3") + " SF3 WHERE TOP 1 * AND F3_FILIAL = FT_FILIAL AND F3_NFISCAL = FT_NFISCAL AND F3_SERIE = FT_SERIE AND F3_CLIEFOR = FT_CLIEFOR AND F3_LOJA = FT_LOJA AND F3_CFO < '5000' AND SF3.D_E_L_E_T_ <> '*') " + chr(13) 
+	EndIf
+	xQuery += "    END RETORNO_SEFAZ, " + chr(13)
+	xQuery += "    FT_CLIEFOR as CLI_FOR, " + chr(13)
+	xQuery += "    FT_LOJA as LOJA, " + chr(13)
+	xQuery += "    CASE " + chr(13)
+	xQuery += "         WHEN ( FT_TIPOMOV ='S' AND FT_TIPO NOT IN('D','B'))  OR (  FT_TIPOMOV = 'E' AND FT_TIPO IN ('D','B')) " + chr(13)
+	xQuery += "             THEN ( SELECT A1_NOME FROM " + RetSqlName("SA1") + " SA1 WHERE A1_FILIAL = '01' AND A1_COD = FT_CLIEFOR AND A1_LOJA = FT_LOJA AND SA1.D_E_L_E_T_ <> '*' ) " + chr(13)
+	xQuery += "         WHEN ( FT_TIPOMOV ='E' AND FT_TIPO NOT IN ('D','B')) OR (FT_TIPOMOV = 'S' AND FT_TIPO IN ('D','B')) " + chr(13)
+	xQuery += "             THEN ( SELECT A2_NOME FROM " + RetSqlName("SA2") + " SA2 WHERE A2_FILIAL = '01' AND A2_COD = FT_CLIEFOR AND A2_LOJA = FT_LOJA AND SA2.D_E_L_E_T_ <> '*' ) " + chr(13)
+	xQuery += "    END AS RAZAO_SOCIAL, " + chr(13)
+	xQuery += "    CASE " + chr(13)
+	xQuery += "         WHEN ( FT_TIPOMOV ='S' AND FT_TIPO NOT IN('D','B'))  OR (  FT_TIPOMOV = 'E' AND FT_TIPO IN ('D','B')) " + chr(13)
+	xQuery += "             THEN ( SELECT A1_CGC FROM " + RetSqlName("SA1") + " SA1 WHERE A1_FILIAL = '01' AND A1_COD = FT_CLIEFOR AND A1_LOJA = FT_LOJA AND SA1.D_E_L_E_T_ <> '*' ) " + chr(13)
+	xQuery += "         WHEN ( FT_TIPOMOV ='E' AND FT_TIPO NOT IN ('D','B')) OR (FT_TIPOMOV = 'S' AND FT_TIPO IN ('D','B')) " + chr(13)
+	xQuery += "             THEN ( SELECT A2_CGC FROM " + RetSqlName("SA2") + " SA2 WHERE A2_FILIAL = '01' AND A2_COD = FT_CLIEFOR AND A2_LOJA = FT_LOJA AND SA2.D_E_L_E_T_ <> '*' ) " + chr(13)
+	xQuery += "    END AS CNPJ, " + chr(13)
+	xQuery += "    CASE " + chr(13)
+	xQuery += "         WHEN ( FT_TIPOMOV ='S' AND FT_TIPO NOT IN('D','B'))  OR (  FT_TIPOMOV = 'E' AND FT_TIPO IN ('D','B')) " + chr(13)
+	xQuery += "             THEN ( SELECT A1_GRPTRIB FROM " + RetSqlName("SA1") + " SA1 WHERE A1_FILIAL = '01' AND A1_COD = FT_CLIEFOR AND A1_LOJA = FT_LOJA AND SA1.D_E_L_E_T_ <> '*' ) " + chr(13)
+	xQuery += "         WHEN ( FT_TIPOMOV ='E' AND FT_TIPO NOT IN ('D','B')) OR (FT_TIPOMOV = 'S' AND FT_TIPO IN ('D','B')) " + chr(13)
+	xQuery += "             THEN ( SELECT A2_GRPTRIB FROM " + RetSqlName("SA2") + " SA2 WHERE A2_FILIAL = '01' AND A2_COD = FT_CLIEFOR AND A2_LOJA = FT_LOJA AND SA2.D_E_L_E_T_ <> '*' ) " + chr(13)
+	xQuery += "    END AS GR_TRIB_CLI_FOR, " + chr(13)
+	xQuery += "    CASE " + chr(13) 
+	xQuery += "         WHEN ( FT_TIPOMOV ='S' AND FT_TIPO NOT IN('D','B'))  OR (  FT_TIPOMOV = 'E' AND FT_TIPO IN ('D','B')) " + chr(13)
+	xQuery += "             THEN ( SELECT A1_MUN FROM " + RetSqlName("SA1") + " SA1 WHERE A1_FILIAL = '01' AND A1_COD = FT_CLIEFOR AND A1_LOJA = FT_LOJA AND SA1.D_E_L_E_T_ <> '*' ) " + chr(13)
+	xQuery += "         WHEN ( FT_TIPOMOV ='E' AND FT_TIPO NOT IN ('D','B')) OR (FT_TIPOMOV = 'S' AND FT_TIPO IN ('D','B')) " + chr(13)
+	xQuery += "             THEN ( SELECT A2_MUN FROM " + RetSqlName("SA2") + " SA2 WHERE A2_FILIAL = '01' AND A2_COD = FT_CLIEFOR AND A2_LOJA = FT_LOJA AND SA2.D_E_L_E_T_ <> '*' ) " + chr(13)
+	xQuery += "    END AS MUNICIPIO, " + chr(13)
+	xQuery += "    FT_ESTADO as ESTADO, " + chr(13)
+	xQuery += "    FT_ESPECIE as ESPECIE, " + chr(13) 
+	xQuery += "    FT_TIPO as TIPO_NF, " + chr(13)
+	xQuery += "    FT_NFORI as NF_ORIGINAL, " + chr(13)
+	xQuery += "    FT_SERORI as SERIE_ORIGINAL,  " + chr(13)
+	xQuery += "    F4_DUPLIC as DUPLICATA, " + chr(13)
+	xQuery += "    FT_TES as TES, " + chr(13)
+	xQuery += "    FT_CFOP as CFOP, " + chr(13)
+	xQuery += "    FT_NRLIVRO as nr_LIVRO,  " + chr(13)
+	xQuery += "    FT_ITEM as ITEM, " + chr(13)
+	xQuery += "    FT_PRODUTO as PRODUTO, " + chr(13)
+	xQuery += "    B1_TIPO as TIPO, " + chr(13)
+	xQuery += "    B1_DESC as DESCRICAO, " + chr(13)
+	xQuery += "    B1_GRTRIB as GR_TRIB_PROD,  " + chr(13)
+	xQuery += "    B1_UM as UNID, " + chr(13)
+	xQuery += "    CASE " + chr(13)
+	xQuery += "         WHEN ( FT_TIPOMOV ='S') " + chr(13)
+	xQuery += "            THEN ( SELECT D2_LOCAL FROM " + RetSqlName("SD2") + " SD2 WHERE D2_FILIAL = FT_FILIAL AND D2_DOC = FT_NFISCAL AND D2_SERIE = FT_SERIE AND D2_CLIENTE = FT_CLIEFOR AND D2_LOJA = FT_LOJA AND D2_COD = FT_PRODUTO AND D2_ITEM = FT_ITEM AND SD2.D_E_L_E_T_ <> '*' ) " + chr(13)
+	xQuery += "         WHEN ( FT_TIPOMOV ='E' ) " + chr(13)
+	xQuery += "             THEN ( SELECT D1_LOCAL FROM " + RetSqlName("SD1") + " SD1 WHERE D1_FILIAL = FT_FILIAL AND D1_DOC = FT_NFISCAL AND D1_SERIE = FT_SERIE AND D1_FORNECE = FT_CLIEFOR AND D1_LOJA = FT_LOJA AND D1_COD = FT_PRODUTO AND D1_ITEM = FT_ITEM AND SD1.D_E_L_E_T_ <> '*' ) " + chr(13)
+	xQuery += "    END ARMAZEM, " + chr(13)
+	xQuery += "    FT_POSIPI as NCM, " + chr(13)
+	xQuery += "    FT_CONTA as CONTA_CONTABIL, " + chr(13)
+	xQuery += "    CASE " + chr(13)
+	xQuery += "         WHEN ( FT_TIPOMOV ='S') " + chr(13)
+	If xBase == 'ORACLE'
+		If AvExisteCampo(aCampos)
+			xQuery += "            THEN  ( SELECT (SUBSTR(SUBSTR(F2_USERLGI, 11, 1) ||      SUBSTR(F2_USERLGI, 15, 1) ||      SUBSTR(F2_USERLGI, 19, 1) ||      SUBSTR(F2_USERLGI, 02, 1) ||      SUBSTR(F2_USERLGI, 06, 1) ||      SUBSTR(F2_USERLGI, 10, 1) ||      SUBSTR(F2_USERLGI, 14, 1) ||      SUBSTR(F2_USERLGI, 01, 1) ||      SUBSTR(F2_USERLGI, 18, 1) ||      SUBSTR(F2_USERLGI, 05, 1) ||      SUBSTR(F2_USERLGI, 09, 1) ||      SUBSTR(F2_USERLGI, 13, 1) ||      SUBSTR(F2_USERLGI, 17, 1) ||      SUBSTR(F2_USERLGI, 04, 1) ||      SUBSTR(F2_USERLGI, 08, 1),1,6)) FROM " +RetSqlName("SF2")+ " SF2 WHERE F2_FILIAL = FT_FILIAL AND F2_DOC = FT_NFISCAL AND F2_SERIE = FT_SERIE AND F2_CLIENTE = FT_CLIEFOR AND F2_LOJA = FT_LOJA AND SF2.D_E_L_E_T_ <> '*' ) " + chr(13)
+			xQuery += "         WHEN ( FT_TIPOMOV ='E' ) " + chr(13)
+			xQuery += "             THEN ( SELECT (SUBSTR(SUBSTR(F1_USERLGI, 11, 1) ||      SUBSTR(F1_USERLGI, 15, 1) ||      SUBSTR(F1_USERLGI, 19, 1) ||      SUBSTR(F1_USERLGI, 02, 1) ||      SUBSTR(F1_USERLGI, 06, 1) ||      SUBSTR(F1_USERLGI, 10, 1) ||      SUBSTR(F1_USERLGI, 14, 1) ||      SUBSTR(F1_USERLGI, 01, 1) ||      SUBSTR(F1_USERLGI, 18, 1) ||      SUBSTR(F1_USERLGI, 05, 1) ||      SUBSTR(F1_USERLGI, 09, 1) ||      SUBSTR(F1_USERLGI, 13, 1) ||      SUBSTR(F1_USERLGI, 17, 1) ||      SUBSTR(F1_USERLGI, 04, 1) ||      SUBSTR(F1_USERLGI, 08, 1),1,6)) FROM "+RetSqlName("SF1")+ " SF1 WHERE F1_FILIAL = FT_FILIAL AND F1_DOC = FT_NFISCAL AND F1_SERIE = FT_SERIE AND F1_FORNECE = FT_CLIEFOR AND F1_LOJA = FT_LOJA AND SF1.D_E_L_E_T_ <> '*' ) " + chr(13)
+			xQuery += "    END USUARIO, " + chr(13)
+			xQuery += "    CASE " + chr(13)
+			xQuery += "          WHEN ( FT_TIPOMOV ='S') " + chr(13)
+			xQuery += "            THEN ( SELECT  (SELECT USR_NOME  FROM  SYS_USR USR WHERE USR_ID = SUBSTR(TRIM(SUBSTR(F2_USERLGI, 11, 1) ||      SUBSTR(F2_USERLGI, 15, 1) ||      SUBSTR(F2_USERLGI, 19, 1) ||      SUBSTR(F2_USERLGI, 02, 1) ||      SUBSTR(F2_USERLGI, 06, 1) ||      SUBSTR(F2_USERLGI, 10, 1) ||      SUBSTR(F2_USERLGI, 14, 1) ||      SUBSTR(F2_USERLGI, 01, 1) ||      SUBSTR(F2_USERLGI, 18, 1) ||      SUBSTR(F2_USERLGI, 05, 1) ||      SUBSTR(F2_USERLGI, 09, 1) ||      SUBSTR(F2_USERLGI, 13, 1) ||      SUBSTR(F2_USERLGI, 17, 1) ||      SUBSTR(F2_USERLGI, 04, 1) ||      SUBSTR(F2_USERLGI, 08, 1)),1,6) AND USR.D_E_L_E_T_ = ' '   AND ROWNUM = 1) FROM "+RetSqlName("SF2")+" SF2 WHERE F2_FILIAL = FT_FILIAL AND F2_DOC = FT_NFISCAL AND F2_SERIE = FT_SERIE AND F2_CLIENTE = FT_CLIEFOR AND F2_LOJA = FT_LOJA AND SF2.D_E_L_E_T_ <> '*' ) " + chr(13) 
+			xQuery += "         WHEN ( FT_TIPOMOV ='E' ) " + chr(13)
+			xQuery += "             THEN ( SELECT (SELECT USR_NOME  FROM  SYS_USR USR WHERE USR_ID = SUBSTR(TRIM(SUBSTR(F1_USERLGI, 11, 1) ||      SUBSTR(F1_USERLGI, 15, 1) ||      SUBSTR(F1_USERLGI, 19, 1) ||      SUBSTR(F1_USERLGI, 02, 1) ||      SUBSTR(F1_USERLGI, 06, 1) ||      SUBSTR(F1_USERLGI, 10, 1) ||      SUBSTR(F1_USERLGI, 14, 1) ||      SUBSTR(F1_USERLGI, 01, 1) ||      SUBSTR(F1_USERLGI, 18, 1) ||      SUBSTR(F1_USERLGI, 05, 1) ||      SUBSTR(F1_USERLGI, 09, 1) ||      SUBSTR(F1_USERLGI, 13, 1) ||      SUBSTR(F1_USERLGI, 17, 1) ||      SUBSTR(F1_USERLGI, 04, 1) ||      SUBSTR(F1_USERLGI, 08, 1)),1,6) AND USR.D_E_L_E_T_ = ' '   AND ROWNUM = 1) FROM "+RetSqlName("SF1")+" SF1 WHERE F1_FILIAL = FT_FILIAL AND F1_DOC = FT_NFISCAL AND F1_SERIE = FT_SERIE AND F1_FORNECE = FT_CLIEFOR AND F1_LOJA = FT_LOJA AND SF1.D_E_L_E_T_ <> '*' ) " + chr(13)
+			xQuery += "    END USR_NAME, " + chr(13)
+		EndIf
+	Else 
+		If AvExisteCampo(aCampos)
+			xQuery += "            THEN  ( SELECT (SUBSTRING(SUBSTRING(F2_USERLGI, 11, 1) ||      SUBSTRING(F2_USERLGI, 15, 1) ||      SUBSTRING(F2_USERLGI, 19, 1) ||      SUBSTRING(F2_USERLGI, 02, 1) ||      SUBSTRING(F2_USERLGI, 06, 1) ||      SUBSTRING(F2_USERLGI, 10, 1) ||      SUBSTRING(F2_USERLGI, 14, 1) ||      SUBSTRING(F2_USERLGI, 01, 1) ||      SUBSTRING(F2_USERLGI, 18, 1) ||      SUBSTRING(F2_USERLGI, 05, 1) ||      SUBSTRING(F2_USERLGI, 09, 1) ||      SUBSTRING(F2_USERLGI, 13, 1) ||      SUBSTRING(F2_USERLGI, 17, 1) ||      SUBSTRING(F2_USERLGI, 04, 1) ||      SUBSTRING(F2_USERLGI, 08, 1),1,6)) FROM "+RetSqlName("SF2")+ " SF2 WHERE F2_FILIAL = FT_FILIAL AND F2_DOC = FT_NFISCAL AND F2_SERIE = FT_SERIE AND F2_CLIENTE = FT_CLIEFOR AND F2_LOJA = FT_LOJA AND SF2.D_E_L_E_T_ <> '*' ) " + chr(13)
+			xQuery += "         WHEN ( FT_TIPOMOV ='E' ) " + chr(13)
+			xQuery += "             THEN ( SELECT (SUBSTRING(SUBSTRING(F1_USERLGI, 11, 1) ||      SUBSTR(SUBSTRING, 15, 1) ||      SUBSTRING(F1_USERLGI, 19, 1) ||      SUBSTRING(F1_USERLGI, 02, 1) ||      SUBSTRING(F1_USERLGI, 06, 1) ||      SUBSTRING(F1_USERLGI, 10, 1) ||      SUBSTRING(F1_USERLGI, 14, 1) ||      SUBSTRING(F1_USERLGI, 01, 1) ||      SUBSTRING(F1_USERLGI, 18, 1) ||      SUBSTRING(F1_USERLGI, 05, 1) ||      SUBSTRING(F1_USERLGI, 09, 1) ||      SUBSTRING(F1_USERLGI, 13, 1) ||      SUBSTRING(F1_USERLGI, 17, 1) ||      SUBSTRING(F1_USERLGI, 04, 1) ||      SUBSTRING(F1_USERLGI, 08, 1),1,6)) FROM " +RetSqlName("SF1")+ " SF1 WHERE F1_FILIAL = FT_FILIAL AND F1_DOC = FT_NFISCAL AND F1_SERIE = FT_SERIE AND F1_FORNECE = FT_CLIEFOR AND F1_LOJA = FT_LOJA AND SF1.D_E_L_E_T_ <> '*' ) " + chr(13)
+			xQuery += "    END USUARIO, " + chr(13)
+			xQuery += "    CASE " + chr(13)
+			xQuery += "          WHEN ( FT_TIPOMOV ='S') " + chr(13)
+			xQuery += "            THEN ( SELECT  (SELECT USR_NOME  FROM  SYS_USR USR WHERE USR_ID = SUBSTRING(TRIM(SUBSTRING(F2_USERLGI, 11, 1) ||      SUBSTRING(F2_USERLGI, 15, 1) ||      SUBSTRING(F2_USERLGI, 19, 1) ||      SUBSTRING(F2_USERLGI, 02, 1) ||      SUBSTRING(F2_USERLGI, 06, 1) ||      SUBSTRING(F2_USERLGI, 10, 1) ||      SUBSTRING(F2_USERLGI, 14, 1) ||      SUBSTRING(F2_USERLGI, 01, 1) ||      SUBSTRING(F2_USERLGI, 18, 1) ||      SUBSTRING(F2_USERLGI, 05, 1) ||      SUBSTRING(F2_USERLGI, 09, 1) ||      SUBSTRING(F2_USERLGI, 13, 1) ||      SUBSTRING(F2_USERLGI, 17, 1) ||      SUBSTRING(F2_USERLGI, 04, 1) ||      SUBSTRING(F2_USERLGI, 08, 1)),1,6) AND USR.D_E_L_E_T_ = ' '   AND ROWNUM = 1) FROM " +RetSqlName("SF2")+ " SF2 WHERE F2_FILIAL = FT_FILIAL AND F2_DOC = FT_NFISCAL AND F2_SERIE = FT_SERIE AND F2_CLIENTE = FT_CLIEFOR AND F2_LOJA = FT_LOJA AND SF2.D_E_L_E_T_ <> '*' ) " + chr(13) 
+			xQuery += "         WHEN ( FT_TIPOMOV ='E' ) " + chr(13)
+			xQuery += "             THEN ( SELECT (SELECT USR_NOME  FROM  SYS_USR USR WHERE USR_ID = SUBSTRING(TRIM(SUBSTRING(F1_USERLGI, 11, 1) ||      SUBSTRING(F1_USERLGI, 15, 1) ||      SUBSTRING(F1_USERLGI, 19, 1) ||      SUBSTRING(F1_USERLGI, 02, 1) ||      SUBSTRING(F1_USERLGI, 06, 1) ||      SUBSTRING(F1_USERLGI, 10, 1) ||      SUBSTRING(F1_USERLGI, 14, 1) ||      SUBSTRING(F1_USERLGI, 01, 1) ||      SUBSTRING(F1_USERLGI, 18, 1) ||      SUBSTRING(F1_USERLGI, 05, 1) ||      SUBSTRING(F1_USERLGI, 09, 1) ||      SUBSTRING(F1_USERLGI, 13, 1) ||      SUBSTRING(F1_USERLGI, 17, 1) ||      SUBSTRING(F1_USERLGI, 04, 1) ||      SUBSTRING(F1_USERLGI, 08, 1)),1,6) AND USR.D_E_L_E_T_ = ' '   AND ROWNUM = 1) FROM " +RetSqlName("SF1")+ " SF1 WHERE F1_FILIAL = FT_FILIAL AND F1_DOC = FT_NFISCAL AND F1_SERIE = FT_SERIE AND F1_FORNECE = FT_CLIEFOR AND F1_LOJA = FT_LOJA AND SF1.D_E_L_E_T_ <> '*' ) " + chr(13)
+			xQuery += "    END USR_NAME, " + chr(13)
+		EndIf
+	EndIf
+	xQuery += "    COALESCE(SD1.D1_CC, 'SAIDA' ) AS CENTRO_CUSTO, " + chr(13)   
+	xQuery += "    COALESCE(IMPOSTO_ENT.CST_CBS, IMPOSTO_SAI.CST_CBS, ' ') AS SIT_TRIB_CST_CBS, " + chr(13)
+	xQuery += "    COALESCE(IMPOSTO_ENT.BASE_CBS, IMPOSTO_SAI.BASE_CBS, 0) AS BASE_CBS, " + chr(13)
+	xQuery += "    COALESCE(IMPOSTO_ENT.ALIQ_CBS, IMPOSTO_SAI.ALIQ_CBS, 0) AS ALIQUOTA_CBS, " + chr(13)
+	xQuery += "    COALESCE(IMPOSTO_ENT.VAL_CBS,  IMPOSTO_SAI.VAL_CBS, 0) AS VALOR_CBS, " + chr(13)
+	xQuery += "    COALESCE(IMPOSTO_ENT.COD_CBS,  IMPOSTO_SAI.COD_CBS, ' ') AS TRIBUTO_CBS, " + chr(13)
+	xQuery += "    COALESCE(IMPOSTO_ENT.COD_ESCRITURACAO_CBS,  IMPOSTO_SAI.COD_ESCRITURACAO_CBS, ' ') AS COD_ESCRITURACAO_CBS, " + chr(13)
+	xQuery += "    COALESCE(IMPOSTO_ENT.CST_IBS, IMPOSTO_SAI.CST_IBS, ' ') AS SIT_TRIB_CST_IBS, " + chr(13)
+	xQuery += "    COALESCE(IMPOSTO_ENT.BASE_IBS, IMPOSTO_SAI.BASE_IBS, 0) AS BASE_IBS, " + chr(13)
+	xQuery += "    COALESCE(IMPOSTO_ENT.ALIQ_IBS, IMPOSTO_SAI.ALIQ_IBS, 0) AS ALIQUOTA_IBS, " + chr(13)
+	xQuery += "    COALESCE(IMPOSTO_ENT.VAL_IBS,  IMPOSTO_SAI.VAL_IBS, 0) AS VALOR_IBS, " + chr(13)
+	xQuery += "    COALESCE(IMPOSTO_ENT.COD_IBS,  IMPOSTO_SAI.COD_IBS, ' ') AS TRIBUTO_IBS, " + chr(13)
+	xQuery += "    COALESCE(IMPOSTO_ENT.COD_ESCRITURACAO_IBS,  IMPOSTO_SAI.COD_ESCRITURACAO_IBS, ' ') AS COD_ESCRITURACAO_IBS, " + chr(13)
+	xQuery += "    COALESCE(IMPOSTO_ENT.CST_IM, IMPOSTO_SAI.CST_IM, ' ') AS SIT_TRIB_CST_IM, " + chr(13)
+	xQuery += "    COALESCE(IMPOSTO_ENT.BASE_IM, IMPOSTO_SAI.BASE_IM, 0) AS BASE_IM, " + chr(13)
+	xQuery += "    COALESCE(IMPOSTO_ENT.ALIQ_IM, IMPOSTO_SAI.ALIQ_IM, 0) AS ALIQUOTA_IM, " + chr(13)
+	xQuery += "    COALESCE(IMPOSTO_ENT.VAL_IM,  IMPOSTO_SAI.VAL_IM, 0) AS VALOR_IM, " + chr(13)
+	xQuery += "    COALESCE(IMPOSTO_ENT.COD_IM,  IMPOSTO_SAI.COD_IM, ' ') AS TRIBUTO_IM, " + chr(13)
+	xQuery += "    COALESCE(IMPOSTO_ENT.COD_ESCRITURACAO_IM,  IMPOSTO_SAI.COD_ESCRITURACAO_IM, ' ') AS COD_ESCRITURACAO_IM " + chr(13)
+	xQuery += "FROM " + RetSqlName("SB1") + " B1, " + RetSqlName("SF4") + " F4, " + RetSqlName("SFT") + " FT " + chr(13)
+	xQuery += "LEFT JOIN " + RetSqlName("SD2") + " SD2 " + chr(13)
+	xQuery += "    ON SD2.D2_FILIAL = FT.FT_FILIAL " + chr(13)
+	xQuery += "    AND SD2.D2_DOC = FT.FT_NFISCAL " + chr(13)
+	xQuery += "    AND SD2.D2_SERIE = FT.FT_SERIE " + chr(13)
+	xQuery += "    AND SD2.D2_CLIENTE = FT.FT_CLIEFOR " + chr(13)
+	xQuery += "    AND SD2.D2_LOJA = FT.FT_LOJA " + chr(13)
+	xQuery += "    AND SD2.D2_COD = FT.FT_PRODUTO " + chr(13)
+	xQuery += "    AND SD2.D2_ITEM = FT.FT_ITEM " + chr(13)
+	xQuery += "    AND SD2.D_E_L_E_T_ = ' ' " + chr(13)
+	xQuery += "LEFT JOIN ( " + chr(13)
+	xQuery += "    SELECT  " + chr(13)
+	xQuery += "        F2D.F2D_FILIAL, F2D.F2D_IDREL, " + chr(13)
+	xQuery += "        MAX(CASE WHEN CJ3.CJ3_TRIB LIKE '%CB%' THEN CJ3.CJ3_CST END) AS CST_CBS, " + chr(13)
+	xQuery += "        SUM(CASE WHEN CJ3.CJ3_TRIB LIKE '%CB%' THEN F2D.F2D_BASE ELSE 0 END) AS BASE_CBS, " + chr(13)
+	xQuery += "        MAX(CASE WHEN CJ3.CJ3_TRIB LIKE '%CB%' THEN F2D.F2D_ALIQ ELSE 0 END) AS ALIQ_CBS, " + chr(13)
+	xQuery += "        SUM(CASE WHEN CJ3.CJ3_TRIB LIKE '%CB%' THEN F2D.F2D_VALOR ELSE 0 END) AS VAL_CBS, " + chr(13)
+	xQuery += "        MAX(CASE WHEN CJ3.CJ3_TRIB LIKE '%CB%' THEN CJ3.CJ3_TRIB END) AS COD_CBS, " + chr(13)
+	xQuery += "        MAX(CASE WHEN CJ3.CJ3_TRIB LIKE '%CB%' THEN F2B.F2B_CODESC END) AS COD_ESCRITURACAO_CBS, " + chr(13)        
+	xQuery += "        MAX(CASE WHEN CJ3.CJ3_TRIB LIKE '%IB%' THEN CJ3.CJ3_CST END) AS CST_IBS, " + chr(13)
+	xQuery += "        SUM(CASE WHEN CJ3.CJ3_TRIB LIKE '%IB%' THEN F2D.F2D_BASE ELSE 0 END) AS BASE_IBS, " + chr(13)
+	xQuery += "        MAX(CASE WHEN CJ3.CJ3_TRIB LIKE '%IB%' THEN F2D.F2D_ALIQ ELSE 0 END) AS ALIQ_IBS, " + chr(13)
+	xQuery += "        SUM(CASE WHEN CJ3.CJ3_TRIB LIKE '%IB%' THEN F2D.F2D_VALOR ELSE 0 END) AS VAL_IBS, " + chr(13)
+	xQuery += "        MAX(CASE WHEN CJ3.CJ3_TRIB LIKE '%IB%' THEN CJ3.CJ3_TRIB END) AS COD_IBS, " + chr(13)
+	xQuery += "        MAX(CASE WHEN CJ3.CJ3_TRIB LIKE '%IB%' THEN F2B.F2B_CODESC END) AS COD_ESCRITURACAO_IBS, " + chr(13)
+	xQuery += "        MAX(CASE WHEN CJ3.CJ3_TRIB LIKE '%IM%' THEN CJ3.CJ3_CST END) AS CST_IM, " + chr(13)
+	xQuery += "        SUM(CASE WHEN CJ3.CJ3_TRIB LIKE '%IM%' THEN F2D.F2D_BASE ELSE 0 END) AS BASE_IM, " + chr(13)
+	xQuery += "        MAX(CASE WHEN CJ3.CJ3_TRIB LIKE '%IM%' THEN F2D.F2D_ALIQ ELSE 0 END) AS ALIQ_IM, " + chr(13)
+	xQuery += "        SUM(CASE WHEN CJ3.CJ3_TRIB LIKE '%IM%' THEN F2D.F2D_VALOR ELSE 0 END) AS VAL_IM, " + chr(13)
+	xQuery += "        MAX(CASE WHEN CJ3.CJ3_TRIB LIKE '%IM%' THEN CJ3.CJ3_TRIB END) AS COD_IM, " + chr(13)
+	xQuery += "        MAX(CASE WHEN CJ3.CJ3_TRIB LIKE '%IM%' THEN F2B.F2B_CODESC END) AS COD_ESCRITURACAO_IM " + chr(13)
+	xQuery += "    FROM " + RetSqlName("F2D") + " F2D " + chr(13)
+	xQuery += "    JOIN " + RetSqlName("CJ3") + " CJ3  " + chr(13)
+	xQuery += "        ON CJ3.CJ3_FILIAL = F2D.F2D_FILIAL " + chr(13)
+	xQuery += "        AND CJ3.CJ3_IDF2D = F2D.F2D_ID " + chr(13)
+	xQuery += "        AND CJ3.D_E_L_E_T_ = ' ' " + chr(13)
+	xQuery += "    JOIN " + RetSqlName("F2B") + " F2B " + chr(13)
+	xQuery += "        ON F2B.F2B_FILIAL = CJ3.CJ3_FILIAL " + chr(13)
+	xQuery += "        AND F2B.F2B_REGRA = CJ3.CJ3_TRIB " + chr(13)
+	xQuery += "    WHERE F2D.D_E_L_E_T_ = ' ' " + chr(13)
+	xQuery += "    GROUP BY F2D.F2D_FILIAL, F2D.F2D_IDREL " + chr(13)
+	xQuery += ") IMPOSTO_SAI  " + chr(13)
+	xQuery += "    ON IMPOSTO_SAI.F2D_FILIAL = SD2.D2_FILIAL " + chr(13)
+	xQuery += "    AND IMPOSTO_SAI.F2D_IDREL = SD2.D2_IDTRIB " + chr(13)
+	xQuery += "LEFT JOIN " + RetSqlName("SD1") + " SD1 " + chr(13)
+	xQuery += "    ON SD1.D1_FILIAL = FT.FT_FILIAL " + chr(13)
+	xQuery += "    AND SD1.D1_DOC = FT.FT_NFISCAL " + chr(13)  
+	xQuery += "    AND SD1.D1_SERIE = FT.FT_SERIE " + chr(13)
+	xQuery += "    AND SD1.D1_FORNECE = FT.FT_CLIEFOR " + chr(13)
+	xQuery += "    AND SD1.D1_LOJA = FT.FT_LOJA " + chr(13)
+	xQuery += "    AND SD1.D1_COD = FT.FT_PRODUTO " + chr(13)
+	xQuery += "    AND SD1.D1_ITEM = FT.FT_ITEM " + chr(13)
+	xQuery += "    AND SD1.D_E_L_E_T_ = ' ' " + chr(13)
+	xQuery += "LEFT JOIN ( " + chr(13)
+	xQuery += "    SELECT  " + chr(13)
+	xQuery += "        F2D.F2D_FILIAL, F2D.F2D_IDREL, " + chr(13)
+	xQuery += "        MAX(CASE WHEN CJ3.CJ3_TRIB LIKE '%CB%' THEN CJ3.CJ3_CST END) AS CST_CBS, " + chr(13)
+	xQuery += "        SUM(CASE WHEN CJ3.CJ3_TRIB LIKE '%CB%' THEN F2D.F2D_BASE ELSE 0 END) AS BASE_CBS, " + chr(13)
+	xQuery += "        MAX(CASE WHEN CJ3.CJ3_TRIB LIKE '%CB%' THEN F2D.F2D_ALIQ ELSE 0 END) AS ALIQ_CBS, " + chr(13)
+	xQuery += "        SUM(CASE WHEN CJ3.CJ3_TRIB LIKE '%CB%' THEN F2D.F2D_VALOR ELSE 0 END) AS VAL_CBS, " + chr(13)
+	xQuery += "        MAX(CASE WHEN CJ3.CJ3_TRIB LIKE '%CB%' THEN CJ3.CJ3_TRIB END) AS COD_CBS, " + chr(13)
+	xQuery += "        MAX(CASE WHEN CJ3.CJ3_TRIB LIKE '%CB%' THEN F2B.F2B_CODESC END) AS COD_ESCRITURACAO_CBS, " + chr(13)      
+	xQuery += "        MAX(CASE WHEN CJ3.CJ3_TRIB LIKE '%IB%' THEN CJ3.CJ3_CST END) AS CST_IBS, " + chr(13)
+	xQuery += "        SUM(CASE WHEN CJ3.CJ3_TRIB LIKE '%IB%' THEN F2D.F2D_BASE ELSE 0 END) AS BASE_IBS, " + chr(13)
+	xQuery += "        MAX(CASE WHEN CJ3.CJ3_TRIB LIKE '%IB%' THEN F2D.F2D_ALIQ ELSE 0 END) AS ALIQ_IBS, " + chr(13)
+	xQuery += "        SUM(CASE WHEN CJ3.CJ3_TRIB LIKE '%IB%' THEN F2D.F2D_VALOR ELSE 0 END) AS VAL_IBS, " + chr(13)
+	xQuery += "        MAX(CASE WHEN CJ3.CJ3_TRIB LIKE '%IB%' THEN CJ3.CJ3_TRIB END) AS COD_IBS, " + chr(13)
+	xQuery += "        MAX(CASE WHEN CJ3.CJ3_TRIB LIKE '%IB%' THEN F2B.F2B_CODESC END) AS COD_ESCRITURACAO_IBS, " + chr(13)       
+	xQuery += "        MAX(CASE WHEN CJ3.CJ3_TRIB LIKE '%IM%' THEN CJ3.CJ3_CST END) AS CST_IM, " + chr(13)
+	xQuery += "        SUM(CASE WHEN CJ3.CJ3_TRIB LIKE '%IM%' THEN F2D.F2D_BASE ELSE 0 END) AS BASE_IM, " + chr(13)
+	xQuery += "        MAX(CASE WHEN CJ3.CJ3_TRIB LIKE '%IM%' THEN F2D.F2D_ALIQ ELSE 0 END) AS ALIQ_IM, " + chr(13)
+	xQuery += "        SUM(CASE WHEN CJ3.CJ3_TRIB LIKE '%IM%' THEN F2D.F2D_VALOR ELSE 0 END) AS VAL_IM, " + chr(13)
+	xQuery += "        MAX(CASE WHEN CJ3.CJ3_TRIB LIKE '%IM%' THEN CJ3.CJ3_TRIB END) AS COD_IM,  " + chr(13)
+	xQuery += "        MAX(CASE WHEN CJ3.CJ3_TRIB LIKE '%IM%' THEN F2B.F2B_CODESC END) AS COD_ESCRITURACAO_IM " + chr(13)
+	xQuery += "    FROM " + RetSqlName("F2D") + " F2D " + chr(13)
+	xQuery += "    JOIN " + RetSqlName("CJ3") + " CJ3 " + chr(13)
+	xQuery += "        ON CJ3.CJ3_FILIAL = F2D.F2D_FILIAL " + chr(13)
+	xQuery += "        AND CJ3.CJ3_IDF2D = F2D.F2D_ID " + chr(13)
+	xQuery += "        AND CJ3.D_E_L_E_T_ = ' ' " + chr(13)
+	xQuery += "    JOIN " + RetSqlName("F2B") + " F2B " + chr(13)
+	xQuery += "        ON F2B.F2B_FILIAL = CJ3.CJ3_FILIAL " + chr(13)
+	xQuery += "        AND F2B.F2B_REGRA = CJ3.CJ3_TRIB " + chr(13)
+	xQuery += "    WHERE F2D.D_E_L_E_T_ = ' ' " + chr(13)
+	xQuery += "    GROUP BY F2D.F2D_FILIAL, F2D.F2D_IDREL " + chr(13)
+	xQuery += ") IMPOSTO_ENT  " + chr(13)
+	xQuery += "    ON IMPOSTO_ENT.F2D_FILIAL = SD1.D1_FILIAL " + chr(13)
+	xQuery += "    AND IMPOSTO_ENT.F2D_IDREL = SD1.D1_IDTRIB " + chr(13)
+	if ValType(oFilter) == "O"
+    	jParams := oFilter:getParameters()
+		//xQuery += "WHERE FT_FILIAL = "+FwxFilial("SFT")+ " " + chr(13) //01
+		//if !Empty(oFilter:getParameters()["FILDEFT"][1])
+			xQuery += "WHERE FT_FILIAL >='" + AllTrim(oFilter:getParameters()["FILDEFT"][1]) +  "' " + chr(13)   
+       // endif
+		//if !Empty(oFilter:getParameters()["FILATEFT"][1])
+			xQuery += "AND FT_ENTRADA <= '" + AllTrim(oFilter:getParameters()["FILATEFT"][1]) +  "' " + chr(13)
+        //endif
+		xQuery += "AND F4.D_E_L_E_T_ = ' ' " + chr(13)
+		xQuery += "AND FT.D_E_L_E_T_ = ' '  " + chr(13)
+		xQuery += "AND B1.D_E_L_E_T_ = ' '  " + chr(13)
+		xQuery += "AND F4_FILIAL = " +FwxFilial("SF4")+ " " + chr(13) //02
+		xQuery += "AND FT_TIPOMOV IN ('E','S') " + chr(13) 
+		xQuery += "AND B1_FILIAL = '" + FwxFilial("SB1") + "' "+ chr(13) //07
+		xQuery += "AND B1_COD = FT_PRODUTO " + chr(13)
+		xQuery += "AND FT_TES = F4_CODIGO " + chr(13)
+		//if !Empty(oFilter:getParameters()["DATADE"][1])
+			xDataDe := Substr(oFilter:getParameters()["DATADE"][1],1,10)
+			xDataDe := StrTran(xDataDe,'-','')
+			xQuery += "AND FT_ENTRADA >= '" + AllTrim(xDataDe) +  "' "  + chr(13)
+        ///endif
+		//if !Empty(oFilter:getParameters()["DATAATE"][1])
+			xDataAte := Substr(oFilter:getParameters()["DATAATE"][1],1,10)
+			xDataAte := StrTran(xDataAte,'-','')
+			xQuery += "AND FT_ENTRADA <= '" + AllTrim(xDataAte) + "' "  + chr(13)
+       // endif
+		//xQuery += "AND FT_ESTADO  BETWEEN ? AND ? " + chr(13) //05 e 06*/
+		//if !Empty(oFilter:getParameters()["ESTADODE"][1])
+            xQuery += " AND FT_ESTADO = '" + AllTrim(oFilter:getParameters()["ESTADODE"][1]) + "' "  + chr(13)
+        //endif
+		//if !Empty(oFilter:getParameters()["ESTADOATE"][1])
+            xQuery += " AND FT_ESTADO = '" + AllTrim(oFilter:getParameters()["ESTADOATE"][1]) + "' "  + chr(13)
+       // endif
+		xQuery += "ORDER BY FT_TIPOMOV, FT_FILIAL, FT_ENTRADA, FT_NFISCAL, FT_SERIE " + chr(13)
+	EndIf
+	// Filtros vindos da interface
+
+	/*lUseParams := .T.
+    if oFilter:hasFilter()
+        xQuery += " AND " + oFilter:getSQLExpression()
+    endif*/
+
+    self:setQuery(xQuery)
+    //self:setOrder("FT_TIPOMOV, FT_FILIAL, FT_ENTRADA, FT_NFISCAL, FT_SERIE")
+
+return self:oData
+
+//-------------------------------------------------------------------
+/*{Protheus.doc} getSchema
+Retorna a estrutura dos campos 
+@return object: self:oSchema 
+@author eduardo.melo
+@since 27/10/2023
+*/
+//-------------------------------------------------------------------   
+method getSchema() as object class mcsConTribSmartviewBusinessObject
+
+	 // Parâmetros que virão da tela do SmartView (Aqui são criados os filtros)
+    self:addParameter("FILDEFT", "Filial de", "string", .F., "")
+	self:addParameter("FILATEFT", "Filial até", "string", .F., "")
+	self:addParameter("DATADE", "Data de", "date", .F., "")
+	self:addParameter("DATAATE", "Data até", "date", .F., "")
+    self:addParameter("ESTADODE", "Estado", "string", .F., "")
+	self:addParameter("ESTADOATE", "Estado", "string", .F., "")
+
+	self:addProperty("Tipo Movimento","Tipo","string","Tipo Movimento",,"MOVIMENTO")
+	self:addProperty("Filial","Filial","string","Filial","FILIAL")
+	/*self:addProperty("Entrada","Filial","date","Entrada","Entrada")
+	self:addProperty("Emissao","Emissão","date","Emissao","Emissao")
+	self:addProperty("Cancelamento","Cancelamento","date","Cancelamento","Cancelamento")
+	self:addProperty("Documento","Numero Documento Fiscal","string","Doc. Fiscal","Documento")
+	self:addProperty("Serie","Série do Dcomento Fiscal","string","Série NF","Serie")
+	self:addProperty("Chave NF","Série do Dcomento Fiscal","string","Chave NF","Chave NF")
+	self:addProperty("Retorno Sefaz","Série do Dcomento Fiscal","string","Retorno Sefaz","Retorno Sefaz")
+	self:addProperty("Cli/For","Cliente/Fornecedor","string","Cli/Forn.","Cli/For")
+	self:addProperty("Loja","Codigo Loja Client/Forn","string","Codigo loja","Loja")
+	self:addProperty("Razão Social","Razão Social","string","Razão Social","Razão Social")
+	/*self:addProperty("Grupo Tribut","Codigo Fiscal Oper/Prest","string","Cod. Fiscal","FT_CFOP")
+	self:addProperty("Município","Valor Contábil","number","Vlr Contábil","FT_VALCONT")
+	self:addProperty("UF","Valor do IPI","number","Valor IPI","FT_VALIPI")
+	self:addProperty("Espécie","Valor do ICMS Retido ST","number","Vlr ICMS Ret","FT_ICMSRET")
+	self:addProperty("Tipo NF","Menssagem Livro Fiscal","string","Obs Liv. Fis","FT_OBSERV")
+	self:addProperty("NF Original","Tipo Lançamento","string","Tipo Lanc","FT_TIPO","L=Nota em Lote;S=Nota com ISS;B=Beneficiamento;D=Devolucao")
+	self:addProperty("Serie Original","Valor Solidário na Obs","number","Vlr Sol Obs","FT_OBSSOL")
+	self:addProperty("Duplicata","Vlr ICMS Solidário Tribut","number","ICMS Sol Tri","FT_SOLTRIB")
+	self:addProperty("TES","Data Cancelamento NF","date","Data Cancel","FT_DTCANC")
+	self:addProperty("CFOP","Espécie da NF","string","Espécie NF","FT_ESPECIE")
+	self:addProperty("Nº Livro","Crédito/Débito ST","string","Crd/Deb ST","FT_CREDST","1=Credita;2=Não se aplica;3=Debita")
+	self:addProperty("Item","Número da Conta Contábil","string","Conta Contáb","FT_CONTA")
+	self:addProperty("Produto","Código do Produto","string","Cod. Produto","FT_PRODUTO")
+	self:addProperty("Tipo","Tipo do Movimento","string","Tipo Mov.","FT_TIPOMOV","E=Entrada;S=Saída")
+	self:addProperty("Descrição","Código do Item","string","Código Item","FT_ITEM")
+	self:addProperty("Grp Trib Prod","ST Retido Isento","number","Retido Isent","FT_ISENRET")
+	self:addProperty("Unidade","ST Retido Outros","number","Retido Outro","FT_OUTRRET")
+	self:addProperty("Armazém","Quantidade do item","number","Quantidade","FT_QUANT")
+	self:addProperty("NCM","Valor do Desconto item","number","Vlr Desconto","FT_DESCONT")
+	self:addProperty("Conta Contábil","Vlr Total Item","number","Vlr Total","FT_TOTAL")
+	self:addProperty("Usuário","Base calculo PIS","number","Base PIS","FT_BASEPIS")
+	self:addProperty("Nome Usuário","Alíquota de PIS","number","Aliq. PIS","FT_ALIQPIS")
+	self:addProperty("ST CST CBS","Valor de PIS","number","Valor PIS","FT_VALPIS")
+	self:addProperty("Base CBS","Base de COFINS","number","Base COFINS","FT_BASECOF")
+	self:addProperty("Aliquota CNS","Alíquota de COFINS","number","Aliq. COFINS","FT_ALIQCOF")
+	self:addProperty("Valor CBS","Valor de COFINS","number","Valor COFINS","FT_VALCOF")
+	self:addProperty("Trib CBS","Base Pis ST","number","Bs. Pis ST","FT_BASEPS3")
+	self:addProperty("Esc CBS","Alíquota Pis ST","number","Al. Pis ST","FT_ALIQPS3")
+	self:addProperty("ST CST IBS","Valor Pis ST","number","Vl. Pis ST","FT_VALPS3")
+	self:addProperty("Base IBS","Base Cofins ST","number","Bs. Cof ST","FT_BASECF3")
+	self:addProperty("Aliquota IBS","Alíquota Cofins ST","number","Al. Cof ST","FT_ALIQCF3")
+	self:addProperty("Valor IBS","Valor Cofins ST","number","Vl. Cof ST","FT_VALCF3")
+	self:addProperty("Trib IBS","Nota Fiscal Eletrônica","string","NF Eletr.","FT_NFELETR")
+	self:addProperty("Cod Escr IBS","CST Pis","string","CST Pis","FT_CSTPIS")
+	self:addProperty("ST Trib IBM","CST Cofins","string","CST COF","FT_CSTCOF")
+	self:addProperty("Base IBM","Cod.BC Cred.","string","Cod.BC Cred.","FT_CODBCC")
+	self:addProperty("Valor IBM","Valor do PIS de Pauta","number","PIS Pauta","FT_PAUTPIS")
+	self:addProperty("Trib IBM","Valor do Cofins de Pauta","number","Cofins Pauta","FT_PAUTCOF")
+	self:addProperty("Cod. ESC IBM","Tabela Nat. da Receita","string","Tab.Nat.Rec","FT_TNATREC")*/
+
+return self:oSchema

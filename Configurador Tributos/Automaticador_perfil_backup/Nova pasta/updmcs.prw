@@ -22,7 +22,7 @@
 Função de update de dicionários para compatibilização
 
 @author UPDATE gerado automaticamente
-@since  15/01/2026
+@since  30/01/2026
 @obs    Gerado por EXPORDIC - V.8.0.2.1 EFS / Upd. V.6.4.1 EFS
 @version 1.0
 /*/
@@ -144,7 +144,7 @@ Return NIL
 Função de processamento da gravação dos arquivos
 
 @author UPDATE gerado automaticamente
-@since  15/01/2026
+@since  30/01/2026
 @obs    Gerado por EXPORDIC - V.8.0.2.1 EFS / Upd. V.6.4.1 EFS
 @version 1.0
 /*/
@@ -356,7 +356,7 @@ Return lRet
 Função de processamento da gravação do SX2 - Arquivos
 
 @author UPDATE gerado automaticamente
-@since  15/01/2026
+@since  30/01/2026
 @obs    Gerado por EXPORDIC - V.8.0.2.1 EFS / Upd. V.6.4.1 EFS
 @version 1.0
 /*/
@@ -674,7 +674,7 @@ Return NIL
 Função de processamento da gravação do SX3 - Campos
 
 @author UPDATE gerado automaticamente
-@since  15/01/2026
+@since  30/01/2026
 @obs    Gerado por EXPORDIC - V.8.0.2.1 EFS / Upd. V.6.4.1 EFS
 @version 1.0
 /*/
@@ -969,7 +969,7 @@ aAdd( aSX3, { ;
 	'UF'																	, ; //X3_DESCRIC
 	'UF'																	, ; //X3_DESCSPA
 	'UF'																	, ; //X3_DESCENG
-	''																		, ; //X3_PICTURE
+	'@!'																	, ; //X3_PICTURE
 	''																		, ; //X3_VALID
 	'x       x       x       x       x       x       x       x       x       x       x       x       x       x       x x', ; //X3_USADO
 	''																		, ; //X3_RELACAO
@@ -1351,7 +1351,7 @@ aAdd( aSX3, { ;
 	'Estado'																, ; //X3_DESCRIC
 	'Estado'																, ; //X3_DESCSPA
 	'Estado'																, ; //X3_DESCENG
-	''																		, ; //X3_PICTURE
+	'@!'																	, ; //X3_PICTURE
 	''																		, ; //X3_VALID
 	'x       x       x       x       x       x       x       x       x       x       x       x       x       x       x x', ; //X3_USADO
 	''																		, ; //X3_RELACAO
@@ -1542,7 +1542,7 @@ aAdd( aSX3, { ;
 	''																		, ; //X3_DESCRIC
 	''																		, ; //X3_DESCSPA
 	''																		, ; //X3_DESCENG
-	''																		, ; //X3_PICTURE
+	'@!'																	, ; //X3_PICTURE
 	''																		, ; //X3_VALID
 	'x       x       x       x       x       x       x       x       x       x       x       x       x       x       x x', ; //X3_USADO
 	''																		, ; //X3_RELACAO
@@ -1780,7 +1780,7 @@ aAdd( aSX3, { ;
 	''																		, ; //X3_DESCRIC
 	''																		, ; //X3_DESCSPA
 	''																		, ; //X3_DESCENG
-	''																		, ; //X3_PICTURE
+	'@!'																	, ; //X3_PICTURE
 	''																		, ; //X3_VALID
 	'x       x       x       x       x       x       x       x       x       x       x       x       x       x       x x', ; //X3_USADO
 	''																		, ; //X3_RELACAO
@@ -2582,7 +2582,7 @@ aAdd( aSX3, { ;
 	'Código'																, ; //X3_DESCRIC
 	'Código'																, ; //X3_DESCSPA
 	'Código'																, ; //X3_DESCENG
-	''																		, ; //X3_PICTURE
+	'@!'																	, ; //X3_PICTURE
 	''																		, ; //X3_VALID
 	'x       x       x       x       x       x       x       x       x       x       x       x       x       x       x x', ; //X3_USADO
 	''																		, ; //X3_RELACAO
@@ -2629,7 +2629,7 @@ aAdd( aSX3, { ;
 	'Grupo tributário'														, ; //X3_DESCRIC
 	'Grupo tributário'														, ; //X3_DESCSPA
 	'Grupo tributário'														, ; //X3_DESCENG
-	''																		, ; //X3_PICTURE
+	'@!'																	, ; //X3_PICTURE
 	''																		, ; //X3_VALID
 	'x       x       x       x       x       x       x       x       x       x       x       x       x       x       x x', ; //X3_USADO
 	''																		, ; //X3_RELACAO
@@ -3050,7 +3050,7 @@ aAdd( aSX3, { ;
 	'05'																	, ; //X3_ORDEM
 	'ZZZ_SITUAC'															, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
-	1																		, ; //X3_TAMANHO
+	8																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
 	'Situação'																, ; //X3_TITULO
 	'Situação'																, ; //X3_TITSPA
@@ -3073,7 +3073,7 @@ aAdd( aSX3, { ;
 	'R'																		, ; //X3_CONTEXT
 	''																		, ; //X3_OBRIGAT
 	''																		, ; //X3_VLDUSER
-	''																		, ; //X3_CBOX
+	'1=Sucesso;2=Erro'														, ; //X3_CBOX
 	''																		, ; //X3_CBOXSPA
 	''																		, ; //X3_CBOXENG
 	''																		, ; //X3_PICTVAR
@@ -3379,7 +3379,7 @@ Return NIL
 Função de processamento da gravação do SIX - Indices
 
 @author UPDATE gerado automaticamente
-@since  15/01/2026
+@since  30/01/2026
 @obs    Gerado por EXPORDIC - V.8.0.2.1 EFS / Upd. V.6.4.1 EFS
 @version 1.0
 /*/
@@ -3790,7 +3790,7 @@ Return NIL
 Função de processamento da gravação do SX6 - Parâmetros
 
 @author UPDATE gerado automaticamente
-@since  15/01/2026
+@since  30/01/2026
 @obs    Gerado por EXPORDIC - V.8.0.2.1 EFS / Upd. V.6.4.1 EFS
 @version 1.0
 /*/
@@ -3913,7 +3913,7 @@ Return NIL
 Função de processamento da gravação dos Helps de Campos
 
 @author UPDATE gerado automaticamente
-@since  15/01/2026
+@since  30/01/2026
 @obs    Gerado por EXPORDIC - V.8.0.2.1 EFS / Upd. V.6.4.1 EFS
 @version 1.0
 /*/
@@ -4466,7 +4466,7 @@ Return NIL
 Função de processamento abertura do SM0 modo exclusivo
 
 @author UPDATE gerado automaticamente
-@since  15/01/2026
+@since  30/01/2026
 @obs    Gerado por EXPORDIC - V.8.0.2.1 EFS / Upd. V.6.4.1 EFS
 @version 1.0
 /*/
@@ -4510,7 +4510,7 @@ Return lOpen
 Função de leitura do LOG gerado com limitacao de string
 
 @author UPDATE gerado automaticamente
-@since  15/01/2026
+@since  30/01/2026
 @obs    Gerado por EXPORDIC - V.8.0.2.1 EFS / Upd. V.6.4.1 EFS
 @version 1.0
 /*/

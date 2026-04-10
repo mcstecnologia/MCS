@@ -1,0 +1,97 @@
+#include "protheus.ch"
+#include "msobject.ch"
+#include "totvs.framework.treports.integratedprovider.th"
+
+//-------------------------------------------------------------------
+//*/{Protheus.doc} SB1TReportsBusinessObject
+//Objeto de Negócio (SmartView) para visualização de Produtos (SB1).
+//
+//@author  Daniel Alves
+//@Email danielalves.ti@gmail.com
+//@since 25/09/2025
+//@version 1.0
+//-------------------------------------------------------------------
+
+namespace custom.estoque.produtos.integratedprovider
+
+@totvsFrameworkTReportsIntegratedProvider(active=.T., team="SIGAEST", tables="SB1", name="PRODUTOSCUSTOM", country="ALL", initialRelease="12.1.2210")
+class SB1TReportsBusinessObject from totvs.framework.treports.integratedprovider.IntegratedProvider
+
+    public method new() as object
+    public method getData(nPage as numeric, oFilter as object) as object
+    public method getSchema() as object
+
+endclass
+
+//------------------------------------------------------------------------------
+// Método: new()
+//------------------------------------------------------------------------------
+method new() class SB1TReportsBusinessObject
+
+    _Super:new()
+
+    self:appendArea("PESSOAL")
+    self:setDisplayName("PRODUTOS CUSTOM")
+    self:setDescription("Consulta de Produtos da Tabela SB1")
+
+return self
+
+//------------------------------------------------------------------------------
+// Método: getData()
+//------------------------------------------------------------------------------
+method getData(nPage as numeric, oFilter as object) as object class SB1TReportsBusinessObject
+    local cQuery     := ""
+    local jParams    := NIL
+    local lUseParams as logical
+
+    self:setPageSize(500)
+
+    cQuery := "SELECT SB1.B1_FILIAL, SB1.B1_COD, SB1.B1_DESC, SB1.B1_TIPO, SB1.B1_UM, SB1.B1_GRUPO " +;
+              "FROM " + RetSqlName("SB1") + " SB1 " +;
+              "WHERE SB1.D_E_L_E_T_ = ' ' "
+
+    lUseParams := .T.
+
+    // Filtros vindos da interface
+    if oFilter:hasFilter()
+        cQuery += " AND " + oFilter:getSQLExpression()
+    endif
+
+    // Parâmetros definidos no getSchema()
+    // Aqui você recebe o retorno dos parametros informados no smartview
+    //
+    if ValType(oFilter) == "O"
+        jParams := oFilter:getParameters()
+
+        if !Empty(jParams["CODIGO"][1])
+            cQuery += " AND SB1.B1_COD = '" + AllTrim(jParams["CODIGO"][1]) + "'"
+        endif
+
+        if !Empty(jParams["GRUPO"][1])
+            cQuery += " AND SB1.B1_GRUPO = '" + AllTrim(jParams["GRUPO"][1]) + "'"
+        endif
+    endif
+
+    self:setQuery(cQuery)
+    self:setOrder("SB1.B1_COD")
+
+return self:oData
+
+//------------------------------------------------------------------------------
+// Método: getSchema()
+//------------------------------------------------------------------------------
+method getSchema() class SB1TReportsBusinessObject
+
+    // Parâmetros que virão da tela do SmartView (Aqui são criados os filtros)
+    self:addParameter("CODIGO", "Código do Produto", "string", .F., "SB1.B1_COD")
+    self:addParameter("GRUPO", "Grupo de Produtos", "string", .F., "SB1.B1_GRUPO")
+
+    // Propriedades exibidas no relatório (Campos que estarão disponiveis no samrtview)
+    self:addProperty("B1_FILIAL", "Filial", "string", "Filial do Produto", "SB1.B1_FILIAL")
+    self:addProperty("B1_COD", "Código", "string", "Código do Produto", "SB1.B1_COD")
+    self:addProperty("B1_DESC", "Descrição", "string", "Descrição do Produto", "SB1.B1_DESC")
+    self:addProperty("B1_TIPO", "Tipo", "string", "Tipo de Produto", "SB1.B1_TIPO")
+    self:addProperty("B1_UM", "Unidade", "string", "Unidade de Medida", "SB1.B1_UM")
+    self:addProperty("B1_GRUPO", "Grupo", "string", "Grupo de Produtos", "SB1.B1_GRUPO")
+
+return self:oSchema

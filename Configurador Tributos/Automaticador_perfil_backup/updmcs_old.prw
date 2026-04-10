@@ -22,7 +22,7 @@
 Função de update de dicionários para compatibilização
 
 @author UPDATE gerado automaticamente
-@since  15/01/2026
+@since  12/02/2026
 @obs    Gerado por EXPORDIC - V.8.0.2.1 EFS / Upd. V.6.4.1 EFS
 @version 1.0
 /*/
@@ -144,7 +144,7 @@ Return NIL
 Função de processamento da gravação dos arquivos
 
 @author UPDATE gerado automaticamente
-@since  15/01/2026
+@since  12/02/2026
 @obs    Gerado por EXPORDIC - V.8.0.2.1 EFS / Upd. V.6.4.1 EFS
 @version 1.0
 /*/
@@ -356,7 +356,7 @@ Return lRet
 Função de processamento da gravação do SX2 - Arquivos
 
 @author UPDATE gerado automaticamente
-@since  15/01/2026
+@since  12/02/2026
 @obs    Gerado por EXPORDIC - V.8.0.2.1 EFS / Upd. V.6.4.1 EFS
 @version 1.0
 /*/
@@ -384,6 +384,33 @@ SX2->( dbGoTop() )
 cPath := SX2->X2_PATH
 cPath := IIf( Right( AllTrim( cPath ), 1 ) <> "\", PadR( AllTrim( cPath ) + "\", Len( cPath ) ), cPath )
 cEmpr := Substr( SX2->X2_ARQUIVO, 4 )
+
+//
+// Tabela ZZQ
+//
+aAdd( aSX2, { ;
+	'ZZQ'																	, ; //X2_CHAVE
+	cPath																	, ; //X2_PATH
+	'ZZQ'+cEmpr																, ; //X2_ARQUIVO
+	'Origem Produto'														, ; //X2_NOME
+	'Origem Produto'														, ; //X2_NOMESPA
+	'Origem Produto'														, ; //X2_NOMEENG
+	'E'																		, ; //X2_MODO
+	''																		, ; //X2_TTS
+	''																		, ; //X2_ROTINA
+	''																		, ; //X2_PYME
+	''																		, ; //X2_UNICO
+	''																		, ; //X2_DISPLAY
+	''																		, ; //X2_SYSOBJ
+	''																		, ; //X2_USROBJ
+	''																		, ; //X2_POSLGT
+	''																		, ; //X2_CLOB
+	''																		, ; //X2_AUTREC
+	'E'																		, ; //X2_MODOEMP
+	'E'																		, ; //X2_MODOUN
+	''																		, ; //X2_STAMP
+	''																		, ; //X2_INSDT
+	0																		} ) //X2_MODULO
 
 //
 // Tabela ZZR
@@ -674,7 +701,7 @@ Return NIL
 Função de processamento da gravação do SX3 - Campos
 
 @author UPDATE gerado automaticamente
-@since  15/01/2026
+@since  12/02/2026
 @obs    Gerado por EXPORDIC - V.8.0.2.1 EFS / Upd. V.6.4.1 EFS
 @version 1.0
 /*/
@@ -714,6 +741,197 @@ aEstrut := { { "X3_ARQUIVO", 0 }, { "X3_ORDEM"  , 0 }, { "X3_CAMPO"  , 0 }, { "X
 
 aEval( aEstrut, { |x| x[2] := SX3->( FieldPos( x[1] ) ) } )
 
+
+//
+// Campos Tabela ZZQ
+//
+aAdd( aSX3, { ;
+	'ZZQ'																	, ; //X3_ARQUIVO
+	'01'																	, ; //X3_ORDEM
+	'ZZQ_FILIAL'															, ; //X3_CAMPO
+	'C'																		, ; //X3_TIPO
+	2																		, ; //X3_TAMANHO
+	0																		, ; //X3_DECIMAL
+	'Filial'																, ; //X3_TITULO
+	'Sucursal'																, ; //X3_TITSPA
+	'Branch'																, ; //X3_TITENG
+	'Filial do Sistema'														, ; //X3_DESCRIC
+	'Sucursal'																, ; //X3_DESCSPA
+	'Branch of the System'													, ; //X3_DESCENG
+	'@!'																	, ; //X3_PICTURE
+	''																		, ; //X3_VALID
+	'x       x       x       x       x       x       x       x       x       x       x       x       x       x       x', ; //X3_USADO
+	''																		, ; //X3_RELACAO
+	''																		, ; //X3_F3
+	1																		, ; //X3_NIVEL
+	'XXXXXX X'																, ; //X3_RESERV
+	''																		, ; //X3_CHECK
+	''																		, ; //X3_TRIGGER
+	'U'																		, ; //X3_PROPRI
+	'N'																		, ; //X3_BROWSE
+	''																		, ; //X3_VISUAL
+	''																		, ; //X3_CONTEXT
+	''																		, ; //X3_OBRIGAT
+	''																		, ; //X3_VLDUSER
+	''																		, ; //X3_CBOX
+	''																		, ; //X3_CBOXSPA
+	''																		, ; //X3_CBOXENG
+	''																		, ; //X3_PICTVAR
+	''																		, ; //X3_WHEN
+	''																		, ; //X3_INIBRW
+	'033'																	, ; //X3_GRPSXG
+	''																		, ; //X3_FOLDER
+	''																		, ; //X3_CONDSQL
+	''																		, ; //X3_CHKSQL
+	''																		, ; //X3_IDXSRV
+	''																		, ; //X3_ORTOGRA
+	''																		, ; //X3_TELA
+	''																		, ; //X3_POSLGT
+	''																		, ; //X3_IDXFLD
+	''																		, ; //X3_AGRUP
+	''																		, ; //X3_MODAL
+	''																		} ) //X3_PYME
+
+aAdd( aSX3, { ;
+	'ZZQ'																	, ; //X3_ARQUIVO
+	'02'																	, ; //X3_ORDEM
+	'ZZQ_COD'																, ; //X3_CAMPO
+	'C'																		, ; //X3_TIPO
+	6																		, ; //X3_TAMANHO
+	0																		, ; //X3_DECIMAL
+	'Código'																, ; //X3_TITULO
+	'Código'																, ; //X3_TITSPA
+	'Código'																, ; //X3_TITENG
+	'Código'																, ; //X3_DESCRIC
+	'Código'																, ; //X3_DESCSPA
+	'Código'																, ; //X3_DESCENG
+	''																		, ; //X3_PICTURE
+	''																		, ; //X3_VALID
+	'x       x       x       x       x       x       x       x       x       x       x       x       x       x       x x', ; //X3_USADO
+	''																		, ; //X3_RELACAO
+	''																		, ; //X3_F3
+	0																		, ; //X3_NIVEL
+	'xxxxxx x'																, ; //X3_RESERV
+	''																		, ; //X3_CHECK
+	''																		, ; //X3_TRIGGER
+	'U'																		, ; //X3_PROPRI
+	'N'																		, ; //X3_BROWSE
+	'A'																		, ; //X3_VISUAL
+	'R'																		, ; //X3_CONTEXT
+	''																		, ; //X3_OBRIGAT
+	''																		, ; //X3_VLDUSER
+	''																		, ; //X3_CBOX
+	''																		, ; //X3_CBOXSPA
+	''																		, ; //X3_CBOXENG
+	''																		, ; //X3_PICTVAR
+	''																		, ; //X3_WHEN
+	''																		, ; //X3_INIBRW
+	''																		, ; //X3_GRPSXG
+	''																		, ; //X3_FOLDER
+	''																		, ; //X3_CONDSQL
+	''																		, ; //X3_CHKSQL
+	''																		, ; //X3_IDXSRV
+	'N'																		, ; //X3_ORTOGRA
+	''																		, ; //X3_TELA
+	''																		, ; //X3_POSLGT
+	'N'																		, ; //X3_IDXFLD
+	''																		, ; //X3_AGRUP
+	''																		, ; //X3_MODAL
+	''																		} ) //X3_PYME
+
+aAdd( aSX3, { ;
+	'ZZQ'																	, ; //X3_ARQUIVO
+	'03'																	, ; //X3_ORDEM
+	'ZZQ_ORIGEM'															, ; //X3_CAMPO
+	'C'																		, ; //X3_TIPO
+	1																		, ; //X3_TAMANHO
+	0																		, ; //X3_DECIMAL
+	'Origem'																, ; //X3_TITULO
+	'Origem'																, ; //X3_TITSPA
+	'Origem'																, ; //X3_TITENG
+	'Origem'																, ; //X3_DESCRIC
+	'Origem'																, ; //X3_DESCSPA
+	'Origem'																, ; //X3_DESCENG
+	''																		, ; //X3_PICTURE
+	''																		, ; //X3_VALID
+	'x       x       x       x       x       x       x       x       x       x       x       x       x       x       x x', ; //X3_USADO
+	''																		, ; //X3_RELACAO
+	'S0'																	, ; //X3_F3
+	0																		, ; //X3_NIVEL
+	'xxxxxx x'																, ; //X3_RESERV
+	''																		, ; //X3_CHECK
+	''																		, ; //X3_TRIGGER
+	'U'																		, ; //X3_PROPRI
+	'N'																		, ; //X3_BROWSE
+	'A'																		, ; //X3_VISUAL
+	'R'																		, ; //X3_CONTEXT
+	''																		, ; //X3_OBRIGAT
+	''																		, ; //X3_VLDUSER
+	''																		, ; //X3_CBOX
+	''																		, ; //X3_CBOXSPA
+	''																		, ; //X3_CBOXENG
+	''																		, ; //X3_PICTVAR
+	''																		, ; //X3_WHEN
+	''																		, ; //X3_INIBRW
+	''																		, ; //X3_GRPSXG
+	''																		, ; //X3_FOLDER
+	''																		, ; //X3_CONDSQL
+	''																		, ; //X3_CHKSQL
+	''																		, ; //X3_IDXSRV
+	'N'																		, ; //X3_ORTOGRA
+	''																		, ; //X3_TELA
+	''																		, ; //X3_POSLGT
+	'N'																		, ; //X3_IDXFLD
+	''																		, ; //X3_AGRUP
+	''																		, ; //X3_MODAL
+	''																		} ) //X3_PYME
+
+aAdd( aSX3, { ;
+	'ZZQ'																	, ; //X3_ARQUIVO
+	'04'																	, ; //X3_ORDEM
+	'ZZQ_DESC'																, ; //X3_CAMPO
+	'C'																		, ; //X3_TIPO
+	100																		, ; //X3_TAMANHO
+	0																		, ; //X3_DECIMAL
+	'Descrição'																, ; //X3_TITULO
+	'Descrição'																, ; //X3_TITSPA
+	'Descrição'																, ; //X3_TITENG
+	'Descrição'																, ; //X3_DESCRIC
+	'Descrição'																, ; //X3_DESCSPA
+	'Descrição'																, ; //X3_DESCENG
+	''																		, ; //X3_PICTURE
+	''																		, ; //X3_VALID
+	'x       x       x       x       x       x       x       x       x       x       x       x       x       x       x x', ; //X3_USADO
+	''																		, ; //X3_RELACAO
+	''																		, ; //X3_F3
+	0																		, ; //X3_NIVEL
+	'xxxxxx x'																, ; //X3_RESERV
+	''																		, ; //X3_CHECK
+	''																		, ; //X3_TRIGGER
+	'U'																		, ; //X3_PROPRI
+	'N'																		, ; //X3_BROWSE
+	'A'																		, ; //X3_VISUAL
+	'R'																		, ; //X3_CONTEXT
+	''																		, ; //X3_OBRIGAT
+	''																		, ; //X3_VLDUSER
+	''																		, ; //X3_CBOX
+	''																		, ; //X3_CBOXSPA
+	''																		, ; //X3_CBOXENG
+	''																		, ; //X3_PICTVAR
+	''																		, ; //X3_WHEN
+	''																		, ; //X3_INIBRW
+	''																		, ; //X3_GRPSXG
+	''																		, ; //X3_FOLDER
+	''																		, ; //X3_CONDSQL
+	''																		, ; //X3_CHKSQL
+	''																		, ; //X3_IDXSRV
+	'N'																		, ; //X3_ORTOGRA
+	''																		, ; //X3_TELA
+	''																		, ; //X3_POSLGT
+	'N'																		, ; //X3_IDXFLD
+	''																		, ; //X3_AGRUP
+	''																		, ; //X3_MODAL
+	''																		} ) //X3_PYME
 
 //
 // Campos Tabela ZZR
@@ -969,7 +1187,7 @@ aAdd( aSX3, { ;
 	'UF'																	, ; //X3_DESCRIC
 	'UF'																	, ; //X3_DESCSPA
 	'UF'																	, ; //X3_DESCENG
-	''																		, ; //X3_PICTURE
+	'@!'																	, ; //X3_PICTURE
 	''																		, ; //X3_VALID
 	'x       x       x       x       x       x       x       x       x       x       x       x       x       x       x x', ; //X3_USADO
 	''																		, ; //X3_RELACAO
@@ -1351,7 +1569,7 @@ aAdd( aSX3, { ;
 	'Estado'																, ; //X3_DESCRIC
 	'Estado'																, ; //X3_DESCSPA
 	'Estado'																, ; //X3_DESCENG
-	''																		, ; //X3_PICTURE
+	'@!'																	, ; //X3_PICTURE
 	''																		, ; //X3_VALID
 	'x       x       x       x       x       x       x       x       x       x       x       x       x       x       x x', ; //X3_USADO
 	''																		, ; //X3_RELACAO
@@ -1542,7 +1760,7 @@ aAdd( aSX3, { ;
 	''																		, ; //X3_DESCRIC
 	''																		, ; //X3_DESCSPA
 	''																		, ; //X3_DESCENG
-	''																		, ; //X3_PICTURE
+	'@!'																	, ; //X3_PICTURE
 	''																		, ; //X3_VALID
 	'x       x       x       x       x       x       x       x       x       x       x       x       x       x       x x', ; //X3_USADO
 	''																		, ; //X3_RELACAO
@@ -1780,7 +1998,7 @@ aAdd( aSX3, { ;
 	''																		, ; //X3_DESCRIC
 	''																		, ; //X3_DESCSPA
 	''																		, ; //X3_DESCENG
-	''																		, ; //X3_PICTURE
+	'@!'																	, ; //X3_PICTURE
 	''																		, ; //X3_VALID
 	'x       x       x       x       x       x       x       x       x       x       x       x       x       x       x x', ; //X3_USADO
 	''																		, ; //X3_RELACAO
@@ -1931,7 +2149,7 @@ aAdd( aSX3, { ;
 	''																		, ; //X3_CHECK
 	''																		, ; //X3_TRIGGER
 	'U'																		, ; //X3_PROPRI
-	'N'																		, ; //X3_BROWSE
+	'S'																		, ; //X3_BROWSE
 	'A'																		, ; //X3_VISUAL
 	'R'																		, ; //X3_CONTEXT
 	''																		, ; //X3_OBRIGAT
@@ -1978,7 +2196,7 @@ aAdd( aSX3, { ;
 	''																		, ; //X3_CHECK
 	''																		, ; //X3_TRIGGER
 	'U'																		, ; //X3_PROPRI
-	'N'																		, ; //X3_BROWSE
+	'S'																		, ; //X3_BROWSE
 	'A'																		, ; //X3_VISUAL
 	'R'																		, ; //X3_CONTEXT
 	''																		, ; //X3_OBRIGAT
@@ -2213,7 +2431,7 @@ aAdd( aSX3, { ;
 	''																		, ; //X3_CHECK
 	''																		, ; //X3_TRIGGER
 	'U'																		, ; //X3_PROPRI
-	'N'																		, ; //X3_BROWSE
+	'S'																		, ; //X3_BROWSE
 	'A'																		, ; //X3_VISUAL
 	'R'																		, ; //X3_CONTEXT
 	''																		, ; //X3_OBRIGAT
@@ -2260,7 +2478,7 @@ aAdd( aSX3, { ;
 	''																		, ; //X3_CHECK
 	''																		, ; //X3_TRIGGER
 	'U'																		, ; //X3_PROPRI
-	'N'																		, ; //X3_BROWSE
+	'S'																		, ; //X3_BROWSE
 	'A'																		, ; //X3_VISUAL
 	'R'																		, ; //X3_CONTEXT
 	''																		, ; //X3_OBRIGAT
@@ -2307,7 +2525,7 @@ aAdd( aSX3, { ;
 	''																		, ; //X3_CHECK
 	''																		, ; //X3_TRIGGER
 	'U'																		, ; //X3_PROPRI
-	'N'																		, ; //X3_BROWSE
+	'S'																		, ; //X3_BROWSE
 	'A'																		, ; //X3_VISUAL
 	'R'																		, ; //X3_CONTEXT
 	''																		, ; //X3_OBRIGAT
@@ -2354,7 +2572,7 @@ aAdd( aSX3, { ;
 	''																		, ; //X3_CHECK
 	''																		, ; //X3_TRIGGER
 	'U'																		, ; //X3_PROPRI
-	'N'																		, ; //X3_BROWSE
+	'S'																		, ; //X3_BROWSE
 	'A'																		, ; //X3_VISUAL
 	'R'																		, ; //X3_CONTEXT
 	''																		, ; //X3_OBRIGAT
@@ -2401,7 +2619,7 @@ aAdd( aSX3, { ;
 	''																		, ; //X3_CHECK
 	''																		, ; //X3_TRIGGER
 	'U'																		, ; //X3_PROPRI
-	'N'																		, ; //X3_BROWSE
+	'S'																		, ; //X3_BROWSE
 	'A'																		, ; //X3_VISUAL
 	'R'																		, ; //X3_CONTEXT
 	''																		, ; //X3_OBRIGAT
@@ -2448,7 +2666,7 @@ aAdd( aSX3, { ;
 	''																		, ; //X3_CHECK
 	''																		, ; //X3_TRIGGER
 	'U'																		, ; //X3_PROPRI
-	'N'																		, ; //X3_BROWSE
+	'S'																		, ; //X3_BROWSE
 	'A'																		, ; //X3_VISUAL
 	'R'																		, ; //X3_CONTEXT
 	''																		, ; //X3_OBRIGAT
@@ -2495,7 +2713,54 @@ aAdd( aSX3, { ;
 	''																		, ; //X3_CHECK
 	''																		, ; //X3_TRIGGER
 	'U'																		, ; //X3_PROPRI
-	'N'																		, ; //X3_BROWSE
+	'S'																		, ; //X3_BROWSE
+	'A'																		, ; //X3_VISUAL
+	'R'																		, ; //X3_CONTEXT
+	''																		, ; //X3_OBRIGAT
+	''																		, ; //X3_VLDUSER
+	'1=Sim;2=Não'															, ; //X3_CBOX
+	''																		, ; //X3_CBOXSPA
+	''																		, ; //X3_CBOXENG
+	''																		, ; //X3_PICTVAR
+	''																		, ; //X3_WHEN
+	''																		, ; //X3_INIBRW
+	''																		, ; //X3_GRPSXG
+	''																		, ; //X3_FOLDER
+	''																		, ; //X3_CONDSQL
+	''																		, ; //X3_CHKSQL
+	''																		, ; //X3_IDXSRV
+	'N'																		, ; //X3_ORTOGRA
+	''																		, ; //X3_TELA
+	''																		, ; //X3_POSLGT
+	'N'																		, ; //X3_IDXFLD
+	''																		, ; //X3_AGRUP
+	''																		, ; //X3_MODAL
+	''																		} ) //X3_PYME
+
+aAdd( aSX3, { ;
+	'ZZW'																	, ; //X3_ARQUIVO
+	'19'																	, ; //X3_ORDEM
+	'ZZW_REGRA7'															, ; //X3_CAMPO
+	'C'																		, ; //X3_TIPO
+	1																		, ; //X3_TAMANHO
+	0																		, ; //X3_DECIMAL
+	'Aba Ori.Prod'															, ; //X3_TITULO
+	'Aba Ori.Prod'															, ; //X3_TITSPA
+	'Aba Ori.Prod'															, ; //X3_TITENG
+	'Regra Origem Produto'													, ; //X3_DESCRIC
+	'Regra Origem Produto'													, ; //X3_DESCSPA
+	'Regra Origem Produto'													, ; //X3_DESCENG
+	''																		, ; //X3_PICTURE
+	''																		, ; //X3_VALID
+	'x       x       x       x       x       x       x       x       x       x       x       x       x       x       x x', ; //X3_USADO
+	''																		, ; //X3_RELACAO
+	''																		, ; //X3_F3
+	0																		, ; //X3_NIVEL
+	'xxxxxx x'																, ; //X3_RESERV
+	''																		, ; //X3_CHECK
+	''																		, ; //X3_TRIGGER
+	'U'																		, ; //X3_PROPRI
+	'S'																		, ; //X3_BROWSE
 	'A'																		, ; //X3_VISUAL
 	'R'																		, ; //X3_CONTEXT
 	''																		, ; //X3_OBRIGAT
@@ -2582,7 +2847,7 @@ aAdd( aSX3, { ;
 	'Código'																, ; //X3_DESCRIC
 	'Código'																, ; //X3_DESCSPA
 	'Código'																, ; //X3_DESCENG
-	''																		, ; //X3_PICTURE
+	'@!'																	, ; //X3_PICTURE
 	''																		, ; //X3_VALID
 	'x       x       x       x       x       x       x       x       x       x       x       x       x       x       x x', ; //X3_USADO
 	''																		, ; //X3_RELACAO
@@ -2629,7 +2894,7 @@ aAdd( aSX3, { ;
 	'Grupo tributário'														, ; //X3_DESCRIC
 	'Grupo tributário'														, ; //X3_DESCSPA
 	'Grupo tributário'														, ; //X3_DESCENG
-	''																		, ; //X3_PICTURE
+	'@!'																	, ; //X3_PICTURE
 	''																		, ; //X3_VALID
 	'x       x       x       x       x       x       x       x       x       x       x       x       x       x       x x', ; //X3_USADO
 	''																		, ; //X3_RELACAO
@@ -3050,7 +3315,7 @@ aAdd( aSX3, { ;
 	'05'																	, ; //X3_ORDEM
 	'ZZZ_SITUAC'															, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
-	1																		, ; //X3_TAMANHO
+	8																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
 	'Situação'																, ; //X3_TITULO
 	'Situação'																, ; //X3_TITSPA
@@ -3073,7 +3338,7 @@ aAdd( aSX3, { ;
 	'R'																		, ; //X3_CONTEXT
 	''																		, ; //X3_OBRIGAT
 	''																		, ; //X3_VLDUSER
-	''																		, ; //X3_CBOX
+	'1=Sucesso;2=Erro'														, ; //X3_CBOX
 	''																		, ; //X3_CBOXSPA
 	''																		, ; //X3_CBOXENG
 	''																		, ; //X3_PICTVAR
@@ -3379,7 +3644,7 @@ Return NIL
 Função de processamento da gravação do SIX - Indices
 
 @author UPDATE gerado automaticamente
-@since  15/01/2026
+@since  12/02/2026
 @obs    Gerado por EXPORDIC - V.8.0.2.1 EFS / Upd. V.6.4.1 EFS
 @version 1.0
 /*/
@@ -3396,6 +3661,33 @@ AutoGrLog( "Ínicio da Atualização" + " SIX" + CRLF )
 
 aEstrut := { "INDICE" , "ORDEM" , "CHAVE", "DESCRICAO", "DESCSPA"  , ;
              "DESCENG", "PROPRI", "F3"   , "NICKNAME" , "SHOWPESQ" }
+
+//
+// Tabela ZZQ
+//
+aAdd( aSIX, { ;
+	'ZZQ'																	, ; //INDICE
+	'1'																		, ; //ORDEM
+	'ZZQ_FILIAL + ZZQ_COD'													, ; //CHAVE
+	'Código'																, ; //DESCRICAO
+	'Código'																, ; //DESCSPA
+	'Código'																, ; //DESCENG
+	'U'																		, ; //PROPRI
+	''																		, ; //F3
+	''																		, ; //NICKNAME
+	'N'																		} ) //SHOWPESQ
+
+aAdd( aSIX, { ;
+	'ZZQ'																	, ; //INDICE
+	'2'																		, ; //ORDEM
+	'ZZQ_FILIAL + ZZQ_COD + ZZQ_ORIGEM'										, ; //CHAVE
+	'Código + Origem'														, ; //DESCRICAO
+	'Código + Origem'														, ; //DESCSPA
+	'Código + Origem'														, ; //DESCENG
+	'U'																		, ; //PROPRI
+	''																		, ; //F3
+	''																		, ; //NICKNAME
+	'N'																		} ) //SHOWPESQ
 
 //
 // Tabela ZZR
@@ -3790,7 +4082,7 @@ Return NIL
 Função de processamento da gravação do SX6 - Parâmetros
 
 @author UPDATE gerado automaticamente
-@since  15/01/2026
+@since  12/02/2026
 @obs    Gerado por EXPORDIC - V.8.0.2.1 EFS / Upd. V.6.4.1 EFS
 @version 1.0
 /*/
@@ -3913,7 +4205,7 @@ Return NIL
 Função de processamento da gravação dos Helps de Campos
 
 @author UPDATE gerado automaticamente
-@since  15/01/2026
+@since  12/02/2026
 @obs    Gerado por EXPORDIC - V.8.0.2.1 EFS / Upd. V.6.4.1 EFS
 @version 1.0
 /*/
@@ -3928,6 +4220,9 @@ AutoGrLog( "Ínicio da Atualização" + " " + "Helps de Campos" + CRLF )
 
 oProcess:IncRegua2( "Atualizando Helps de Campos ..." )
 
+//
+// Helps Tabela ZZQ
+//
 //
 // Helps Tabela ZZR
 //
@@ -4110,6 +4405,21 @@ aAdd( aHlpSpa, 'igual na regra criada' )
 
 PutSX1Help( "PZZW_REGRA6", aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
 AutoGrLog( "Atualizado o Help do campo " + "ZZW_REGRA6" )
+
+aHlpPor := {}
+aAdd( aHlpPor, 'Indica se será considerada regra de' )
+aAdd( aHlpPor, 'origem de produto' )
+
+aHlpEng := {}
+aAdd( aHlpEng, 'Indica se será considerada regra de' )
+aAdd( aHlpEng, 'origem de produto' )
+
+aHlpSpa := {}
+aAdd( aHlpSpa, 'Indica se será considerada regra de' )
+aAdd( aHlpSpa, 'origem de produto' )
+
+PutSX1Help( "PZZW_REGRA7", aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
+AutoGrLog( "Atualizado o Help do campo " + "ZZW_REGRA7" )
 
 //
 // Helps Tabela ZZX
@@ -4466,7 +4776,7 @@ Return NIL
 Função de processamento abertura do SM0 modo exclusivo
 
 @author UPDATE gerado automaticamente
-@since  15/01/2026
+@since  12/02/2026
 @obs    Gerado por EXPORDIC - V.8.0.2.1 EFS / Upd. V.6.4.1 EFS
 @version 1.0
 /*/
@@ -4510,7 +4820,7 @@ Return lOpen
 Função de leitura do LOG gerado com limitacao de string
 
 @author UPDATE gerado automaticamente
-@since  15/01/2026
+@since  12/02/2026
 @obs    Gerado por EXPORDIC - V.8.0.2.1 EFS / Upd. V.6.4.1 EFS
 @version 1.0
 /*/

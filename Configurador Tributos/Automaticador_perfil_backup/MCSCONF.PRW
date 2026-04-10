@@ -26,6 +26,7 @@ User Function MCSCONF()
     ChkFile("ZZT")
     ChkFile("ZZS")
     ChkFile("ZZR")
+    ChkFile("ZZQ")
 
     dbSelectArea("ZZW")
 	oBrowse := FWmBrowse():New()
@@ -76,13 +77,15 @@ Static Function ModelDef()
     Local oStruF      := FWFormStruct(1, "ZZT") 
     Local oStruG      := FWFormStruct(1, "ZZS")
     Local oStruH      := FWFormStruct(1, "ZZR")
+    Local oStruI      := FWFormStruct(1, "ZZQ")
     Local cRelacB   := ""
     Local cRelacC   := ""
     Local cRelacD   := ""
     Local cRelacE   := ""
     Local cRelacF   := ""
     Local cRelacG   := ""
-    Local cRelach   := ""
+    Local cRelacH   := ""
+    Local cRelacI   := ""
     Local aRelacB	:= {}
     Local aRelacC	:= {}
     Local aRelacD	:= {}
@@ -90,10 +93,12 @@ Static Function ModelDef()
     Local aRelacF	:= {}
     Local aRelacG	:= {}
     Local aRelacH	:= {}
+    Local aRelacI	:= {}
     Local aGat      := {}
     Local aGat1     := {}
     Local aGat2     := {}
     Local aGat3     := {}
+    Local aGat4     := {}
     Local bVldPos   := {|| U_ValReg01()} //Validação ao clicar no Confirmar
     Local bLinePost := {|| u_ValGrid1()} // Validação na grid
 
@@ -105,6 +110,7 @@ Static Function ModelDef()
     cRelacF := 'xFilial("ZZT")'
     cRelacG := 'xFilial("ZZS")'
     cRelacH := 'xFilial("ZZR")'
+    cRelacI := 'xFilial("ZZQ")'
 
     //Obtendo a estrura das tabelas
     oStruA := FWFormStruct( 1, 'ZZW' , /* bAvalCampo */, /* lViewUsado */ )
@@ -115,18 +121,20 @@ Static Function ModelDef()
     oStruF := FWFormStruct( 1, 'ZZT' , /* bAvalCampo */, /* lViewUsado */ )
     oStruG := FWFormStruct( 1, 'ZZS' , /* bAvalCampo */, /* lViewUsado */ )
     oStruH := FWFormStruct( 1, 'ZZR' , /* bAvalCampo */, /* lViewUsado */ )
+    oStruI := FWFormStruct( 1, 'ZZQ' , /* bAvalCampo */, /* lViewUsado */ )
 
     // DEFINE O SUBMODELO COMO FIELD
     oModel := MPFormModel():New("MCSCONFA", /*bVldPre*/, bVldPos,/*bVldCom*/, /*bVldCan*/)
     oModel:AddFields('ZZWMASTER', NIL, oStruA)
 
-    oStruA:SetProperty('ZZW_ALIAS',MODEL_FIELD_OBRIGAT, .T. )
-    oStruA:SetProperty('ZZW_REGRA1',MODEL_FIELD_OBRIGAT, .T. )
+    oStruA:SetProperty('ZZW_ALIAS' ,MODEL_FIELD_OBRIGAT, .T. )
+    oStruA:SetProperty('ZZW_DESC'  ,MODEL_FIELD_OBRIGAT, .T. )
+    /*oStruA:SetProperty('ZZW_REGRA1',MODEL_FIELD_OBRIGAT, .T. )
     oStruA:SetProperty('ZZW_REGRA2',MODEL_FIELD_OBRIGAT, .T. )
     oStruA:SetProperty('ZZW_REGRA3',MODEL_FIELD_OBRIGAT, .T. )
     oStruA:SetProperty('ZZW_REGRA4',MODEL_FIELD_OBRIGAT, .T. )
     oStruA:SetProperty('ZZW_REGRA5',MODEL_FIELD_OBRIGAT, .T. )
-    oStruA:SetProperty('ZZW_REGRA6',MODEL_FIELD_OBRIGAT, .T. )
+    oStruA:SetProperty('ZZW_REGRA6',MODEL_FIELD_OBRIGAT, .T. )*/
     //oStruA:SetProperty('ZZW_CONTRI',MODEL_FIELD_OBRIGAT, 'U_MCSOBRIG()' )
     oStruA:SetProperty('ZZW_COD',   MODEL_FIELD_WHEN,    FwBuildFeature(STRUCT_FEATURE_WHEN,    '.F.'))
     oStruA:SetProperty('ZZW_COD',   MODEL_FIELD_INIT,    FwBuildFeature(STRUCT_FEATURE_INIPAD,  'GetSXENum("ZZW", "ZZW_COD")'))
@@ -138,10 +146,17 @@ Static Function ModelDef()
     oStruF:SetProperty('ZZT_COD',    MODEL_FIELD_WHEN,    FwBuildFeature(STRUCT_FEATURE_WHEN,    '.F.'))
     oStruG:SetProperty('ZZS_COD',    MODEL_FIELD_WHEN,    FwBuildFeature(STRUCT_FEATURE_WHEN,    '.F.'))
     oStruH:SetProperty('ZZR_COD',    MODEL_FIELD_WHEN,    FwBuildFeature(STRUCT_FEATURE_WHEN,    '.F.'))
-    oStruA:SetProperty('ZZW_CONTRI'   , MODEL_FIELD_WHEN, FwBuildFeature(STRUCT_FEATURE_WHEN,    'U_MCSWHEN()'))
-    oStruA:SetProperty('ZZW_TIPPAR'   , MODEL_FIELD_WHEN, FwBuildFeature(STRUCT_FEATURE_WHEN,    'U_MCSWHEN()'))
-    oStruA:SetProperty('ZZW_SUFRAM'   , MODEL_FIELD_WHEN, FwBuildFeature(STRUCT_FEATURE_WHEN,    'U_MCSWHEN()'))
-    oStruA:SetProperty('ZZW_SIMPLE'   , MODEL_FIELD_WHEN, FwBuildFeature(STRUCT_FEATURE_WHEN,    'U_MCSWHEN()'))
+    oStruA:SetProperty('ZZW_CONTRI'   , MODEL_FIELD_WHEN, FwBuildFeature(STRUCT_FEATURE_WHEN,    'U_WHEN1CF()'))
+    oStruA:SetProperty('ZZW_TIPPAR'   , MODEL_FIELD_WHEN, FwBuildFeature(STRUCT_FEATURE_WHEN,    'U_WHEN1CF()'))
+    oStruA:SetProperty('ZZW_SUFRAM'   , MODEL_FIELD_WHEN, FwBuildFeature(STRUCT_FEATURE_WHEN,    'U_WHEN1CF()'))
+    oStruA:SetProperty('ZZW_SIMPLE'   , MODEL_FIELD_WHEN, FwBuildFeature(STRUCT_FEATURE_WHEN,    'U_WHEN1CF()'))
+    //oStruA:SetProperty('ZZW_REGRA1'   , MODEL_FIELD_WHEN, FwBuildFeature(STRUCT_FEATURE_WHEN,    'U_WHEN1CF()'))
+    oStruA:SetProperty('ZZW_REGRA2'   , MODEL_FIELD_WHEN, FwBuildFeature(STRUCT_FEATURE_WHEN,    'U_WHEN1CF()'))
+    oStruA:SetProperty('ZZW_REGRA3'   , MODEL_FIELD_WHEN, FwBuildFeature(STRUCT_FEATURE_WHEN,    'U_WHEN1CF()'))
+    oStruA:SetProperty('ZZW_REGRA4'   , MODEL_FIELD_WHEN, FwBuildFeature(STRUCT_FEATURE_WHEN,    'U_WHEN1CF()'))
+    oStruA:SetProperty('ZZW_REGRA5'   , MODEL_FIELD_WHEN, FwBuildFeature(STRUCT_FEATURE_WHEN,    'U_WHENPRO()'))
+    oStruA:SetProperty('ZZW_REGRA6'   , MODEL_FIELD_WHEN, FwBuildFeature(STRUCT_FEATURE_WHEN,    'U_WHENPRO()'))
+    oStruA:SetProperty('ZZW_REGRA7'   , MODEL_FIELD_WHEN, FwBuildFeature(STRUCT_FEATURE_WHEN,    'U_WHENPRO()'))
 
     //	Triggers
     aGat := FwStruTrigger("ZZV_CODMUN","ZZV_DESC",'Posicione("CC2",1,xFilial("CC2") + M->ZZV_EST+M->ZZV_CODMUN,"CC2_MUN" )',.F.,,,)
@@ -156,6 +171,11 @@ Static Function ModelDef()
     aGat3:= FwStruTrigger("ZZY_CODPER","ZZY_DESC",'U_GATPER("1")',.F.,,,)
 	oStruB:AddTrigger(aGat3[1],aGat3[2],aGat3[3],aGat3[4])
 
+    aGat4:= FwStruTrigger("ZZQ_ORIGEM","ZZQ_DESC",'U_GATPER("3")',.F.,,,)
+	oStruI:AddTrigger(aGat4[1],aGat4[2],aGat4[3],aGat4[4])
+
+    oStruB:SetProperty('ZZY_CODPER',MODEL_FIELD_VALID,FWBuildFeature(STRUCT_FEATURE_VALID,"ExistCpo('F20',+FWFldGet('ZZY_CODPER'))"))
+
     // Adiciona ao modelo uma estrutura de formul?io de edi?o por grid
     oModel:AddGrid( 'ZZYDETAIL'     , 'ZZWMASTER'   , oStruB, /*bLinePre*/, /*bLinePost*/, /*bPreVal*/, /*bPosVal*/, /*BLoad*/ )
     oModel:AddGrid( 'ZZXDETAIL'		, 'ZZWMASTER'	, oStruC, /*bLinePre*/, /*bLinePost*/, /*bPreVal*/, /*bPosVal*/, /*BLoad*/ )
@@ -164,6 +184,7 @@ Static Function ModelDef()
     oModel:AddGrid( 'ZZTDETAIL'		, 'ZZWMASTER'	, oStruF, /*bLinePre*/, /*bLinePost*/, /*bPreVal*/, /*bPosVal*/, /*BLoad*/ )
     oModel:AddGrid( 'ZZSDETAIL'		, 'ZZWMASTER'	, oStruG, /*bLinePre*/, /*bLinePost*/, /*bPreVal*/, /*bPosVal*/, /*BLoad*/ )
     oModel:AddGrid( 'ZZRDETAIL'		, 'ZZWMASTER'	, oStruH, /*bLinePre*/, /*bLinePost*/, /*bPreVal*/, /*bPosVal*/, /*BLoad*/ )
+    oModel:AddGrid( 'ZZQDETAIL'		, 'ZZWMASTER'	, oStruI, /*bLinePre*/, /*bLinePost*/, /*bPreVal*/, /*bPosVal*/, /*BLoad*/ )
 
     //Relacionamento da tabela 
     aAdd(aRelacB,{ oStruB:aFields[1][3]	, cRelacB	})
@@ -173,6 +194,7 @@ Static Function ModelDef()
     aAdd(aRelacF,{ oStruF:aFields[1][3]	, cRelacB	})
     aAdd(aRelacG,{ oStruG:aFields[1][3]	, cRelacB	})
     aAdd(aRelacH,{ oStruH:aFields[1][3]	, cRelacB	})
+    aAdd(aRelacI,{ oStruH:aFields[1][3]	, cRelacB	})
 
     // Faz relaciomaneto entre os compomentes do model
     oModel:SetRelation("ZZYDETAIL", {{"ZZY_FILIAL", "FwXFilial('ZZY')"}, {"ZZY_COD", "ZZW_COD"}}, ZZY->(IndexKey( 1 )))
@@ -182,6 +204,7 @@ Static Function ModelDef()
     oModel:SetRelation("ZZTDETAIL", {{"ZZT_FILIAL", "FwXFilial('ZZT')"}, {"ZZT_COD", "ZZW_COD"}}, ZZT->(IndexKey( 1 )))
     oModel:SetRelation("ZZSDETAIL", {{"ZZS_FILIAL", "FwXFilial('ZZS')"}, {"ZZS_COD", "ZZW_COD"}}, ZZS->(IndexKey( 1 )))
     oModel:SetRelation("ZZRDETAIL", {{"ZZR_FILIAL", "FwXFilial('ZZR')"}, {"ZZR_COD", "ZZW_COD"}}, ZZR->(IndexKey( 1 )))
+    oModel:SetRelation("ZZQDETAIL", {{"ZZQ_FILIAL", "FwXFilial('ZZQ')"}, {"ZZQ_COD", "ZZW_COD"}}, ZZQ->(IndexKey( 1 )))
  
     // DESCRIÇÃO DO MODELO
     oModel:SetDescription("Configuração regras")
@@ -195,6 +218,7 @@ Static Function ModelDef()
     oModel:GetModel( 'ZZUDETAIL' ):SetDescription( "Uf" )
     oModel:GetModel( 'ZZTDETAIL' ):SetDescription( "NCM Iguais (==)" )
     oModel:GetModel( 'ZZRDETAIL' ):SetDescription( "NCM Diferentes (<>)" )
+    oModel:GetModel( 'ZZQDETAIL' ):SetDescription( "Origem Produto" )
 
     oModel:SetPrimaryKey({oStruA:aFields[1][3]})
 
@@ -205,6 +229,7 @@ Static Function ModelDef()
     oModel:GetModel("ZZTDETAIL"):SetOptional(.T.)
     oModel:GetModel("ZZSDETAIL"):SetOptional(.T.)
     oModel:GetModel("ZZRDETAIL"):SetOptional(.T.)
+    oModel:GetModel("ZZQDETAIL"):SetOptional(.T.)
 
 
 Return (oModel)
@@ -228,6 +253,7 @@ Static Function ViewDef()
     Local oStruF      := FwFormStruct(2, 'ZZT',{|x| Alltrim(x) + ";" $ "ZZT_NCM;"})
     Local oStruG      := FwFormStruct(2, 'ZZS',{|x| Alltrim(x) + ";" $ "ZZS_UF;ZZS_CODMUN;ZZS_DESC;"})
     Local oStruH      := FwFormStruct(2, 'ZZR',{|x| Alltrim(x) + ";" $ "ZZR_NCM;"})
+    Local oStruI      := FwFormStruct(2, 'ZZQ',{|x| Alltrim(x) + ";" $ "ZZQ_ORIGEM;ZZQ_DESC;"})
     Local oModel      := FwLoadModel("MCSCONF")
     Local oView       := Nil
     Local cParMast    := "ZZWMASTER"
@@ -237,7 +263,8 @@ Static Function ViewDef()
     Local cEnvDet3    := "ZZUDETAIL"
     Local cEnvDet4    := "ZZTDETAIL"
     Local cEnvDet5    := "ZZSDETAIL"
-    Local cEnvDet6    := "ZZRDETAIL"   
+    Local cEnvDet6    := "ZZRDETAIL"
+    Local cEnvDet7    := "ZZQDETAIL"     
 
     oStruB:SetProperty("ZZY_CODPER", MVC_VIEW_LOOKUP, {|| McsF3()})
     // INDICA O MODELO DA VIEW
@@ -256,6 +283,7 @@ Static Function ViewDef()
     oView:AddGrid( "VIEW_ZZT", oStruF, cEnvDet4 )
     oView:AddGrid( "VIEW_ZZS", oStruG, cEnvDet5 )
     oView:AddGrid( "VIEW_ZZR", oStruH, cEnvDet6 )
+    oView:AddGrid( "VIEW_ZZQ", oStruI, cEnvDet7 )
 
     // Criar "box" horizontal para receber algum elemento da view
     oView:CreateHorizontalBox( 'SUPERIOR' , 60 )
@@ -273,6 +301,7 @@ Static Function ViewDef()
     oView:AddSheet('PASTA_INFERIOR', 'ABA_QUIN' , 'Uf')
     oView:AddSheet('PASTA_INFERIOR', 'ABA_SEXT' , 'NCM Iguais (==)')
     oView:AddSheet('PASTA_INFERIOR', 'ABA_SETI' , 'NCM Diferentes (<>)')
+    oView:AddSheet('PASTA_INFERIOR', 'ABA_OITA' , 'Origem Produto')
 
     //Cria os Box que serão vinculados as abas
     oView:CreateHorizontalBox( 'Parâmetros' ,100, /*owner*/, /*lUsePixel*/, 'PASTA_SUPERIOR', 'ABA_INI')
@@ -283,6 +312,7 @@ Static Function ViewDef()
     oView:CreateHorizontalBox( 'Uf' ,100, /*owner*/, /*lUsePixel*/, 'PASTA_INFERIOR', 'ABA_QUIN')
     oView:CreateHorizontalBox( 'Ncm Igual' ,100, /*owner*/, /*lUsePixel*/, 'PASTA_INFERIOR', 'ABA_SEXT')
     oView:CreateHorizontalBox( 'Ncm Diferente' ,100, /*owner*/, /*lUsePixel*/, 'PASTA_INFERIOR', 'ABA_SETI')
+    oView:CreateHorizontalBox( 'Origem Produto' ,100, /*owner*/, /*lUsePixel*/, 'PASTA_INFERIOR', 'ABA_OITA')
 
     //Amarra as Abas aos Views de Struct criados
     oView:SetOwnerView('VIEW_ZZW','Parâmetros')
@@ -293,6 +323,7 @@ Static Function ViewDef()
     oView:SetOwnerView('VIEW_ZZU','Uf')
     oView:SetOwnerView('VIEW_ZZT','Ncm Igual')
     oView:SetOwnerView('VIEW_ZZR','Ncm Diferente')
+    oView:SetOwnerView('VIEW_ZZQ','Origem Produto')
 
     // Liga a identificacao do componente
     oView:EnableTitleView("VIEW_ZZY","Perfis")
@@ -302,6 +333,7 @@ Static Function ViewDef()
     oView:EnableTitleView("VIEW_ZZU","Uf")
     oView:EnableTitleView("VIEW_ZZT","Ncm Igual")
     oView:EnableTitleView("VIEW_ZZR","Ncm Diferente")
+    oView:EnableTitleView("VIEW_ZZQ","Origem Produto")
 
 Return (oView)
 
@@ -346,12 +378,14 @@ User Function ValReg01()
     Local xRegra4    := oModel:GetValue('ZZWMASTER', 'ZZW_REGRA4')
     Local xRegra5    := oModel:GetValue('ZZWMASTER', 'ZZW_REGRA5')
     Local xRegra6    := oModel:GetValue('ZZWMASTER', 'ZZW_REGRA6')
+    Local xRegra7    := oModel:GetValue('ZZWMASTER', 'ZZW_REGRA7')
     Local xAlias     := oModel:GetValue('ZZWMASTER', 'ZZW_ALIAS')
     Local xUf01      := oModel:GetValue('ZZUDETAIL', 'ZZU_EST')
     Local xUf02      := oModel:GetValue('ZZSDETAIL', 'ZZS_UF')
     Local xUf03      := oModel:GetValue('ZZVDETAIL', 'ZZV_EST')
     Local xNcm1      := oModel:GetValue('ZZTDETAIL', 'ZZT_NCM')
     Local xNcm2      := oModel:GetValue('ZZRDETAIL', 'ZZR_NCM')
+    Local xOri       := oModel:GetValue('ZZQDETAIL', 'ZZQ_ORIGEM')
     Local xGrup      := oModel:GetValue('ZZXDETAIL', 'ZZX_GRPTRI')
     Local oModelZZV  := oModel:GetModel('ZZVDETAIL')
     Local oModelZZT  := oModel:GetModel('ZZTDETAIL')
@@ -359,6 +393,7 @@ User Function ValReg01()
     Local oModelZZS  := oModel:GetModel('ZZSDETAIL')
     Local oModelZZX  := oModel:GetModel('ZZXDETAIL')
     Local oModelZZU  := oModel:GetModel('ZZUDETAIL')
+    Local oModelZZQ  := oModel:GetModel('ZZQDETAIL')
     Local xMessage01 := "Ajuste os campos das regras ou as informações contidas na aba correspondente"
     //Local xMessage02 := "Ajuste os campos Aba Município igual e Diferente e Aba UF com valores diferentes"
     Local lRet       := .T.
@@ -446,6 +481,31 @@ User Function ValReg01()
         lRet := .F.
     EndIf 
 
+    If xRegra3 == '1' .And. !Empty(xUf01) .And. (!oModelZZU:IsDeleted())
+        Help(,, "MCSCONF", , "Campo Aba Município Dif marcado como 1-Sim, Aba Estado Exceção não pode ser preenchida.", 1, 0, , , , , , {xMessage01})
+        lRet := .F.
+    EndIf 
+
+    If xRegra7 == '2' .And. !Empty(xOri) .And. (!oModelZZQ:IsDeleted())
+        Help(,, "MCSCONF", , "Campo Aba Origem Produto marcado como 2-Não, Aba Origem Produto não pode ser preenchida.", 1, 0, , , , , , {xMessage01})
+        lRet := .F.
+    EndIf
+
+    If xRegra7 == '1' .And. Empty(xOri) .And. (!oModelZZQ:IsDeleted())
+        Help(,, "MCSCONF", , "Campo Aba Origem Produto marcado como 1-Sim, Aba Origem Produto precisa ser preenchida.", 1, 0, , , , , , {xMessage01})
+        lRet := .F.
+    EndIf
+
+    If xRegra2 == '1' .And. xRegra4 == '1' 
+        Help(,, "MCSCONF", , "Não é possível utilizar a regra de Município Igual e Aba UF na mesma regra.", 1, 0, , , , , , {xMessage01})
+        lRet := .F.
+    EndIf
+
+    If xRegra3 == '1' .And. xRegra4 == '1' 
+        Help(,, "MCSCONF", , "Não é possível utilizar a regra de Município Diferente e Aba UF na mesma regra.", 1, 0, , , , , , {xMessage01})
+        lRet := .F.
+    EndIf
+
 Return lRet
 
 /*/{Protheus.doc} GATPER
@@ -467,11 +527,25 @@ User Function GATPER(xOp)
         Do Case 
             Case AllTrim(xAlias) $ '1#2'
             xRet := Posicione("F20",1,xFilial("F20") + M->ZZY_CODPER + "02","F20_DESC")
+            If Empty(xRet)
+               /* FWAlertError("Perfil não encontrado, informe um código válido", "Configurador Regra")
+                oModel:setValue("ZZY_CODPER","")*/
+            EndIf
         Otherwise
-            xDesc := Posicione("F20",1,xFilial("F20") + M->ZZY_CODPER + "04","F20_DESC")
+            xRet := Posicione("F20",1,xFilial("F20") + M->ZZY_CODPER + "04","F20_DESC")
+            If Empty(xRet)
+                /*FWAlertError("Perfil não encontrado, informe um código válido", "Configurador Regra")
+                oModel:setValue("ZZY_CODPER","")*/
+            EndIf
         EndCase
-    Else 
+    ElseIf xOp == '2'
         xRet := Posicione("SX5",1,xFilial("SX5") + "12" + M->ZZU_EST,"X5_DESCRI")
+        If Empty(xRet)
+            /*FWAlertError("Perfil não encontrado, informe um código válido", "Configurador Regra")
+            oModel:setValue("ZZY_CODPER","")*/
+        EndIf
+    Else
+        xRet := Posicione("SX5",1,xFilial("SX5") + "S0" + M->ZZQ_ORIGEM, "X5_DESCRI")
     EndIf
 
 Return xRet
@@ -480,17 +554,37 @@ Return xRet
 HAbilta ou não a edição do campo
 @type function
 @version  
-@author Daiane Leandro
+@author MCS Tecnologia
 @since 1/13/2026
 @return variant, return_description
 /*/
-User Function MCSWHEN()
+User Function WHEN1CF()
 
     Local oModel := FWModelActive()
     Local xAlias := oModel:GetValue('ZZWMASTER', 'ZZW_ALIAS')
     Local lRet   := .T. 
 
     If AllTrim(xAlias) == '3'
+        lRet := .F.
+    EndIf
+
+Return lRet
+
+/*/{Protheus.doc} MCSWHEN2
+HAbilta ou não a edição do campo
+@type function
+@version  
+@author MCS Tecnologia
+@since 1/13/2026
+@return variant, return_description
+/*/
+User Function WHENPRO()
+
+    Local oModel := FWModelActive()
+    Local xAlias := oModel:GetValue('ZZWMASTER', 'ZZW_ALIAS')
+    Local lRet   := .T. 
+
+    If Alltrim(xAlias) $ '1/2'
         lRet := .F.
     EndIf
 

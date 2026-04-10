@@ -14,7 +14,9 @@ User Function MCSTRIBR()
 
     aRet := Params("MCSTRIBR")
 
-    FwMsgRun(,{ |oSay| fGeraXls(oSay,aRet[1]) }, "Aguarde...", "Gerando planilha com as informações solicitadas.")
+    If Len(aRet) > 0
+        FwMsgRun(,{ |oSay| fGeraXls(oSay,aRet[1]) }, "Aguarde...", "Gerando planilha com as informações solicitadas.")
+    EndIf
 
 Return
 
@@ -32,7 +34,7 @@ Static Function fGeraXls(oSay,nPerfil)
 
     Local oFWMsExcel
 	Local oExcel
-	Local xArquivo      := "C:\Temp\relacao.xml"
+	Local xArquivo      := "C:\Temp\relacao.xls"
 	Local xWorkSheet    := "Não relacionados com perfis - FISA170"
 	Local xTitulo       := "Não relacionados com perfis - FISA170"
     Local xAlias        := GetNextAlias()
@@ -40,9 +42,10 @@ Static Function fGeraXls(oSay,nPerfil)
 
     Do Case 
         Case nPerfil == 1
-            xQuery := "SELECT A1_COD AS COD, A1_LOJA AS LOJA, A1_NOME AS NOME " + chr(13)
+            xQuery := "SELECT A1_COD AS COD, A1_LOJA AS LOJA, A1_NOME AS NOME, A1_DTCAD AS DTCAD " + chr(13)
             xQuery += "FROM " +RetSqlName("SA1")+ " A1 " + chr(13)
             xQuery += "WHERE A1.D_E_L_E_T_ = ' ' " + chr(13)
+            xQuery += "AND A1.A1_MSBLQL <> '1' " + chr(13)
             xQuery += "AND NOT EXISTS ( " + chr(13)
             xQuery += "SELECT 1 " + chr(13)
             xQuery += "FROM " +RetSqlName("F22")+ " F22 " + chr(13) 
@@ -52,9 +55,10 @@ Static Function fGeraXls(oSay,nPerfil)
             xQuery += "AND F22.D_E_L_E_T_ = ' ' " + chr(13)
             xQuery += ")"
         Case nPerfil == 2
-            xQuery := "SELECT A2_COD AS COD, A2_LOJA AS LOJA, A2_NOME AS NOME " + chr(13)
+            xQuery := "SELECT A2_COD AS COD, A2_LOJA AS LOJA, A2_NOME AS NOME, '' AS DTCAD " + chr(13)
             xQuery += "FROM " +RetSqlName("SA2")+ " A2 " + chr(13)
             xQuery += "WHERE A2.D_E_L_E_T_ = ' ' " + chr(13)
+            xQuery += "AND A2.A2_MSBLQL <> '1' " + chr(13)
             xQuery += "AND NOT EXISTS ( " + chr(13)
             xQuery += "SELECT 1 " + chr(13)
             xQuery += "FROM " +RetSqlName("F22")+ " F22 " + chr(13) 
@@ -67,6 +71,7 @@ Static Function fGeraXls(oSay,nPerfil)
             xQuery := "SELECT B1_COD AS COD, B1_DESC AS NOME " + chr(13)
             xQuery += "FROM " +RetSqlName("SB1")+ " B1 " + chr(13)
             xQuery += "WHERE B1.D_E_L_E_T_ = ' ' " + chr(13)
+            xQuery += "AND B1.B1_MSBLQL <> '1' " + chr(13)
             xQuery += "AND NOT EXISTS ( " + chr(13)
             xQuery += "SELECT 1 " + chr(13)
             xQuery += "FROM " +RetSqlName("F24")+ " F24 " + chr(13) 
@@ -96,6 +101,9 @@ Static Function fGeraXls(oSay,nPerfil)
             oFWMsExcel:AddColumn(xWorkSheet, xTitulo, "Loja", 1, 1, .F.)
         EndIf
         oFWMsExcel:AddColumn(xWorkSheet, xTitulo, "Nome", 1, 1, .F.)
+        If nPerfil <> 3
+            oFWMsExcel:AddColumn(xWorkSheet, xTitulo, "Data Cadastro", 1, 1, .F.)
+        EndIf
 
     Else 
         MsgAlert("Não foram localizados dados para exportar!")
@@ -111,7 +119,8 @@ Static Function fGeraXls(oSay,nPerfil)
             oFWMsExcel:AddRow(xWorkSheet, xTitulo, {;
                     (xAlias)->COD,;
                     (xAlias)->LOJA,;
-                    (xAlias)->NOME;
+                    (xAlias)->NOME,;
+                    (xAlias)->DTCAD;
             })
         Else 
             oFWMsExcel:AddRow(xWorkSheet, xTitulo, {;

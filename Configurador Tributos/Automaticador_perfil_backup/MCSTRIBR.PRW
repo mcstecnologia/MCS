@@ -32,7 +32,7 @@ Static Function fGeraXls(oSay,nPerfil)
 
     Local oFWMsExcel
 	Local oExcel
-	Local xArquivo      := "C:\Temp\relacao.xml"
+	Local xArquivo      := "C:\Temp\relacao.xls"
 	Local xWorkSheet    := "Não relacionados com perfis - FISA170"
 	Local xTitulo       := "Não relacionados com perfis - FISA170"
     Local xAlias        := GetNextAlias()
