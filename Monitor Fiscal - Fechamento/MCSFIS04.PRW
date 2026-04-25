@@ -108,6 +108,7 @@ Static Function ModelDef()
     oStTMP:AddTable(cAliasTmp, {'TMP_COD', 'TMP_DES', 'TMP_VAL', 'TMP_DAT'}, "Temporaria")
        
     //Adiciona os campos da estrutura
+    oStTmp:AddField('SELECT', ' ', 'SELECT', 'L', 1, 0, , , {}, .F.,FWBuildFeature( STRUCT_FEATURE_INIPAD, ".F."))
     oStTmp:AddField(;
         "Codigo",;                                                                                  // [01]  C   Titulo do campo
         "Codigo",;                                                                                  // [02]  C   ToolTip do campo
@@ -190,6 +191,7 @@ Static Function ViewDef()
     Local oView := Nil
    
     //Adicionando campos da estrutura
+    oStTmp:AddField( 'SELECT','01','SELECT','SELECT',, 'Check')
     oStTmp:AddField(;
         "TMP_COD",;                 // [01]  C   Nome do Campo
         "01",;                      // [02]  C   Ordem
