@@ -24,7 +24,7 @@ User Function MCSTRIB()
         //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
         If IsInCallStack('U_CRMA980') .And. lAtv4
             If nOperation == 3
-                fInsertPer("","","","",SA1->A1_COD, SA1->A1_LOJA, SA1->A1_GRPTRIB,nOperation,SA1->A1_TIPO,SA1->A1_CONTRIB,SA1->A1_EST,SA1->A1_COD_MUN,SA1->A1_SUFRAMA,SA1->A1_SIMPNAC,SA1->A1_PAIS,"2")
+                U_fInsertPer("","","","",SA1->A1_COD, SA1->A1_LOJA, SA1->A1_GRPTRIB,nOperation,SA1->A1_TIPO,SA1->A1_CONTRIB,SA1->A1_EST,SA1->A1_COD_MUN,SA1->A1_SUFRAMA,SA1->A1_SIMPNAC,SA1->A1_PAIS,"2")
             ElseIf nOperation == 4 
                 //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
                 //³ Se for alteração, chama função para excluir                         ³
@@ -33,11 +33,11 @@ User Function MCSTRIB()
                 //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
                 //³ Após exclusão ou se não existe, faz a inserção                      ³
                 //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-                fInsertPer("","","","",SA1->A1_COD, SA1->A1_LOJA, SA1->A1_GRPTRIB,nOperation,SA1->A1_TIPO,SA1->A1_CONTRIB,SA1->A1_EST,SA1->A1_COD_MUN,SA1->A1_SUFRAMA,SA1->A1_SIMPNAC,SA1->A1_PAIS,"2")
+                U_fInsertPer("","","","",SA1->A1_COD, SA1->A1_LOJA, SA1->A1_GRPTRIB,nOperation,SA1->A1_TIPO,SA1->A1_CONTRIB,SA1->A1_EST,SA1->A1_COD_MUN,SA1->A1_SUFRAMA,SA1->A1_SIMPNAC,SA1->A1_PAIS,"2")
             EndIf
         ElseIf IsInCallStack('MATA020') .And. lAtv2
             If INCLUI 
-                fInsertPer("","","","",SA2->A2_COD, SA2->A2_LOJA, SA2->A2_GRPTRIB,,SA2->A2_TIPO,SA2->A2_CONTRIB,SA2->A2_EST,SA2->A2_COD_MUN,"",SA2->A2_SIMPNAC,SA2->A2_PAIS,"1")
+                U_fInsertPer("","","","",SA2->A2_COD, SA2->A2_LOJA, SA2->A2_GRPTRIB,,SA2->A2_TIPO,SA2->A2_CONTRIB,SA2->A2_EST,SA2->A2_COD_MUN,"",SA2->A2_SIMPNAC,SA2->A2_PAIS,"1")
             ElseIf ALTERA  
                 //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
                 //³ Se for alteração, chama função para excluir                         ³
@@ -46,12 +46,12 @@ User Function MCSTRIB()
                 //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
                 //³ Após exclusão ou se não existe, faz a inserção                      ³
                 //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-                fInsertPer("","","","",SA2->A2_COD, SA2->A2_LOJA, SA2->A2_GRPTRIB,,SA2->A2_TIPO,SA2->A2_CONTRIB,SA2->A2_EST,SA2->A2_COD_MUN,"",SA2->A2_SIMPNAC,SA2->A2_PAIS,"1")
+                U_fInsertPer("","","","",SA2->A2_COD, SA2->A2_LOJA, SA2->A2_GRPTRIB,,SA2->A2_TIPO,SA2->A2_CONTRIB,SA2->A2_EST,SA2->A2_COD_MUN,"",SA2->A2_SIMPNAC,SA2->A2_PAIS,"1")
             EndIf
         Else 
             If lAtv3
                 If INCLUI 
-                    fInsertPer(SB1->B1_COD,SB1->B1_POSIPI,SB1->B1_ORIGEM,SB1->B1_TIPO,"","",AllTrim(SB1->B1_GRTRIB),"","","","","","","","","3")
+                    U_fInsertPer(SB1->B1_COD,SB1->B1_POSIPI,SB1->B1_ORIGEM,SB1->B1_TIPO,"","",AllTrim(SB1->B1_GRTRIB),"","","","","","","","","3")
                 ElseIf ALTERA
                     //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
                     //³ Se for alteração, chama função para excluir                         ³
@@ -60,7 +60,7 @@ User Function MCSTRIB()
                     //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
                     //³ Após exclusão ou se não existe, faz a inserção                      ³
                     //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-                    fInsertPer(SB1->B1_COD,SB1->B1_POSIPI,SB1->B1_ORIGEM,SB1->B1_TIPO,"",AllTrim(SB1->B1_GRTRIB),"","","","","","","","","3")
+                    U_fInsertPer(SB1->B1_COD,SB1->B1_POSIPI,SB1->B1_ORIGEM,SB1->B1_TIPO,"",AllTrim(SB1->B1_GRTRIB),"","","","","","","","","3")
                 EndIf
             EndIf
         EndIf
@@ -465,7 +465,7 @@ Query principal para busca dos registros de perfis para inclusão
 @param lRevisa, logical, param_description
 @return variant, return_description
 /*/
-Static Function fInsertPer(xProd,xPosIpi,xOrig,xTipoPro,xClieFor,xLoja,xGrpTrib,xOper,xTipo,xContri,xEst,xCodMun,xSufr,xSimples,xPais,xTipPer)
+User Function fInsertPer(xProd,xPosIpi,xOrig,xTipoPro,xClieFor,xLoja,xGrpTrib,xOper,xTipo,xContri,xEst,xCodMun,xSufr,xSimples,xPais,xTipPer)
 
     Local aPerf         := {}
     Local xAlias        := GetNextAlias()
