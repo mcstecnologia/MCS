@@ -54,7 +54,7 @@ User Function MCSJOB(aEmp)
         //³ Verifica se há registros encontrados                                ³
         //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
         If !(xAlias)->(Eof())
-            fGrvMonit(xAlias,'5')
+            fGrvMonit(xAlias,'3')
         Else 
             (xAlias)->(dbCloseArea())
         EndIf
@@ -94,7 +94,7 @@ Static Function fGrvMonit(xAlias,xTpNota)
         //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
         If xTpNota == '4'
             lRet := MCSVERIF((xAlias)->PREFIXO, (xAlias)->TITULO, (xAlias)->PARCELA, (xAlias)->TIPO, (xAlias)->LOJA, (xAlias)->COD_CLIENTE, (xAlias)->DOCUMENTO, (xAlias)->SERIE, (xAlias)->TIPO_NOTA)
-        ElseIf xTpNota == '5'
+        ElseIf xTpNota == '3'
             lRet := MCSVERIF("","","","",(xAlias)->LOJA, (xAlias)->COD_CLIENTE, (xAlias)->DOCUMENTO, (xAlias)->SERIE, (xAlias)->TIPO_NOTA)
         EndIf
         //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
@@ -181,7 +181,7 @@ Static Function MCSVERIF(xPref, xTitulo, xParcela, xTipo, xLoja, xCodCli, xDocum
             lExist := .T.
             //U_MCSLOG("INFO","MCSVERIFICA","Encontrado registro na tabela: " + xAliDoc + " para o título: " + xPref + " " + xTitulo + " " + xParcela + " " + xTipo + " " + xLoja + " " + xCodCli + " " + xTipNota)
         EndIf 
-    ElseIf xTipNota == '5'
+    ElseIf xTipNota == '3'
         (xAliDoc)->(dbSetOrder(2))
         If (xAliDoc)->(dbSeek(xFilial(xAliDoc)+xDocumento+xSerie+xCodCli+xLoja,.F.))
             lExist := .T.
@@ -372,7 +372,7 @@ Static Function QryNProc()
     xQuery += "          + ISNULL(D2.D2_VALISS, 0) " + chr(13)
     xQuery += "        ) " + chr(13)
     xQuery += "    ) AS BASE_IBS_CBS, " + chr(13)
-    xQuery += "'5' AS TIPO_NOTA, "+ chr(13)
+    xQuery += "'3' AS TIPO_NOTA, "+ chr(13)
     xQuery += " A1.A1_NOME AS NOME_CLIENTE,"
     xQuery += "    CASE " + chr(13)
     xQuery += "        WHEN MAX(CASE WHEN DKN.DKN_DOCREF IS NOT NULL THEN 1 ELSE 0 END) = 1 " + chr(13)

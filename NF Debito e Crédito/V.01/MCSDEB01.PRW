@@ -30,7 +30,7 @@ User Function MCSDEB01()
 
     //Montando as cores da legenda
     aAdd(aCores,{xCampo+" == 'N' .And. "+xTabela+"_TPNOTA == '4' ", "BR_VERDE"   })
-    aAdd(aCores,{xCampo+" == 'N' .And. "+xTabela+"_TPNOTA == '5' ", "BR_PINK"    })
+    aAdd(aCores,{xCampo+" == 'N' .And. "+xTabela+"_TPNOTA == '3' ", "BR_PINK"    })
     aAdd(aCores,{xCampo+" == 'S' ", "BR_VERMELHO"  })
 
     //Selecionando a tabela e ordenando
@@ -61,7 +61,7 @@ User Function MCSLEG()
 
     aLegenda := { { "BR_VERDE"      ,    "NF Tipo 4 Não Gerada" },;
                   { "BR_VERMELHO"   ,    "Nf Gerada"     },;
-                  { "BR_PINK"       ,    "NF Tipo 5 Não Gerada"}}
+                  { "BR_PINK"       ,    "NF Tipo 3 Não Gerada"}}
                  
    BRWLEGENDA( cCadastro, "Legenda", aLegenda )
 

@@ -29,7 +29,7 @@ User Function MCSTELA1()
      
     //Setando Legenda
     oMark:AddLegend( xCampo+" == 'N' .And. "+xTabela+"_TPNOTA == '4' ", "GREEN",   "NF Tipo 4 Não Gerada" )
-    oMark:AddLegend( xCampo+" == 'N' .And. "+xTabela+"_TPNOTA == '5' ", "PINK",    "NF Tipo 5 Não Gerada" )
+    oMark:AddLegend( xCampo+" == 'N' .And. "+xTabela+"_TPNOTA == '3' ", "PINK",    "NF Tipo 3 Não Gerada" )
     oMark:AddLegend( xCampo+" == 'S' ", "RED",    "NF Gerada" )
 
      
@@ -55,6 +55,7 @@ Static Function MenuDef()
     ADD OPTION aRotina TITLE 'Visualizar' ACTION 'VIEWDEF.MCSTELA1' OPERATION 2 ACCESS 0
     //ADD OPTION aRotina TITLE 'Alterar'    ACTION 'VIEWDEF.MCSMODEL' OPERATION 4 ACCESS 0
     ADD OPTION aRotina TITLE 'Gerar Nota' ACTION 'U_MCSGERA'       OPERATION 2 ACCESS 0
+    ADD OPTION aRotina TITLE 'TES x CFOP' ACTION 'U_MCSTES'       OPERATION 2 ACCESS 0
     //ADD OPTION aRotina TITLE 'Legenda'    ACTION 'u_zMod1Leg'      OPERATION 2 ACCESS 0
 Return aRotina
  
@@ -120,3 +121,16 @@ Static Function ViewDef()
 
 Return oView
  
+/*/{Protheus.doc} MCSTES
+Monta dela para realizar o De/Para TES x CFOP
+@type function
+@version  
+@author MCS Tecnologia
+@since 5/4/2026
+@return variant, return_description
+/*/ 
+User Function MCSTES()
+
+
+
+Return
