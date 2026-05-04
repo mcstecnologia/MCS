@@ -142,6 +142,11 @@ Static Function MCSTELA(oSay,cSel)
 	//юддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддды
 	aRet := MCSBUSCA(cSel)
 
+    If Len(aRet) == 0
+        MsgInfo("NЦo foram encontrados registros para associaГЦo.")
+        Return
+    EndIf
+
 	//зддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд©
 	//Ё Montagem do Array para a Tela                                       Ё
 	//юддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддды
