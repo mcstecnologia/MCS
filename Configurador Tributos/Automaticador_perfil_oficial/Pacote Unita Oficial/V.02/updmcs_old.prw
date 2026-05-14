@@ -22,107 +22,12 @@
 Função de update de dicionários para compatibilização
 
 @author UPDATE gerado automaticamente
-@since  11/05/2026
+@since  26/02/2026
 @obs    Gerado por EXPORDIC - V.8.0.2.1 EFS / Upd. V.6.4.1 EFS
 @version 1.0
 /*/
 //--------------------------------------------------------------------
-
-//--------------------------------------------------------------
-/*/{Protheus.doc} MyFunction
-Tela para criação das tabelas customizadas
-@type function
-@version  
-@author rodri
-@since 5/11/2026
-@return variant, return_description
-/*/
-User Function MCSUPD(cEmpAmb, cFilAmb)   
-
-	Local oButton1
-	Local oButton2
-	Local oGet1
-	Local cGet1 := Space(3)
-	Local oGet10
-	Local cGet10 := Space(3)
-	Local oGet11
-	Local cGet11 := Space(3)
-	Local oGet2
-	Local cGet2 := Space(3)
-	Local oGet3
-	Local cGet3 := Space(3)
-	Local oGet4
-	Local cGet4 := Space(3)
-	Local oGet5
-	Local cGet5 := Space(3)
-	Local oGet6
-	Local cGet6 := Space(3)
-	Local oGet7
-	Local cGet7 := Space(3)
-	Local oGet8
-	Local cGet8 := Space(3)
-	Local oGet9
-	Local cGet9 := Space(3)
-	Local oGroup1
-	Local oSay1
-	Local oSay10
-	Local oSay11
-	Local oSay12
-	Local oSay2
-	Local oSay3
-	Local oSay5
-	Local oSay6
-	Local oSay7
-	Local oSay8
-	Local oSay9
-	Local nOpc := 0
-	Local aTabs := {}
-	Static oDlg
-
-	DEFINE MSDIALOG oDlg TITLE "UPDMCS - Configurador de Regras" FROM 000, 000  TO 500, 800 COLORS 0, 16777215 PIXEL
-
-		@ 005, 005 GROUP oGroup1 TO 243, 392 PROMPT "Criação de tabelas customizadas - UPDMCS" OF oDlg COLOR 0, 16777215 PIXEL
-		@ 018, 060 SAY oSay1 PROMPT "Tabela de Log:" SIZE 041, 007 OF oDlg COLORS 0, 16777215 PIXEL
-		@ 035, 060 SAY oSay2 PROMPT "Tabela de Regra" SIZE 041, 007 OF oGroup1 COLORS 0, 16777215 PIXEL
-		@ 052, 060 SAY oSay3 PROMPT "Tabela de Perfis" SIZE 041, 007 OF oGroup1 COLORS 0, 16777215 PIXEL
-		@ 071, 060 SAY oSay5 PROMPT "Tabela de Grp Tributário" SIZE 061, 007 OF oGroup1 COLORS 0, 16777215 PIXEL
-		@ 090, 060 SAY oSay6 PROMPT "Tabela de Mun Igual" SIZE 067, 007 OF oGroup1 COLORS 0, 16777215 PIXEL
-		@ 110, 060 SAY oSay7 PROMPT "Tabela de Mun. Diferente" SIZE 065, 007 OF oGroup1 COLORS 0, 16777215 PIXEL
-		@ 130, 060 SAY oSay8 PROMPT "Tabela de Estados" SIZE 066, 007 OF oGroup1 COLORS 0, 16777215 PIXEL
-		@ 151, 060 SAY oSay9 PROMPT "Tabela de NCM Igual" SIZE 063, 007 OF oGroup1 COLORS 0, 16777215 PIXEL
-		@ 172, 060 SAY oSay10 PROMPT "Tabela de NCM Diferente" SIZE 063, 007 OF oGroup1 COLORS 0, 16777215 PIXEL
-		@ 191, 060 SAY oSay11 PROMPT "Tabela de Orig. Produto" SIZE 065, 007 OF oGroup1 COLORS 0, 16777215 PIXEL
-		@ 212, 060 SAY oSay12 PROMPT "Tabela de Tipo Produto" SIZE 063, 007 OF oGroup1 COLORS 0, 16777215 PIXEL
-		@ 018, 136 MSGET oGet1 VAR cGet1 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
-		@ 034, 136 MSGET oGet2 VAR cGet2 SIZE 060, 010 OF oGroup1 COLORS 0, 16777215 PIXEL
-		@ 056, 136 MSGET oGet3 VAR cGet3 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
-		@ 076, 136 MSGET oGet4 VAR cGet4 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
-		@ 096, 136 MSGET oGet5 VAR cGet5 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
-		@ 114, 136 MSGET oGet6 VAR cGet6 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
-		@ 134, 136 MSGET oGet7 VAR cGet7 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
-		@ 154, 136 MSGET oGet8 VAR cGet8 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
-		@ 173, 136 MSGET oGet9 VAR cGet9 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
-		@ 195, 136 MSGET oGet10 VAR cGet10 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
-		@ 214, 136 MSGET oGet11 VAR cGet11 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
-		@ 210, 272 BUTTON oButton1 PROMPT "Continuar" SIZE 037, 012 Action(nOpc := 1,oDlg:End()) OF oDlg PIXEL
-		@ 210, 314 BUTTON oButton2 PROMPT "Fechar" SIZE 037, 012 Action(oDlg:End()) OF oDlg PIXEL
-
-	ACTIVATE MSDIALOG oDlg CENTERED
-
-	If nOpc == 1
-
-		If Empty(cGet1) .Or. Empty(cGet2) .Or. Empty(cGet3) .Or. Empty(cGet4) .Or. Empty(cGet5) .Or. Empty(cGet6);
-			.Or. Empty(cGet7) .Or. Empty(cGet8) .Or. Empty(cGet9) .Or. Empty(cGet10) .Or. Empty(cGet11) 
-			FWAlertError("Não é possível continuar pois existem tabelas não informadas.","UPDMCS")
-		Else
-			U_UPDMCS(cEmpAmb,cFilAmb,cGet1,cGet2,cGet3,cGet4,cGet5,cGet6,cGet7,cGet8,cGet9,cGet10,cGet11)
-		EndIf
-
-	EndIf
-
-Return
-
-User Function UPDMCS( cEmpAmb, cFilAmb,xTabLog,xTabReg,xTabPer,xTabGrpT,xTabMunI,xTabMunD,xTabEst,xTabNcmI,xTabNcmD,xTabOriP,xTabTipP)
+User Function UPDMCS( cEmpAmb, cFilAmb )
 Local   aSay      := {}
 Local   aButton   := {}
 Local   aMarcadas := {}
@@ -137,7 +42,6 @@ Local   cDesc7    := ""
 Local   cMsg      := ""
 Local   lOk       := .F.
 Local   lAuto     := ( cEmpAmb <> NIL .or. cFilAmb <> NIL )
-Local 	aTabs     := {}
 
 Private oMainWnd  := NIL
 Private oProcess  := NIL
@@ -200,37 +104,29 @@ If lOk
 	EndIf
 
 	If !Empty( aMarcadas )
+		If lAuto .OR. MsgNoYes( "Confirma a atualização dos dicionários ?", cTitulo )
+			oProcess := MsNewProcess():New( { | lEnd | lOk := FSTProc( @lEnd, aMarcadas, lAuto ) }, "Atualizando", "Aguarde, atualizando ...", .F. )
+			oProcess:Activate()
 
-		//aadd(aTabs,{xTabLog,xTabReg,xTabGrpT,xTabGrpT,xTabMunI,xTabMunD,xTabEst,xTabNcmI,xTabNcmD,xTabOriP,xTabTipP})
-		//lOk := MCSVALTAB(aTabs)
-
-		//If lOk 
-
-			If lAuto .OR. MsgNoYes( "Confirma a atualização dos dicionários ?", cTitulo )
-				oProcess := MsNewProcess():New( { | lEnd | lOk := FSTProc( @lEnd, aMarcadas, lAuto,xTabLog,xTabReg,xTabPer,xTabGrpT,xTabMunI,xTabMunD,xTabEst,xTabNcmI,xTabNcmD,xTabOriP,xTabTipP ) }, "Atualizando", "Aguarde, atualizando ...", .F. )
-				oProcess:Activate()
-
-				If lAuto
-					If lOk
-						MsgInfo( "Atualização realizada.", "UPDMCS" )
-					Else
-						MsgStop( "Atualização não realizada.", "UPDMCS" )
-					EndIf
-					dbCloseAll()
+			If lAuto
+				If lOk
+					MsgInfo( "Atualização realizada.", "UPDMCS" )
 				Else
-					If lOk
-						Final( "Atualização realizada." )
-					Else
-						Final( "Atualização não realizada." )
-					EndIf
+					MsgStop( "Atualização não realizada.", "UPDMCS" )
 				EndIf
-
+				dbCloseAll()
 			Else
-				Final( "Atualização não realizada." )
+				If lOk
+					Final( "Atualização realizada." )
+				Else
+					Final( "Atualização não realizada." )
+				EndIf
 			EndIf
-		/*Else 
+
+		Else
 			Final( "Atualização não realizada." )
-		EndIf*/
+
+		EndIf
 
 	Else
 		Final( "Atualização não realizada." )
@@ -248,12 +144,12 @@ Return NIL
 Função de processamento da gravação dos arquivos
 
 @author UPDATE gerado automaticamente
-@since  11/05/2026
+@since  26/02/2026
 @obs    Gerado por EXPORDIC - V.8.0.2.1 EFS / Upd. V.6.4.1 EFS
 @version 1.0
 /*/
 //--------------------------------------------------------------------
-Static Function FSTProc( lEnd, aMarcadas, lAutom,xTabLog,xTabReg,xTabPer,xTabGrpT,xTabMunI,xTabMunD,xTabEst,xTabNcmI,xTabNcmD,xTabOriP,xTabTipP)
+Static Function FSTProc( lEnd, aMarcadas, lAuto )
 Local   aInfo     := {}
 Local   aRecnoSM0 := {}
 Local   cAux      := ""
@@ -341,7 +237,7 @@ If ( lOpen := MyOpenSm0(.T.) )
 			AutoGrLog( Replicate( "-", 128 ) )
 			AutoGrLog( " " )
 
-			If !lAutom
+			If !lAuto
 				AutoGrLog( Replicate( "-", 128 ) )
 				AutoGrLog( "Empresa : " + SM0->M0_CODIGO + "/" + SM0->M0_NOME + CRLF )
 			EndIf
@@ -352,18 +248,18 @@ If ( lOpen := MyOpenSm0(.T.) )
 			// Atualiza o dicionário SX2
 			//------------------------------------
 			oProcess:IncRegua1( "Dicionário de arquivos" + " - " + SM0->M0_CODIGO + " " + SM0->M0_NOME + " ..." )
-			FSAtuSX2(xTabLog,xTabReg,xTabPer,xTabGrpT,xTabMunI,xTabMunD,xTabEst,xTabNcmI,xTabNcmD,xTabOriP,xTabTipP)
+			FSAtuSX2()
 
 			//------------------------------------
 			// Atualiza o dicionário SX3
 			//------------------------------------
-			FSAtuSX3(xTabLog,xTabReg,xTabPer,xTabGrpT,xTabMunI,xTabMunD,xTabEst,xTabNcmI,xTabNcmD,xTabOriP,xTabTipP)
+			FSAtuSX3()
 
 			//------------------------------------
 			// Atualiza o dicionário SIX
 			//------------------------------------
 			oProcess:IncRegua1( "Dicionário de índices" + " - " + SM0->M0_CODIGO + " " + SM0->M0_NOME + " ..." )
-			FSAtuSIX(xTabLog,xTabReg,xTabPer,xTabGrpT,xTabMunI,xTabMunD,xTabEst,xTabNcmI,xTabNcmD,xTabOriP,xTabTipP)
+			FSAtuSIX()
 
 			oProcess:IncRegua1( "Dicionário de dados" + " - " + SM0->M0_CODIGO + " " + SM0->M0_NOME + " ..." )
 			oProcess:IncRegua2( "Atualizando campos/índices" )
@@ -413,7 +309,7 @@ If ( lOpen := MyOpenSm0(.T.) )
 			// Atualiza os helps
 			//------------------------------------
 			oProcess:IncRegua1( "Helps de Campo" + " - " + SM0->M0_CODIGO + " " + SM0->M0_NOME + " ..." )
-			FSAtuHlp(xTabLog,xTabReg,xTabPer,xTabGrpT,xTabMunI,xTabMunD,xTabEst,xTabNcmI,xTabNcmD,xTabOriP,xTabTipP)
+			FSAtuHlp()
 
 			AutoGrLog( Replicate( "-", 128 ) )
 			AutoGrLog( " Data / Hora Final.: " + DtoC( Date() ) + " / " + Time() )
@@ -423,7 +319,7 @@ If ( lOpen := MyOpenSm0(.T.) )
 
 		Next nI
 
-		If !lAutom
+		If !lAuto
 
 			cTexto := LeLog()
 
@@ -460,12 +356,12 @@ Return lRet
 Função de processamento da gravação do SX2 - Arquivos
 
 @author UPDATE gerado automaticamente
-@since  11/05/2026
+@since  26/02/2026
 @obs    Gerado por EXPORDIC - V.8.0.2.1 EFS / Upd. V.6.4.1 EFS
 @version 1.0
 /*/
 //--------------------------------------------------------------------
-Static Function FSAtuSX2(xTabLog,xTabReg,xTabPer,xTabGrpT,xTabMunI,xTabMunD,xTabEst,xTabNcmI,xTabNcmD,xTabOriP,xTabTipP)
+Static Function FSAtuSX2()
 Local aEstrut   := {}
 Local aSX2      := {}
 Local cAlias    := ""
@@ -493,13 +389,13 @@ cEmpr := Substr( SX2->X2_ARQUIVO, 4 )
 // Tabela ZZP
 //
 aAdd( aSX2, { ;
-	xTabTipP																, ; //X2_CHAVE
+	'ZZP'																	, ; //X2_CHAVE
 	cPath																	, ; //X2_PATH
-	xTabTipP+cEmpr														    , ; //X2_ARQUIVO
+	'ZZP'+cEmpr																, ; //X2_ARQUIVO
 	'Tipo Produto'															, ; //X2_NOME
 	'Tipo Produto'															, ; //X2_NOMESPA
 	'Tipo Produto'															, ; //X2_NOMEENG
-	'C'																		, ; //X2_MODO
+	'E'																		, ; //X2_MODO
 	''																		, ; //X2_TTS
 	''																		, ; //X2_ROTINA
 	''																		, ; //X2_PYME
@@ -517,16 +413,16 @@ aAdd( aSX2, { ;
 	0																		} ) //X2_MODULO
 
 //
-// Tabela '+xTabOriP+'
+// Tabela ZZQ
 //
 aAdd( aSX2, { ;
-	xTabOriP																	, ; //X2_CHAVE
+	'ZZQ'																	, ; //X2_CHAVE
 	cPath																	, ; //X2_PATH
-	xTabOriP+cEmpr														    , ; //X2_ARQUIVO
+	'ZZQ'+cEmpr																, ; //X2_ARQUIVO
 	'Origem Produto'														, ; //X2_NOME
 	'Origem Produto'														, ; //X2_NOMESPA
 	'Origem Produto'														, ; //X2_NOMEENG
-	'C'																		, ; //X2_MODO
+	'E'																		, ; //X2_MODO
 	''																		, ; //X2_TTS
 	''																		, ; //X2_ROTINA
 	''																		, ; //X2_PYME
@@ -544,16 +440,16 @@ aAdd( aSX2, { ;
 	0																		} ) //X2_MODULO
 
 //
-// Tabela '+xTabNcmD+'
+// Tabela ZZR
 //
 aAdd( aSX2, { ;
-	xTabNcmD																	, ; //X2_CHAVE
+	'ZZR'																	, ; //X2_CHAVE
 	cPath																	, ; //X2_PATH
-	xTabNcmD+cEmpr																, ; //X2_ARQUIVO
+	'ZZR'+cEmpr																, ; //X2_ARQUIVO
 	'Ncm diferente'															, ; //X2_NOME
 	'Ncm diferente'															, ; //X2_NOMESPA
 	'Ncm diferente'															, ; //X2_NOMEENG
-	'C'																		, ; //X2_MODO
+	'E'																		, ; //X2_MODO
 	''																		, ; //X2_TTS
 	''																		, ; //X2_ROTINA
 	''																		, ; //X2_PYME
@@ -571,16 +467,16 @@ aAdd( aSX2, { ;
 	0																		} ) //X2_MODULO
 
 //
-// Tabela '+xTabMunD+'
+// Tabela ZZS
 //
 aAdd( aSX2, { ;
-	xTabMunD																	, ; //X2_CHAVE
+	'ZZS'																	, ; //X2_CHAVE
 	cPath																	, ; //X2_PATH
-	xTabMunD+cEmpr																, ; //X2_ARQUIVO
+	'ZZS'+cEmpr																, ; //X2_ARQUIVO
 	'Municipios Diferentes'													, ; //X2_NOME
 	'Municipios Diferentes'													, ; //X2_NOMESPA
 	'Municipios Diferentes'													, ; //X2_NOMEENG
-	'C'																		, ; //X2_MODO
+	'E'																		, ; //X2_MODO
 	''																		, ; //X2_TTS
 	''																		, ; //X2_ROTINA
 	''																		, ; //X2_PYME
@@ -598,16 +494,16 @@ aAdd( aSX2, { ;
 	0																		} ) //X2_MODULO
 
 //
-// Tabela '+xTabMunI+'
+// Tabela ZZT
 //
 aAdd( aSX2, { ;
-	xTabNcmI																, ; //X2_CHAVE
+	'ZZT'																	, ; //X2_CHAVE
 	cPath																	, ; //X2_PATH
-	xTabNcmI+cEmpr															, ; //X2_ARQUIVO
+	'ZZT'+cEmpr																, ; //X2_ARQUIVO
 	'Ncm Igual'																, ; //X2_NOME
 	'Ncm Igual'																, ; //X2_NOMESPA
 	'Ncm Igual'																, ; //X2_NOMEENG
-	'C'																		, ; //X2_MODO
+	'E'																		, ; //X2_MODO
 	''																		, ; //X2_TTS
 	''																		, ; //X2_ROTINA
 	''																		, ; //X2_PYME
@@ -625,16 +521,16 @@ aAdd( aSX2, { ;
 	0																		} ) //X2_MODULO
 
 //
-// Tabela '+xTabEst+'
+// Tabela ZZU
 //
 aAdd( aSX2, { ;
-	xTabEst																	, ; //X2_CHAVE
+	'ZZU'																	, ; //X2_CHAVE
 	cPath																	, ; //X2_PATH
-	xTabEst+cEmpr																, ; //X2_ARQUIVO
+	'ZZU'+cEmpr																, ; //X2_ARQUIVO
 	'Estados'																, ; //X2_NOME
 	'Estados'																, ; //X2_NOMESPA
 	'Estados'																, ; //X2_NOMEENG
-	'C'																		, ; //X2_MODO
+	'E'																		, ; //X2_MODO
 	''																		, ; //X2_TTS
 	''																		, ; //X2_ROTINA
 	''																		, ; //X2_PYME
@@ -652,16 +548,16 @@ aAdd( aSX2, { ;
 	0																		} ) //X2_MODULO
 
 //
-// Tabela '+xTabMunI+'
+// Tabela ZZV
 //
 aAdd( aSX2, { ;
-	xTabMunI																	, ; //X2_CHAVE
+	'ZZV'																	, ; //X2_CHAVE
 	cPath																	, ; //X2_PATH
-	xTabMunI+cEmpr																, ; //X2_ARQUIVO
+	'ZZV'+cEmpr																, ; //X2_ARQUIVO
 	'Municipios Igual'														, ; //X2_NOME
 	'Municipios Igual'														, ; //X2_NOMESPA
 	'Municipios Igual'														, ; //X2_NOMEENG
-	'C'																		, ; //X2_MODO
+	'E'																		, ; //X2_MODO
 	''																		, ; //X2_TTS
 	''																		, ; //X2_ROTINA
 	''																		, ; //X2_PYME
@@ -679,16 +575,16 @@ aAdd( aSX2, { ;
 	0																		} ) //X2_MODULO
 
 //
-// Tabela '+xTabReg+'
+// Tabela ZZW
 //
 aAdd( aSX2, { ;
-	xTabReg																	, ; //X2_CHAVE
+	'ZZW'																	, ; //X2_CHAVE
 	cPath																	, ; //X2_PATH
-	xTabReg+cEmpr																, ; //X2_ARQUIVO
+	'ZZW'+cEmpr																, ; //X2_ARQUIVO
 	'Gerenciador de Regras'													, ; //X2_NOME
 	'Gerenciador de Regras'													, ; //X2_NOMESPA
 	'Gerenciador de Regras'													, ; //X2_NOMEENG
-	'C'																		, ; //X2_MODO
+	'E'																		, ; //X2_MODO
 	''																		, ; //X2_TTS
 	''																		, ; //X2_ROTINA
 	''																		, ; //X2_PYME
@@ -706,16 +602,16 @@ aAdd( aSX2, { ;
 	0																		} ) //X2_MODULO
 
 //
-// Tabela '+xTabGrpT+'
+// Tabela ZZX
 //
 aAdd( aSX2, { ;
-	xTabGrpT																	, ; //X2_CHAVE
+	'ZZX'																	, ; //X2_CHAVE
 	cPath																	, ; //X2_PATH
-	xTabGrpT+cEmpr																, ; //X2_ARQUIVO
+	'ZZX'+cEmpr																, ; //X2_ARQUIVO
 	'Grupos Tributários'													, ; //X2_NOME
 	'Grupos Tributários'													, ; //X2_NOMESPA
 	'Grupos Tributários'													, ; //X2_NOMEENG
-	'C'																		, ; //X2_MODO
+	'E'																		, ; //X2_MODO
 	''																		, ; //X2_TTS
 	''																		, ; //X2_ROTINA
 	''																		, ; //X2_PYME
@@ -733,16 +629,16 @@ aAdd( aSX2, { ;
 	0																		} ) //X2_MODULO
 
 //
-// Tabela '+xTabPer+'
+// Tabela ZZY
 //
 aAdd( aSX2, { ;
-	xTabPer																	, ; //X2_CHAVE
+	'ZZY'																	, ; //X2_CHAVE
 	cPath																	, ; //X2_PATH
-	xTabPer+cEmpr															, ; //X2_ARQUIVO
+	'ZZY'+cEmpr																, ; //X2_ARQUIVO
 	'Perfis'																, ; //X2_NOME
 	'Perfis'																, ; //X2_NOMESPA
 	'Perfis'																, ; //X2_NOMEENG
-	'C'																		, ; //X2_MODO
+	'E'																		, ; //X2_MODO
 	''																		, ; //X2_TTS
 	''																		, ; //X2_ROTINA
 	''																		, ; //X2_PYME
@@ -760,16 +656,16 @@ aAdd( aSX2, { ;
 	0																		} ) //X2_MODULO
 
 //
-// Tabela '+xTabLog+'
+// Tabela ZZZ
 //
 aAdd( aSX2, { ;
-	xTabLog																	, ; //X2_CHAVE
+	'ZZZ'																	, ; //X2_CHAVE
 	cPath																	, ; //X2_PATH
-	xTabLog+cEmpr																, ; //X2_ARQUIVO
+	'ZZZ'+cEmpr																, ; //X2_ARQUIVO
 	'Monitor gravação perfil - Conf'										, ; //X2_NOME
 	'Monitor gravação perfil - Conf'										, ; //X2_NOMESPA
 	'Monitor gravação perfil - Conf'										, ; //X2_NOMEENG
-	'C'																		, ; //X2_MODO
+	'E'																		, ; //X2_MODO
 	''																		, ; //X2_TTS
 	''																		, ; //X2_ROTINA
 	''																		, ; //X2_PYME
@@ -832,12 +728,12 @@ Return NIL
 Função de processamento da gravação do SX3 - Campos
 
 @author UPDATE gerado automaticamente
-@since  11/05/2026
+@since  26/02/2026
 @obs    Gerado por EXPORDIC - V.8.0.2.1 EFS / Upd. V.6.4.1 EFS
 @version 1.0
 /*/
 //--------------------------------------------------------------------
-Static Function FSAtuSX3(xTabLog,xTabReg,xTabPer,xTabGrpT,xTabMunI,xTabMunD,xTabEst,xTabNcmI,xTabNcmD,xTabOriP,xTabTipP)
+Static Function FSAtuSX3()
 Local aEstrut   := {}
 Local aSX3      := {}
 Local cAlias    := ""
@@ -877,9 +773,9 @@ aEval( aEstrut, { |x| x[2] := SX3->( FieldPos( x[1] ) ) } )
 // Campos Tabela ZZP
 //
 aAdd( aSX3, { ;
-	xTabTipP																	, ; //X3_ARQUIVO
+	'ZZP'																	, ; //X3_ARQUIVO
 	'01'																	, ; //X3_ORDEM
-	xTabTipP+'_FILIAL'															, ; //X3_CAMPO
+	'ZZP_FILIAL'															, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	2																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -924,9 +820,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabTipP																	, ; //X3_ARQUIVO
+	'ZZP'																	, ; //X3_ARQUIVO
 	'02'																	, ; //X3_ORDEM
-	xTabTipP+'_COD'																, ; //X3_CAMPO
+	'ZZP_COD'																, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	6																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -971,9 +867,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabTipP																	, ; //X3_ARQUIVO
+	'ZZP'																	, ; //X3_ARQUIVO
 	'03'																	, ; //X3_ORDEM
-	xTabTipP+'_TIPO'																, ; //X3_CAMPO
+	'ZZP_TIPO'																, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	2																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -1018,12 +914,12 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 //
-// Campos Tabela '+xTabOriP+'
+// Campos Tabela ZZQ
 //
 aAdd( aSX3, { ;
-	xTabOriP																	, ; //X3_ARQUIVO
+	'ZZQ'																	, ; //X3_ARQUIVO
 	'01'																	, ; //X3_ORDEM
-	xTabOriP+'_FILIAL'															, ; //X3_CAMPO
+	'ZZQ_FILIAL'															, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	2																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -1068,9 +964,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabOriP																	, ; //X3_ARQUIVO
+	'ZZQ'																	, ; //X3_ARQUIVO
 	'02'																	, ; //X3_ORDEM
-	xTabOriP+'_COD'																, ; //X3_CAMPO
+	'ZZQ_COD'																, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	6																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -1115,9 +1011,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabOriP																	, ; //X3_ARQUIVO
+	'ZZQ'																	, ; //X3_ARQUIVO
 	'03'																	, ; //X3_ORDEM
-	xTabOriP+'_ORIGEM'															, ; //X3_CAMPO
+	'ZZQ_ORIGEM'															, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	1																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -1162,9 +1058,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabOriP																	, ; //X3_ARQUIVO
+	'ZZQ'																	, ; //X3_ARQUIVO
 	'04'																	, ; //X3_ORDEM
-	xTabOriP+'_DESC'																, ; //X3_CAMPO
+	'ZZQ_DESC'																, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	100																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -1209,12 +1105,12 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 //
-// Campos Tabela '+xTabNcmD+'
+// Campos Tabela ZZR
 //
 aAdd( aSX3, { ;
-	xTabNcmD																	, ; //X3_ARQUIVO
+	'ZZR'																	, ; //X3_ARQUIVO
 	'01'																	, ; //X3_ORDEM
-	xTabNcmD+'_FILIAL'															, ; //X3_CAMPO
+	'ZZR_FILIAL'															, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	2																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -1259,9 +1155,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabNcmD																	, ; //X3_ARQUIVO
+	'ZZR'																	, ; //X3_ARQUIVO
 	'02'																	, ; //X3_ORDEM
-	xTabNcmD+'_COD'																, ; //X3_CAMPO
+	'ZZR_COD'																, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	6																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -1306,9 +1202,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabNcmD																	, ; //X3_ARQUIVO
+	'ZZR'																	, ; //X3_ARQUIVO
 	'03'																	, ; //X3_ORDEM
-	xTabNcmD+'_NCM'																, ; //X3_CAMPO
+	'ZZR_NCM'																, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	8																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -1353,12 +1249,12 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 //
-// Campos Tabela '+xTabMunD+'
+// Campos Tabela ZZS
 //
 aAdd( aSX3, { ;
-	xTabMunD																	, ; //X3_ARQUIVO
+	'ZZS'																	, ; //X3_ARQUIVO
 	'01'																	, ; //X3_ORDEM
-	xTabMunD+'_FILIAL'															, ; //X3_CAMPO
+	'ZZS_FILIAL'															, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	2																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -1403,9 +1299,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabMunD																	, ; //X3_ARQUIVO
+	'ZZS'																	, ; //X3_ARQUIVO
 	'02'																	, ; //X3_ORDEM
-	xTabMunD+'_COD'																, ; //X3_CAMPO
+	'ZZS_COD'																, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	6																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -1450,9 +1346,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabMunD																	, ; //X3_ARQUIVO
+	'ZZS'																	, ; //X3_ARQUIVO
 	'03'																	, ; //X3_ORDEM
-	xTabMunD+'_UF'																, ; //X3_CAMPO
+	'ZZS_UF'																, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	2																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -1497,9 +1393,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabMunD																	, ; //X3_ARQUIVO
+	'ZZS'																	, ; //X3_ARQUIVO
 	'04'																	, ; //X3_ORDEM
-	xTabMunD+'_CODMUN'															, ; //X3_CAMPO
+	'ZZS_CODMUN'															, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	5																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -1544,9 +1440,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabMunD																	, ; //X3_ARQUIVO
+	'ZZS'																	, ; //X3_ARQUIVO
 	'05'																	, ; //X3_ORDEM
-	xTabMunD+'_DESC'																, ; //X3_CAMPO
+	'ZZS_DESC'																, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	30																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -1591,12 +1487,12 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 //
-// Campos Tabela '+xTabNcmI+'
+// Campos Tabela ZZT
 //
 aAdd( aSX3, { ;
-	xTabNcmI																	, ; //X3_ARQUIVO
+	'ZZT'																	, ; //X3_ARQUIVO
 	'01'																	, ; //X3_ORDEM
-	xTabNcmI+'_FILIAL'															, ; //X3_CAMPO
+	'ZZT_FILIAL'															, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	2																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -1641,9 +1537,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabNcmI																	, ; //X3_ARQUIVO
+	'ZZT'																	, ; //X3_ARQUIVO
 	'02'																	, ; //X3_ORDEM
-	xTabNcmI+'_COD'																, ; //X3_CAMPO
+	'ZZT_COD'																, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	6																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -1688,9 +1584,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabNcmI																	, ; //X3_ARQUIVO
+	'ZZT'																	, ; //X3_ARQUIVO
 	'03'																	, ; //X3_ORDEM
-	xTabNcmI+'_NCM'																, ; //X3_CAMPO
+	'ZZT_NCM'																, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	8																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -1735,12 +1631,12 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 //
-// Campos Tabela '+xTabEst+'
+// Campos Tabela ZZU
 //
 aAdd( aSX3, { ;
-	xTabEst																	, ; //X3_ARQUIVO
+	'ZZU'																	, ; //X3_ARQUIVO
 	'01'																	, ; //X3_ORDEM
-	xTabEst+'_FILIAL'															, ; //X3_CAMPO
+	'ZZU_FILIAL'															, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	2																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -1785,9 +1681,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabEst																	, ; //X3_ARQUIVO
+	'ZZU'																	, ; //X3_ARQUIVO
 	'02'																	, ; //X3_ORDEM
-	xTabEst+'_COD'																, ; //X3_CAMPO
+	'ZZU_COD'																, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	6																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -1832,9 +1728,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabEst																	, ; //X3_ARQUIVO
+	'ZZU'																	, ; //X3_ARQUIVO
 	'03'																	, ; //X3_ORDEM
-	xTabEst+'_EST'																, ; //X3_CAMPO
+	'ZZU_EST'																, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	2																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -1879,9 +1775,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabEst																	, ; //X3_ARQUIVO
+	'ZZU'																	, ; //X3_ARQUIVO
 	'04'																	, ; //X3_ORDEM
-	xTabEst+'_DESC'																, ; //X3_CAMPO
+	'ZZU_DESC'																, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	30																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -1926,12 +1822,12 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 //
-// Campos Tabela '+xTabMunI+'
+// Campos Tabela ZZV
 //
 aAdd( aSX3, { ;
-	xTabMunI																	, ; //X3_ARQUIVO
+	'ZZV'																	, ; //X3_ARQUIVO
 	'01'																	, ; //X3_ORDEM
-	xTabMunI+'_FILIAL'															, ; //X3_CAMPO
+	'ZZV_FILIAL'															, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	2																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -1976,9 +1872,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabMunI																	, ; //X3_ARQUIVO
+	'ZZV'																	, ; //X3_ARQUIVO
 	'02'																	, ; //X3_ORDEM
-	xTabMunI+'_COD'																, ; //X3_CAMPO
+	'ZZV_COD'																, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	6																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -2023,9 +1919,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabMunI																	, ; //X3_ARQUIVO
+	'ZZV'																	, ; //X3_ARQUIVO
 	'03'																	, ; //X3_ORDEM
-	xTabMunI+'_EST'																, ; //X3_CAMPO
+	'ZZV_EST'																, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	2																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -2070,9 +1966,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabMunI																	, ; //X3_ARQUIVO
+	'ZZV'																	, ; //X3_ARQUIVO
 	'04'																	, ; //X3_ORDEM
-	xTabMunI+'_CODMUN'															, ; //X3_CAMPO
+	'ZZV_CODMUN'															, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	5																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -2086,7 +1982,7 @@ aAdd( aSX3, { ;
 	''																		, ; //X3_VALID
 	'x       x       x       x       x       x       x       x       x       x       x       x       x       x       x x', ; //X3_USADO
 	''																		, ; //X3_RELACAO
-	'CC2'+xTabMunI+''																, ; //X3_F3
+	'CC2'																	, ; //X3_F3
 	0																		, ; //X3_NIVEL
 	'xxxxxx x'																, ; //X3_RESERV
 	''																		, ; //X3_CHECK
@@ -2117,9 +2013,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabMunI																	, ; //X3_ARQUIVO
+	'ZZV'																	, ; //X3_ARQUIVO
 	'05'																	, ; //X3_ORDEM
-	xTabMunI+'_DESC'																, ; //X3_CAMPO
+	'ZZV_DESC'																, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	50																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -2164,12 +2060,12 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 //
-// Campos Tabela '+xTabReg+'
+// Campos Tabela ZZW
 //
 aAdd( aSX3, { ;
-	xTabReg																	, ; //X3_ARQUIVO
+	'ZZW'																	, ; //X3_ARQUIVO
 	'01'																	, ; //X3_ORDEM
-	xTabReg+'_FILIAL'															, ; //X3_CAMPO
+	'ZZW_FILIAL'															, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	2																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -2214,9 +2110,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabReg																	, ; //X3_ARQUIVO
+	'ZZW'																	, ; //X3_ARQUIVO
 	'02'																	, ; //X3_ORDEM
-	xTabReg+'_COD'																, ; //X3_CAMPO
+	'ZZW_COD'																, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	6																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -2229,7 +2125,7 @@ aAdd( aSX3, { ;
 	''																		, ; //X3_PICTURE
 	''																		, ; //X3_VALID
 	'x       x       x       x       x       x       x       x       x       x       x       x       x       x       x x', ; //X3_USADO
-	''																		, ; //X3_RELACAO
+	'GETSXENUM("ZZW", "ZZW_COD")'											, ; //X3_RELACAO
 	''																		, ; //X3_F3
 	0																		, ; //X3_NIVEL
 	'xxxxxx x'																, ; //X3_RESERV
@@ -2261,9 +2157,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabReg																	, ; //X3_ARQUIVO
+	'ZZW'																	, ; //X3_ARQUIVO
 	'03'																	, ; //X3_ORDEM
-	xTabReg+'_DESC'																, ; //X3_CAMPO
+	'ZZW_DESC'																, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	100																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -2308,9 +2204,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabReg																	, ; //X3_ARQUIVO
+	'ZZW'																	, ; //X3_ARQUIVO
 	'04'																	, ; //X3_ORDEM
-	xTabReg+'_ALIAS'																, ; //X3_CAMPO
+	'ZZW_ALIAS'																, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	3																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -2355,9 +2251,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabReg																	, ; //X3_ARQUIVO
+	'ZZW'																	, ; //X3_ARQUIVO
 	'05'																	, ; //X3_ORDEM
-	xTabReg+'_GRPTRI'															, ; //X3_CAMPO
+	'ZZW_GRPTRI'															, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	3																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -2402,9 +2298,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabReg																	, ; //X3_ARQUIVO
+	'ZZW'																	, ; //X3_ARQUIVO
 	'06'																	, ; //X3_ORDEM
-	xTabReg+'_TIPPAR'															, ; //X3_CAMPO
+	'ZZW_TIPPAR'															, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	1																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -2449,9 +2345,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabReg																	, ; //X3_ARQUIVO
+	'ZZW'																	, ; //X3_ARQUIVO
 	'07'																	, ; //X3_ORDEM
-	xTabReg+'_CONTRI'															, ; //X3_CAMPO
+	'ZZW_CONTRI'															, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	1																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -2496,9 +2392,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabReg																	, ; //X3_ARQUIVO
+	'ZZW'																	, ; //X3_ARQUIVO
 	'08'																	, ; //X3_ORDEM
-	xTabReg+'_EST'																, ; //X3_CAMPO
+	'ZZW_EST'																, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	2																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -2543,9 +2439,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabReg																	, ; //X3_ARQUIVO
+	'ZZW'																	, ; //X3_ARQUIVO
 	'09'																	, ; //X3_ORDEM
-	xTabReg+'_ESTEXC'															, ; //X3_CAMPO
+	'ZZW_ESTEXC'															, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	2																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -2590,9 +2486,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabReg																	, ; //X3_ARQUIVO
+	'ZZW'																	, ; //X3_ARQUIVO
 	'10'																	, ; //X3_ORDEM
-	xTabReg+'_SUFRAM'															, ; //X3_CAMPO
+	'ZZW_SUFRAM'															, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	3																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -2637,9 +2533,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabReg																	, ; //X3_ARQUIVO
+	'ZZW'																	, ; //X3_ARQUIVO
 	'11'																	, ; //X3_ORDEM
-	xTabReg+'_CODMUN'															, ; //X3_CAMPO
+	'ZZW_CODMUN'															, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	200																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -2684,9 +2580,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabReg																	, ; //X3_ARQUIVO
+	'ZZW'																	, ; //X3_ARQUIVO
 	'12'																	, ; //X3_ORDEM
-	xTabReg+'_SIMPLE'															, ; //X3_CAMPO
+	'ZZW_SIMPLE'															, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	1																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -2731,9 +2627,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabReg																	, ; //X3_ARQUIVO
+	'ZZW'																	, ; //X3_ARQUIVO
 	'13'																	, ; //X3_ORDEM
-	xTabReg+'_REGRA1'															, ; //X3_CAMPO
+	'ZZW_REGRA1'															, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	1																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -2778,9 +2674,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabReg																	, ; //X3_ARQUIVO
+	'ZZW'																	, ; //X3_ARQUIVO
 	'14'																	, ; //X3_ORDEM
-	xTabReg+'_REGRA2'															, ; //X3_CAMPO
+	'ZZW_REGRA2'															, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	1																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -2825,9 +2721,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabReg																	, ; //X3_ARQUIVO
+	'ZZW'																	, ; //X3_ARQUIVO
 	'15'																	, ; //X3_ORDEM
-	xTabReg+'_REGRA3'															, ; //X3_CAMPO
+	'ZZW_REGRA3'															, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	1																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -2872,9 +2768,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabReg																	, ; //X3_ARQUIVO
+	'ZZW'																	, ; //X3_ARQUIVO
 	'16'																	, ; //X3_ORDEM
-	xTabReg+'_REGRA4'															, ; //X3_CAMPO
+	'ZZW_REGRA4'															, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	1																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -2919,9 +2815,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabReg																	, ; //X3_ARQUIVO
+	'ZZW'																	, ; //X3_ARQUIVO
 	'17'																	, ; //X3_ORDEM
-	xTabReg+'_REGRA5'															, ; //X3_CAMPO
+	'ZZW_REGRA5'															, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	1																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -2966,9 +2862,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabReg																	, ; //X3_ARQUIVO
+	'ZZW'																	, ; //X3_ARQUIVO
 	'18'																	, ; //X3_ORDEM
-	xTabReg+'_REGRA6'															, ; //X3_CAMPO
+	'ZZW_REGRA6'															, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	1																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -3013,9 +2909,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabReg																	, ; //X3_ARQUIVO
+	'ZZW'																	, ; //X3_ARQUIVO
 	'19'																	, ; //X3_ORDEM
-	xTabReg+'_REGRA7'															, ; //X3_CAMPO
+	'ZZW_REGRA7'															, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	1																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -3060,9 +2956,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabReg																	, ; //X3_ARQUIVO
+	'ZZW'																	, ; //X3_ARQUIVO
 	'20'																	, ; //X3_ORDEM
-	xTabReg+'_REGRA8'															, ; //X3_CAMPO
+	'ZZW_REGRA8'															, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	1																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -3107,12 +3003,12 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 //
-// Campos Tabela '+xTabGrpT+'
+// Campos Tabela ZZX
 //
 aAdd( aSX3, { ;
-	xTabGrpT																	, ; //X3_ARQUIVO
+	'ZZX'																	, ; //X3_ARQUIVO
 	'01'																	, ; //X3_ORDEM
-	xTabGrpT+'_FILIAL'															, ; //X3_CAMPO
+	'ZZX_FILIAL'															, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	2																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -3157,9 +3053,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabGrpT																	, ; //X3_ARQUIVO
+	'ZZX'																	, ; //X3_ARQUIVO
 	'02'																	, ; //X3_ORDEM
-	xTabGrpT+'_COD'																, ; //X3_CAMPO
+	'ZZX_COD'																, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	6																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -3204,9 +3100,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabGrpT																	, ; //X3_ARQUIVO
+	'ZZX'																	, ; //X3_ARQUIVO
 	'03'																	, ; //X3_ORDEM
-	xTabGrpT+'_GRPTRI'															, ; //X3_CAMPO
+	'ZZX_GRPTRI'															, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	3																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -3251,12 +3147,12 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 //
-// Campos Tabela '+xTabPer+'
+// Campos Tabela ZZY
 //
 aAdd( aSX3, { ;
-	xTabPer																	, ; //X3_ARQUIVO
+	'ZZY'																	, ; //X3_ARQUIVO
 	'01'																	, ; //X3_ORDEM
-	xTabPer+'_FILIAL'															, ; //X3_CAMPO
+	'ZZY_FILIAL'															, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	2																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -3301,9 +3197,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabPer																	, ; //X3_ARQUIVO
+	'ZZY'																	, ; //X3_ARQUIVO
 	'02'																	, ; //X3_ORDEM
-	xTabPer+'_COD'																, ; //X3_CAMPO
+	'ZZY_COD'																, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	6																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -3348,9 +3244,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabPer																	, ; //X3_ARQUIVO
+	'ZZY'																	, ; //X3_ARQUIVO
 	'03'																	, ; //X3_ORDEM
-	xTabPer+'_CODPER'															, ; //X3_CAMPO
+	'ZZY_CODPER'															, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	6																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -3395,9 +3291,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabPer																	, ; //X3_ARQUIVO
+	'ZZY'																	, ; //X3_ARQUIVO
 	'04'																	, ; //X3_ORDEM
-	xTabPer+'_DESC'																, ; //X3_CAMPO
+	'ZZY_DESC'																, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	100																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -3442,12 +3338,12 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 //
-// Campos Tabela '+xTabLog+'
+// Campos Tabela ZZZ
 //
 aAdd( aSX3, { ;
-	xTabLog																	, ; //X3_ARQUIVO
+	'ZZZ'																	, ; //X3_ARQUIVO
 	'01'																	, ; //X3_ORDEM
-	xTabLog+'_FILIAL'															, ; //X3_CAMPO
+	'ZZZ_FILIAL'															, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	2																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -3492,9 +3388,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabLog																	, ; //X3_ARQUIVO
+	'ZZZ'																	, ; //X3_ARQUIVO
 	'02'																	, ; //X3_ORDEM
-	xTabLog+'_CHAVE'																, ; //X3_CAMPO
+	'ZZZ_CHAVE'																, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	20																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -3539,9 +3435,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabLog																	, ; //X3_ARQUIVO
+	'ZZZ'																	, ; //X3_ARQUIVO
 	'03'																	, ; //X3_ORDEM
-	xTabLog+'_DATA'																, ; //X3_CAMPO
+	'ZZZ_DATA'																, ; //X3_CAMPO
 	'D'																		, ; //X3_TIPO
 	8																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -3586,9 +3482,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabLog																	, ; //X3_ARQUIVO
+	'ZZZ'																	, ; //X3_ARQUIVO
 	'04'																	, ; //X3_ORDEM
-	xTabLog+'_ALIAS'																, ; //X3_CAMPO
+	'ZZZ_ALIAS'																, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	3																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -3633,9 +3529,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabLog																	, ; //X3_ARQUIVO
+	'ZZZ'																	, ; //X3_ARQUIVO
 	'05'																	, ; //X3_ORDEM
-	xTabLog+'_SITUAC'															, ; //X3_CAMPO
+	'ZZZ_SITUAC'															, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	1																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -3680,9 +3576,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabLog																	, ; //X3_ARQUIVO
+	'ZZZ'																	, ; //X3_ARQUIVO
 	'06'																	, ; //X3_ORDEM
-	xTabLog+'_PERFIL'															, ; //X3_CAMPO
+	'ZZZ_PERFIL'															, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	6																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -3727,9 +3623,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabLog																	, ; //X3_ARQUIVO
+	'ZZZ'																	, ; //X3_ARQUIVO
 	'07'																	, ; //X3_ORDEM
-	xTabLog+'_DESC'																, ; //X3_CAMPO
+	'ZZZ_DESC'																, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	50																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -3774,9 +3670,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabLog																	, ; //X3_ARQUIVO
+	'ZZZ'																	, ; //X3_ARQUIVO
 	'08'																	, ; //X3_ORDEM
-	xTabLog+'_ACAO'																, ; //X3_CAMPO
+	'ZZZ_ACAO'																, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	120																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -3821,9 +3717,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabLog																	, ; //X3_ARQUIVO
+	'ZZZ'																	, ; //X3_ARQUIVO
 	'09'																	, ; //X3_ORDEM
-	xTabLog+'_USER'																, ; //X3_CAMPO
+	'ZZZ_USER'																, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	30																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -3966,12 +3862,12 @@ Return NIL
 Função de processamento da gravação do SIX - Indices
 
 @author UPDATE gerado automaticamente
-@since  11/05/2026
+@since  26/02/2026
 @obs    Gerado por EXPORDIC - V.8.0.2.1 EFS / Upd. V.6.4.1 EFS
 @version 1.0
 /*/
 //--------------------------------------------------------------------
-Static Function FSAtuSIX(xTabLog,xTabReg,xTabPer,xTabGrpT,xTabMunI,xTabMunD,xTabEst,xTabNcmI,xTabNcmD,xTabOriP,xTabTipP)
+Static Function FSAtuSIX()
 Local aEstrut   := {}
 Local aSIX      := {}
 Local lAlt      := .F.
@@ -3988,9 +3884,9 @@ aEstrut := { "INDICE" , "ORDEM" , "CHAVE", "DESCRICAO", "DESCSPA"  , ;
 // Tabela ZZP
 //
 aAdd( aSIX, { ;
-	xTabTipP																	, ; //INDICE
+	'ZZP'																	, ; //INDICE
 	'1'																		, ; //ORDEM
-	xTabTipP+'_FILIAL  + '+xTabTipP+'_COD'													, ; //CHAVE
+	'ZZP_FILIAL  + ZZP_COD'													, ; //CHAVE
 	'Código'																, ; //DESCRICAO
 	'Código'																, ; //DESCSPA
 	'Código'																, ; //DESCENG
@@ -4000,9 +3896,9 @@ aAdd( aSIX, { ;
 	'N'																		} ) //SHOWPESQ
 
 aAdd( aSIX, { ;
-	xTabTipP																	, ; //INDICE
+	'ZZP'																	, ; //INDICE
 	'2'																		, ; //ORDEM
-	xTabTipP+'_FILIAL + '+xTabTipP+'_COD + '+xTabTipP+'_TIPO'										, ; //CHAVE
+	'ZZP_FILIAL + ZZP_COD + ZZP_TIPO'										, ; //CHAVE
 	'Código + Tipo'															, ; //DESCRICAO
 	'Código + Tipo'															, ; //DESCSPA
 	'Código + Tipo'															, ; //DESCENG
@@ -4012,12 +3908,12 @@ aAdd( aSIX, { ;
 	'N'																		} ) //SHOWPESQ
 
 //
-// Tabela '+xTabOriP+'
+// Tabela ZZQ
 //
 aAdd( aSIX, { ;
-	xTabOriP																	, ; //INDICE
+	'ZZQ'																	, ; //INDICE
 	'1'																		, ; //ORDEM
-	xTabOriP+'_FILIAL + '+xTabOriP+'_COD'													, ; //CHAVE
+	'ZZQ_FILIAL + ZZQ_COD'													, ; //CHAVE
 	'Código'																, ; //DESCRICAO
 	'Código'																, ; //DESCSPA
 	'Código'																, ; //DESCENG
@@ -4027,9 +3923,9 @@ aAdd( aSIX, { ;
 	'N'																		} ) //SHOWPESQ
 
 aAdd( aSIX, { ;
-	xTabOriP																	, ; //INDICE
+	'ZZQ'																	, ; //INDICE
 	'2'																		, ; //ORDEM
-	xTabOriP+'_FILIAL + '+xTabOriP+'_COD + '+xTabOriP+'_ORIGEM'										, ; //CHAVE
+	'ZZQ_FILIAL + ZZQ_COD + ZZQ_ORIGEM'										, ; //CHAVE
 	'Código + Origem'														, ; //DESCRICAO
 	'Código + Origem'														, ; //DESCSPA
 	'Código + Origem'														, ; //DESCENG
@@ -4039,12 +3935,12 @@ aAdd( aSIX, { ;
 	'N'																		} ) //SHOWPESQ
 
 //
-// Tabela '+xTabNcmD+'
+// Tabela ZZR
 //
 aAdd( aSIX, { ;
-	xTabNcmD																	, ; //INDICE
+	'ZZR'																	, ; //INDICE
 	'1'																		, ; //ORDEM
-	xTabNcmD+'_FILIAL'															, ; //CHAVE
+	'ZZR_FILIAL'															, ; //CHAVE
 	'Filial'																, ; //DESCRICAO
 	'Filial'																, ; //DESCSPA
 	'Filial'																, ; //DESCENG
@@ -4054,9 +3950,9 @@ aAdd( aSIX, { ;
 	'N'																		} ) //SHOWPESQ
 
 aAdd( aSIX, { ;
-	xTabNcmD																	, ; //INDICE
+	'ZZR'																	, ; //INDICE
 	'2'																		, ; //ORDEM
-	xTabNcmD+'_FILIAL + '+xTabNcmD+'_COD'													, ; //CHAVE
+	'ZZR_FILIAL + ZZR_COD'													, ; //CHAVE
 	'Código'																, ; //DESCRICAO
 	'Código'																, ; //DESCSPA
 	'Código'																, ; //DESCENG
@@ -4066,9 +3962,9 @@ aAdd( aSIX, { ;
 	'N'																		} ) //SHOWPESQ
 
 aAdd( aSIX, { ;
-	xTabNcmD																	, ; //INDICE
+	'ZZR'																	, ; //INDICE
 	'3'																		, ; //ORDEM
-	xTabNcmD+'_FILIAL + '+xTabNcmD+'_COD + '+xTabNcmD+'_NCM'										, ; //CHAVE
+	'ZZR_FILIAL + ZZR_COD + ZZR_NCM'										, ; //CHAVE
 	'Código + NCM'															, ; //DESCRICAO
 	'Código + NCM'															, ; //DESCSPA
 	'Código + NCM'															, ; //DESCENG
@@ -4078,12 +3974,12 @@ aAdd( aSIX, { ;
 	'N'																		} ) //SHOWPESQ
 
 //
-// Tabela '+xTabMunD+'
+// Tabela ZZS
 //
 aAdd( aSIX, { ;
-	xTabMunD																	, ; //INDICE
+	'ZZS'																	, ; //INDICE
 	'1'																		, ; //ORDEM
-	xTabMunD+'_FILIAL'															, ; //CHAVE
+	'ZZS_FILIAL'															, ; //CHAVE
 	'Filial'																, ; //DESCRICAO
 	'Filial'																, ; //DESCSPA
 	'Filial'																, ; //DESCENG
@@ -4093,9 +3989,9 @@ aAdd( aSIX, { ;
 	'N'																		} ) //SHOWPESQ
 
 aAdd( aSIX, { ;
-	xTabMunD																	, ; //INDICE
+	'ZZS'																	, ; //INDICE
 	'2'																		, ; //ORDEM
-	xTabMunD+'_FILIAL + '+xTabMunD+'_COD'													, ; //CHAVE
+	'ZZS_FILIAL + ZZS_COD'													, ; //CHAVE
 	'Código'																, ; //DESCRICAO
 	'Código'																, ; //DESCSPA
 	'Código'																, ; //DESCENG
@@ -4105,9 +4001,9 @@ aAdd( aSIX, { ;
 	'N'																		} ) //SHOWPESQ
 
 aAdd( aSIX, { ;
-	xTabMunD																	, ; //INDICE
+	'ZZS'																	, ; //INDICE
 	'3'																		, ; //ORDEM
-	xTabMunD+'_FILIAL + '+xTabMunD+'_COD + '+xTabMunD+'_UF'											, ; //CHAVE
+	'ZZS_FILIAL + ZZS_COD + ZZS_UF'											, ; //CHAVE
 	'Código + UF'															, ; //DESCRICAO
 	'Código + UF'															, ; //DESCSPA
 	'Código + UF'															, ; //DESCENG
@@ -4117,9 +4013,9 @@ aAdd( aSIX, { ;
 	'N'																		} ) //SHOWPESQ
 
 aAdd( aSIX, { ;
-	xTabMunD																	, ; //INDICE
+	'ZZS'																	, ; //INDICE
 	'4'																		, ; //ORDEM
-	xTabMunD+'_FILIAL + '+xTabMunD+'_COD + '+xTabMunD+'_UF + '+xTabMunD+'_CODMUN'							, ; //CHAVE
+	'ZZS_FILIAL + ZZS_COD + ZZS_UF + ZZS_CODMUN'							, ; //CHAVE
 	'Código + Uf + Cod Município'											, ; //DESCRICAO
 	'Código + Uf + Cod Município'											, ; //DESCSPA
 	'Código + Uf + Cod Município'											, ; //DESCENG
@@ -4129,12 +4025,12 @@ aAdd( aSIX, { ;
 	'N'																		} ) //SHOWPESQ
 
 //
-// Tabela '+xTabMunI+'
+// Tabela ZZT
 //
 aAdd( aSIX, { ;
-	xTabMunI																	, ; //INDICE
+	'ZZT'																	, ; //INDICE
 	'1'																		, ; //ORDEM
-	xTabMunI+'_FILIAL'															, ; //CHAVE
+	'ZZT_FILIAL'															, ; //CHAVE
 	'Filial'																, ; //DESCRICAO
 	'Filial'																, ; //DESCSPA
 	'Filial'																, ; //DESCENG
@@ -4144,9 +4040,9 @@ aAdd( aSIX, { ;
 	'N'																		} ) //SHOWPESQ
 
 aAdd( aSIX, { ;
-	xTabMunI																	, ; //INDICE
+	'ZZT'																	, ; //INDICE
 	'2'																		, ; //ORDEM
-	xTabMunI+'_FILIAL + '+xTabMunI+'_COD'													, ; //CHAVE
+	'ZZT_FILIAL + ZZT_COD'													, ; //CHAVE
 	'Código'																, ; //DESCRICAO
 	'Código'																, ; //DESCSPA
 	'Código'																, ; //DESCENG
@@ -4156,9 +4052,9 @@ aAdd( aSIX, { ;
 	'N'																		} ) //SHOWPESQ
 
 aAdd( aSIX, { ;
-	xTabMunI																	, ; //INDICE
+	'ZZT'																	, ; //INDICE
 	'3'																		, ; //ORDEM
-	xTabMunI+'_FILIAL + '+xTabMunI+'_COD + '+xTabMunI+'_NCM'										, ; //CHAVE
+	'ZZT_FILIAL + ZZT_COD + ZZT_NCM'										, ; //CHAVE
 	'Código + NCM'															, ; //DESCRICAO
 	'Código + NCM'															, ; //DESCSPA
 	'Código + NCM'															, ; //DESCENG
@@ -4168,12 +4064,12 @@ aAdd( aSIX, { ;
 	'N'																		} ) //SHOWPESQ
 
 //
-// Tabela '+xTabEst+'
+// Tabela ZZU
 //
 aAdd( aSIX, { ;
-	xTabEst																	, ; //INDICE
+	'ZZU'																	, ; //INDICE
 	'1'																		, ; //ORDEM
-	xTabEst+'_FILIAL'															, ; //CHAVE
+	'ZZU_FILIAL'															, ; //CHAVE
 	'Filial'																, ; //DESCRICAO
 	'Filial'																, ; //DESCSPA
 	'Filial'																, ; //DESCENG
@@ -4183,9 +4079,9 @@ aAdd( aSIX, { ;
 	'N'																		} ) //SHOWPESQ
 
 aAdd( aSIX, { ;
-	xTabEst																	, ; //INDICE
+	'ZZU'																	, ; //INDICE
 	'2'																		, ; //ORDEM
-	xTabEst+'_FILIAL + '+xTabEst+'_COD'													, ; //CHAVE
+	'ZZU_FILIAL + ZZU_COD'													, ; //CHAVE
 	'Código'																, ; //DESCRICAO
 	'Código'																, ; //DESCSPA
 	'Código'																, ; //DESCENG
@@ -4195,9 +4091,9 @@ aAdd( aSIX, { ;
 	'N'																		} ) //SHOWPESQ
 
 aAdd( aSIX, { ;
-	xTabEst																	, ; //INDICE
+	'ZZU'																	, ; //INDICE
 	'3'																		, ; //ORDEM
-	xTabEst+'_FILIAL + '+xTabEst+'_COD + '+xTabEst+'_EST'										, ; //CHAVE
+	'ZZU_FILIAL + ZZU_COD + ZZU_EST'										, ; //CHAVE
 	'Código + UF'															, ; //DESCRICAO
 	'Código + UF'															, ; //DESCSPA
 	'Código + UF'															, ; //DESCENG
@@ -4207,12 +4103,12 @@ aAdd( aSIX, { ;
 	'N'																		} ) //SHOWPESQ
 
 //
-// Tabela '+xTabMunI+'
+// Tabela ZZV
 //
 aAdd( aSIX, { ;
-	xTabMunI																	, ; //INDICE
+	'ZZV'																	, ; //INDICE
 	'1'																		, ; //ORDEM
-	xTabMunI+'_FILIAL'															, ; //CHAVE
+	'ZZV_FILIAL'															, ; //CHAVE
 	'Filial'																, ; //DESCRICAO
 	'Código'																, ; //DESCSPA
 	'Código'																, ; //DESCENG
@@ -4222,9 +4118,9 @@ aAdd( aSIX, { ;
 	'N'																		} ) //SHOWPESQ
 
 aAdd( aSIX, { ;
-	xTabMunI																	, ; //INDICE
+	'ZZV'																	, ; //INDICE
 	'2'																		, ; //ORDEM
-	xTabMunI+'_FILIAL + '+xTabMunI+'_COD'													, ; //CHAVE
+	'ZZV_FILIAL + ZZV_COD'													, ; //CHAVE
 	'Código'																, ; //DESCRICAO
 	'Código'																, ; //DESCSPA
 	'Código'																, ; //DESCENG
@@ -4234,9 +4130,9 @@ aAdd( aSIX, { ;
 	'N'																		} ) //SHOWPESQ
 
 aAdd( aSIX, { ;
-	xTabMunI																	, ; //INDICE
+	'ZZV'																	, ; //INDICE
 	'3'																		, ; //ORDEM
-	xTabMunI+'_FILIAL + '+xTabMunI+'_COD + '+xTabMunI+'_EST + '+xTabMunI+'_CODMUN'							, ; //CHAVE
+	'ZZV_FILIAL + ZZV_COD + ZZV_EST + ZZV_CODMUN'							, ; //CHAVE
 	'Codigo + Estado + Município'											, ; //DESCRICAO
 	'Codigo + Estado + Município'											, ; //DESCSPA
 	'Codigo + Estado + Município'											, ; //DESCENG
@@ -4246,12 +4142,12 @@ aAdd( aSIX, { ;
 	'N'																		} ) //SHOWPESQ
 
 //
-// Tabela '+xTabReg+'
+// Tabela ZZW
 //
 aAdd( aSIX, { ;
-	xTabReg																	, ; //INDICE
+	'ZZW'																	, ; //INDICE
 	'1'																		, ; //ORDEM
-	xTabReg+'_FILIAL + '+xTabReg+'_COD'													, ; //CHAVE
+	'ZZW_FILIAL + ZZW_COD'													, ; //CHAVE
 	'Código'																, ; //DESCRICAO
 	'Código'																, ; //DESCSPA
 	'Código'																, ; //DESCENG
@@ -4261,12 +4157,12 @@ aAdd( aSIX, { ;
 	'S'																		} ) //SHOWPESQ
 
 //
-// Tabela '+xTabGrpT+'
+// Tabela ZZX
 //
 aAdd( aSIX, { ;
-	xTabGrpT																	, ; //INDICE
+	'ZZX'																	, ; //INDICE
 	'1'																		, ; //ORDEM
-	xTabGrpT+'_FILIAL'															, ; //CHAVE
+	'ZZX_FILIAL'															, ; //CHAVE
 	'Filial'																, ; //DESCRICAO
 	'Código'																, ; //DESCSPA
 	'Código'																, ; //DESCENG
@@ -4276,9 +4172,9 @@ aAdd( aSIX, { ;
 	'N'																		} ) //SHOWPESQ
 
 aAdd( aSIX, { ;
-	xTabGrpT																	, ; //INDICE
+	'ZZX'																	, ; //INDICE
 	'2'																		, ; //ORDEM
-	xTabGrpT+'_FILIAL + '+xTabGrpT+'_COD'													, ; //CHAVE
+	'ZZX_FILIAL + ZZX_COD'													, ; //CHAVE
 	'Código'																, ; //DESCRICAO
 	'Código'																, ; //DESCSPA
 	'Código'																, ; //DESCENG
@@ -4288,9 +4184,9 @@ aAdd( aSIX, { ;
 	'N'																		} ) //SHOWPESQ
 
 aAdd( aSIX, { ;
-	xTabGrpT																	, ; //INDICE
+	'ZZX'																	, ; //INDICE
 	'3'																		, ; //ORDEM
-	xTabGrpT+'_FILIAL + '+xTabGrpT+'_COD + '+xTabGrpT+'_GRPTRI'										, ; //CHAVE
+	'ZZX_FILIAL + ZZX_COD + ZZX_GRPTRI'										, ; //CHAVE
 	'Código + Grp Trib'														, ; //DESCRICAO
 	'Código + Grp Trib'														, ; //DESCSPA
 	'Código + Grp Trib'														, ; //DESCENG
@@ -4300,12 +4196,12 @@ aAdd( aSIX, { ;
 	'N'																		} ) //SHOWPESQ
 
 //
-// Tabela '+xTabPer+'
+// Tabela ZZY
 //
 aAdd( aSIX, { ;
-	xTabPer																	, ; //INDICE
+	'ZZY'																	, ; //INDICE
 	'1'																		, ; //ORDEM
-	xTabPer+'_FILIAL'															, ; //CHAVE
+	'ZZY_FILIAL'															, ; //CHAVE
 	'Filial'																, ; //DESCRICAO
 	'Código'																, ; //DESCSPA
 	'Código'																, ; //DESCENG
@@ -4315,9 +4211,9 @@ aAdd( aSIX, { ;
 	'N'																		} ) //SHOWPESQ
 
 aAdd( aSIX, { ;
-	xTabPer																	, ; //INDICE
+	'ZZY'																	, ; //INDICE
 	'2'																		, ; //ORDEM
-	xTabPer+'_FILIAL + '+xTabPer+'_COD'													, ; //CHAVE
+	'ZZY_FILIAL + ZZY_COD'													, ; //CHAVE
 	'Código'																, ; //DESCRICAO
 	'Código'																, ; //DESCSPA
 	'Código'																, ; //DESCENG
@@ -4327,9 +4223,9 @@ aAdd( aSIX, { ;
 	'N'																		} ) //SHOWPESQ
 
 aAdd( aSIX, { ;
-	xTabPer																	, ; //INDICE
+	'ZZY'																	, ; //INDICE
 	'3'																		, ; //ORDEM
-	xTabPer+'_FILIAL + '+xTabPer+'_COD + '+xTabPer+'_CODPER'										, ; //CHAVE
+	'ZZY_FILIAL + ZZY_COD + ZZY_CODPER'										, ; //CHAVE
 	'Código + Perfil'														, ; //DESCRICAO
 	'Código + Perfil'														, ; //DESCSPA
 	'Código + Perfil'														, ; //DESCENG
@@ -4339,12 +4235,12 @@ aAdd( aSIX, { ;
 	'N'																		} ) //SHOWPESQ
 
 //
-// Tabela '+xTabLog+'
+// Tabela ZZZ
 //
 aAdd( aSIX, { ;
-	xTabLog																	, ; //INDICE
+	'ZZZ'																	, ; //INDICE
 	'1'																		, ; //ORDEM
-	xTabLog+'_FILIAL + '+xTabLog+'_ALIAS'												, ; //CHAVE
+	'ZZZ_FILIAL + ZZZ_ALIAS'												, ; //CHAVE
 	'Tabela'																, ; //DESCRICAO
 	'Tabela'																, ; //DESCSPA
 	'Tabela'																, ; //DESCENG
@@ -4354,9 +4250,9 @@ aAdd( aSIX, { ;
 	'N'																		} ) //SHOWPESQ
 
 aAdd( aSIX, { ;
-	xTabLog																	, ; //INDICE
+	'ZZZ'																	, ; //INDICE
 	'2'																		, ; //ORDEM
-	xTabLog+'_FILIAL + '+xTabLog+'_DATA'													, ; //CHAVE
+	'ZZZ_FILIAL + ZZZ_DATA'													, ; //CHAVE
 	'Data'																	, ; //DESCRICAO
 	'Data'																	, ; //DESCSPA
 	'Data'																	, ; //DESCENG
@@ -4366,9 +4262,9 @@ aAdd( aSIX, { ;
 	'S'																		} ) //SHOWPESQ
 
 aAdd( aSIX, { ;
-	xTabLog																	, ; //INDICE
+	'ZZZ'																	, ; //INDICE
 	'3'																		, ; //ORDEM
-	xTabLog+'_FILIAL + '+xTabLog+'_CHAVE'												, ; //CHAVE
+	'ZZZ_FILIAL + ZZZ_CHAVE'												, ; //CHAVE
 	'Chave'																	, ; //DESCRICAO
 	'Chave'																	, ; //DESCSPA
 	'Chave'																	, ; //DESCENG
@@ -4431,7 +4327,7 @@ Return NIL
 Função de processamento da gravação do SX6 - Parâmetros
 
 @author UPDATE gerado automaticamente
-@since  11/05/2026
+@since  26/02/2026
 @obs    Gerado por EXPORDIC - V.8.0.2.1 EFS / Upd. V.6.4.1 EFS
 @version 1.0
 /*/
@@ -4460,54 +4356,6 @@ aEstrut := { "X6_FIL"    , "X6_VAR"    , "X6_TIPO"   , "X6_DESCRIC", "X6_DSCSPA"
 
 aAdd( aSX6, { ;
 	'  '																	, ; //X6_FIL
-	'MV_XATVCLI'															, ; //X6_VAR
-	'L'																		, ; //X6_TIPO
-	'MCS -  Ativa a integração automatica dos clientes'						, ; //X6_DESCRIC
-	''																		, ; //X6_DSCSPA
-	''																		, ; //X6_DSCENG
-	''																		, ; //X6_DESC1
-	''																		, ; //X6_DSCSPA1
-	''																		, ; //X6_DSCENG1
-	''																		, ; //X6_DESC2
-	''																		, ; //X6_DSCSPA2
-	''																		, ; //X6_DSCENG2
-	'.F.'																	, ; //X6_CONTEUD
-	''																		, ; //X6_CONTSPA
-	''																		, ; //X6_CONTENG
-	'U'																		, ; //X6_PROPRI
-	''																		, ; //X6_VALID
-	''																		, ; //X6_INIT
-	''																		, ; //X6_DEFPOR
-	''																		, ; //X6_DEFSPA
-	''																		, ; //X6_DEFENG
-	''																		} ) //X6_PYME
-
-aAdd( aSX6, { ;
-	'  '																	, ; //X6_FIL
-	'MV_XATVFOR'															, ; //X6_VAR
-	'L'																		, ; //X6_TIPO
-	'MCS - Ativa a integração automática dos fornecedor'					, ; //X6_DESCRIC
-	''																		, ; //X6_DSCSPA
-	''																		, ; //X6_DSCENG
-	'es'																	, ; //X6_DESC1
-	''																		, ; //X6_DSCSPA1
-	''																		, ; //X6_DSCENG1
-	''																		, ; //X6_DESC2
-	''																		, ; //X6_DSCSPA2
-	''																		, ; //X6_DSCENG2
-	'.F.'																	, ; //X6_CONTEUD
-	''																		, ; //X6_CONTSPA
-	''																		, ; //X6_CONTENG
-	'U'																		, ; //X6_PROPRI
-	''																		, ; //X6_VALID
-	''																		, ; //X6_INIT
-	''																		, ; //X6_DEFPOR
-	''																		, ; //X6_DEFSPA
-	''																		, ; //X6_DEFENG
-	''																		} ) //X6_PYME
-
-aAdd( aSX6, { ;
-	'  '																	, ; //X6_FIL
 	'MV_XATVMCS'															, ; //X6_VAR
 	'L'																		, ; //X6_TIPO
 	'Ativa a automatização para gravação dos perfis -'						, ; //X6_DESCRIC
@@ -4520,30 +4368,6 @@ aAdd( aSX6, { ;
 	''																		, ; //X6_DSCSPA2
 	''																		, ; //X6_DSCENG2
 	'.T.'																	, ; //X6_CONTEUD
-	''																		, ; //X6_CONTSPA
-	''																		, ; //X6_CONTENG
-	'U'																		, ; //X6_PROPRI
-	''																		, ; //X6_VALID
-	''																		, ; //X6_INIT
-	''																		, ; //X6_DEFPOR
-	''																		, ; //X6_DEFSPA
-	''																		, ; //X6_DEFENG
-	''																		} ) //X6_PYME
-
-aAdd( aSX6, { ;
-	'  '																	, ; //X6_FIL
-	'MV_XATVPRO'															, ; //X6_VAR
-	'L'																		, ; //X6_TIPO
-	'MCS - Ativa a integração automatica dos produtos'						, ; //X6_DESCRIC
-	''																		, ; //X6_DSCSPA
-	''																		, ; //X6_DSCENG
-	''																		, ; //X6_DESC1
-	''																		, ; //X6_DSCSPA1
-	''																		, ; //X6_DSCENG1
-	''																		, ; //X6_DESC2
-	''																		, ; //X6_DSCSPA2
-	''																		, ; //X6_DSCENG2
-	'.F.'																	, ; //X6_CONTEUD
 	''																		, ; //X6_CONTSPA
 	''																		, ; //X6_CONTENG
 	'U'																		, ; //X6_PROPRI
@@ -4626,12 +4450,12 @@ Return NIL
 Função de processamento da gravação dos Helps de Campos
 
 @author UPDATE gerado automaticamente
-@since  11/05/2026
+@since  26/02/2026
 @obs    Gerado por EXPORDIC - V.8.0.2.1 EFS / Upd. V.6.4.1 EFS
 @version 1.0
 /*/
 //--------------------------------------------------------------------
-Static Function FSAtuHlp(xTabLog,xTabReg,xTabPer,xTabGrpT,xTabMunI,xTabMunD,xTabEst,xTabNcmI,xTabNcmD,xTabOriP,xTabTipP)
+Static Function FSAtuHlp()
 Local aHlpPor   := {}
 Local aHlpEng   := {}
 Local aHlpSpa   := {}
@@ -4645,25 +4469,25 @@ oProcess:IncRegua2( "Atualizando Helps de Campos ..." )
 // Helps Tabela ZZP
 //
 //
-// Helps Tabela '+xTabOriP+'
+// Helps Tabela ZZQ
 //
 //
-// Helps Tabela '+xTabNcmD+'
+// Helps Tabela ZZR
 //
 //
-// Helps Tabela '+xTabMunD+'
+// Helps Tabela ZZS
 //
 //
-// Helps Tabela '+xTabMunI+'
+// Helps Tabela ZZT
 //
 //
-// Helps Tabela '+xTabEst+'
+// Helps Tabela ZZU
 //
 //
-// Helps Tabela '+xTabMunI+'
+// Helps Tabela ZZV
 //
 //
-// Helps Tabela '+xTabReg+'
+// Helps Tabela ZZW
 //
 aHlpPor := {}
 aAdd( aHlpPor, 'Informa se é consumidor final,' )
@@ -4677,8 +4501,8 @@ aHlpSpa := {}
 aAdd( aHlpSpa, 'Informa se é consumidor final,' )
 aAdd( aHlpSpa, 'revendedor' )
 
-PutSX1Help( 'P'+xTabReg+'_TIPPAR', aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
-AutoGrLog( 'Atualizado o Help do campo ' +xTabReg+'_TIPPAR')
+PutSX1Help( "PZZW_TIPPAR", aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
+AutoGrLog( "Atualizado o Help do campo " + "ZZW_TIPPAR" )
 
 aHlpPor := {}
 aAdd( aHlpPor, 'Informa se é contribuinte' )
@@ -4689,8 +4513,8 @@ aAdd( aHlpEng, 'Informa se é contribuinte' )
 aHlpSpa := {}
 aAdd( aHlpSpa, 'Informa se é contribuinte' )
 
-PutSX1Help( 'P'+xTabReg+'_CONTRI', aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
-AutoGrLog( 'Atualizado o Help do campo ' +xTabReg+'_CONTRI' )
+PutSX1Help( "PZZW_CONTRI", aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
+AutoGrLog( "Atualizado o Help do campo " + "ZZW_CONTRI" )
 
 aHlpPor := {}
 aAdd( aHlpPor, 'Informa o estado para a regra, se a' )
@@ -4707,8 +4531,8 @@ aAdd( aHlpSpa, 'Informa o estado para a regra, se a' )
 aAdd( aHlpSpa, 'regra abranger vários estados, deixar' )
 aAdd( aHlpSpa, 'embranco' )
 
-PutSX1Help( 'P'+xTabReg+'_EST', aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
-AutoGrLog( 'Atualizado o Help do campo ' +xTabReg+'_EST' )
+PutSX1Help( "PZZW_EST   ", aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
+AutoGrLog( "Atualizado o Help do campo " + "ZZW_EST" )
 
 aHlpPor := {}
 aAdd( aHlpPor, 'Caso alguns estado esteja fora da regra' )
@@ -4722,8 +4546,8 @@ aHlpSpa := {}
 aAdd( aHlpSpa, 'Caso alguns estado esteja fora da regra' )
 aAdd( aHlpSpa, 'de todos, informe a UF' )
 
-PutSX1Help( 'P'+xTabReg+'_ESTEXC', aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
-AutoGrLog( 'Atualizado o Help do campo '+xTabReg+'_ESTEXC' )
+PutSX1Help( "PZZW_ESTEXC", aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
+AutoGrLog( "Atualizado o Help do campo " + "ZZW_ESTEXC" )
 
 aHlpPor := {}
 aAdd( aHlpPor, 'Informe os códigos de município,' )
@@ -4737,8 +4561,8 @@ aHlpSpa := {}
 aAdd( aHlpSpa, 'Informe os códigos de município,' )
 aAdd( aHlpSpa, 'separados por ;' )
 
-PutSX1Help( 'P'+xTabReg+'_CODMUN', aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
-AutoGrLog( 'Atualizado o Help do campo ' +xTabReg+'_CODMUN' )
+PutSX1Help( "PZZW_CODMUN", aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
+AutoGrLog( "Atualizado o Help do campo " + "ZZW_CODMUN" )
 
 aHlpPor := {}
 aAdd( aHlpPor, 'Indica se será considerada regra' )
@@ -4752,8 +4576,8 @@ aHlpSpa := {}
 aAdd( aHlpSpa, 'Indica se será considerada regra' )
 aAdd( aHlpSpa, 'contidanaaba de grupo tributário' )
 
-PutSX1Help( 'P'+xTabReg+'_REGRA1', aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
-AutoGrLog( 'Atualizado o Help do campo ' + xTabReg+'_REGRA1' )
+PutSX1Help( "PZZW_REGRA1", aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
+AutoGrLog( "Atualizado o Help do campo " + "ZZW_REGRA1" )
 
 aHlpPor := {}
 aAdd( aHlpPor, 'Indica se será considerada' )
@@ -4767,8 +4591,8 @@ aHlpSpa := {}
 aAdd( aHlpSpa, 'Indica se será considerada' )
 aAdd( aHlpSpa, 'regracontidanaaba de município' )
 
-PutSX1Help( 'P'+xTabReg+'_REGRA2', aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
-AutoGrLog( 'Atualizado o Help do campo ' + xTabReg+'_REGRA2' )
+PutSX1Help( "PZZW_REGRA2", aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
+AutoGrLog( "Atualizado o Help do campo " + "ZZW_REGRA2" )
 
 aHlpPor := {}
 aAdd( aHlpPor, 'Indica se será considera regra da aba' )
@@ -4782,8 +4606,8 @@ aHlpSpa := {}
 aAdd( aHlpSpa, 'Indica se será considera regra da aba' )
 aAdd( aHlpSpa, 'Município diferente' )
 
-PutSX1Help( 'P'+xTabReg+'_REGRA3', aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
-AutoGrLog( 'Atualizado o Help do campo ' + xTabReg+'_REGRA3' )
+PutSX1Help( "PZZW_REGRA3", aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
+AutoGrLog( "Atualizado o Help do campo " + "ZZW_REGRA3" )
 
 aHlpPor := {}
 aAdd( aHlpPor, 'Indica se será considerada' )
@@ -4797,8 +4621,8 @@ aHlpSpa := {}
 aAdd( aHlpSpa, 'Indica se será considerada' )
 aAdd( aHlpSpa, 'regracontidanaaba de UF Exceção' )
 
-PutSX1Help( 'P'+xTabReg+'_REGRA4', aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
-AutoGrLog( 'Atualizado o Help do campo ' + xTabReg+'_REGRA4' )
+PutSX1Help( "PZZW_REGRA4", aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
+AutoGrLog( "Atualizado o Help do campo " + "ZZW_REGRA4" )
 
 aHlpPor := {}
 aAdd( aHlpPor, 'Indica se será considerada regra' )
@@ -4812,8 +4636,8 @@ aHlpSpa := {}
 aAdd( aHlpSpa, 'Indica se será considerada regra' )
 aAdd( aHlpSpa, 'contidana aba NCM Diferente' )
 
-PutSX1Help( 'P'+xTabReg+'_REGRA5', aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
-AutoGrLog( 'Atualizado o Help do campo ' + xTabReg+'_REGRA5' )
+PutSX1Help( "PZZW_REGRA5", aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
+AutoGrLog( "Atualizado o Help do campo " + "ZZW_REGRA5" )
 
 aHlpPor := {}
 aAdd( aHlpPor, 'Indica se será considerada aba de ncm' )
@@ -4827,8 +4651,8 @@ aHlpSpa := {}
 aAdd( aHlpSpa, 'Indica se será considerada aba de ncm' )
 aAdd( aHlpSpa, 'igual na regra criada' )
 
-PutSX1Help( 'P'+xTabReg+'_REGRA6', aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
-AutoGrLog( 'Atualizado o Help do campo ' + xTabReg+'_REGRA6' )
+PutSX1Help( "PZZW_REGRA6", aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
+AutoGrLog( "Atualizado o Help do campo " + "ZZW_REGRA6" )
 
 aHlpPor := {}
 aAdd( aHlpPor, 'Indica se será considerada regra de' )
@@ -4842,8 +4666,8 @@ aHlpSpa := {}
 aAdd( aHlpSpa, 'Indica se será considerada regra de' )
 aAdd( aHlpSpa, 'origem de produto' )
 
-PutSX1Help( 'P'+xTabReg+'_REGRA7', aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
-AutoGrLog( 'Atualizado o Help do campo ' + xTabReg+'_REGRA7' )
+PutSX1Help( "PZZW_REGRA7", aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
+AutoGrLog( "Atualizado o Help do campo " + "ZZW_REGRA7" )
 
 aHlpPor := {}
 aAdd( aHlpPor, 'Indica se será considerada regra de' )
@@ -4857,17 +4681,17 @@ aHlpSpa := {}
 aAdd( aHlpSpa, 'Indica se será considerada regra de' )
 aAdd( aHlpSpa, 'tipode produto' )
 
-PutSX1Help( 'P'+xTabReg+'_REGRA8', aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
-AutoGrLog( 'Atualizado o Help do campo ' + xTabReg+'_REGRA8' )
+PutSX1Help( "PZZW_REGRA8", aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
+AutoGrLog( "Atualizado o Help do campo " + "ZZW_REGRA8" )
 
 //
-// Helps Tabela '+xTabGrpT+'
+// Helps Tabela ZZX
 //
 //
-// Helps Tabela '+xTabPer+'
+// Helps Tabela ZZY
 //
 //
-// Helps Tabela '+xTabLog+'
+// Helps Tabela ZZZ
 //
 aHlpPor := {}
 aAdd( aHlpPor, 'Chave do registro gerado' )
@@ -4878,8 +4702,8 @@ aAdd( aHlpEng, 'Chave do registro gerado' )
 aHlpSpa := {}
 aAdd( aHlpSpa, 'Chave do registro gerado' )
 
-PutSX1Help( 'P'+xTabLog+'_CHAVE', aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
-AutoGrLog( 'Atualizado o Help do campo ' + xTabLog+'_CHAVE' )
+PutSX1Help( "PZZZ_CHAVE ", aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
+AutoGrLog( "Atualizado o Help do campo " + "ZZZ_CHAVE" )
 
 aHlpPor := {}
 aAdd( aHlpPor, 'Data de gravação do registro' )
@@ -4890,8 +4714,8 @@ aAdd( aHlpEng, 'Data de gravação do registro' )
 aHlpSpa := {}
 aAdd( aHlpSpa, 'Data de gravação do registro' )
 
-PutSX1Help( 'P'+xTabLog+'_DATA', aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
-AutoGrLog( 'Atualizado o Help do campo ' + xTabLog+'_DATA' )
+PutSX1Help( "PZZZ_DATA  ", aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
+AutoGrLog( "Atualizado o Help do campo " + "ZZZ_DATA" )
 
 aHlpPor := {}
 aAdd( aHlpPor, 'Tabela envolvida no processo' )
@@ -4902,8 +4726,8 @@ aAdd( aHlpEng, 'Tabela envolvida no processo' )
 aHlpSpa := {}
 aAdd( aHlpSpa, 'Tabela envolvida no processo' )
 
-PutSX1Help( 'P'+xTabLog+'_ALIAS', aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
-AutoGrLog( 'Atualizado o Help do campo ' + xTabLog+'_ALIAS' )
+PutSX1Help( "PZZZ_ALIAS ", aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
+AutoGrLog( "Atualizado o Help do campo " + "ZZZ_ALIAS" )
 
 aHlpPor := {}
 aAdd( aHlpPor, 'Situação do registro' )
@@ -4914,8 +4738,8 @@ aAdd( aHlpEng, 'Situação do registro' )
 aHlpSpa := {}
 aAdd( aHlpSpa, 'Situação do registro' )
 
-PutSX1Help( 'P'+xTabLog+'_SITUAC', aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
-AutoGrLog( 'Atualizado o Help do campo ' + xTabLog+'_SITUAC' )
+PutSX1Help( "PZZZ_SITUAC", aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
+AutoGrLog( "Atualizado o Help do campo " + "ZZZ_SITUAC" )
 
 aHlpPor := {}
 aAdd( aHlpPor, 'Perfil do configurador de tributos' )
@@ -4926,8 +4750,8 @@ aAdd( aHlpEng, 'Perfil do configurador de tributos' )
 aHlpSpa := {}
 aAdd( aHlpSpa, 'Perfil do configurador de tributos' )
 
-PutSX1Help( 'P'+xTabLog+'_PERFIL', aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
-AutoGrLog( 'Atualizado o Help do campo ' + xTabLog+'_PERFIL' )
+PutSX1Help( "PZZZ_PERFIL", aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
+AutoGrLog( "Atualizado o Help do campo " + "ZZZ_PERFIL" )
 
 aHlpPor := {}
 aAdd( aHlpPor, 'Descrição perfil' )
@@ -4938,8 +4762,8 @@ aAdd( aHlpEng, 'Descrição perfil' )
 aHlpSpa := {}
 aAdd( aHlpSpa, 'Descrição perfil' )
 
-PutSX1Help( 'P'+xTabLog+'_DESC', aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
-AutoGrLog( 'Atualizado o Help do campo ' + xTabLog+'_DESC' )
+PutSX1Help( "PZZZ_DESC  ", aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
+AutoGrLog( "Atualizado o Help do campo " + "ZZZ_DESC" )
 
 aHlpPor := {}
 aAdd( aHlpPor, 'Mensagem com a ação executada no' )
@@ -4953,8 +4777,8 @@ aHlpSpa := {}
 aAdd( aHlpSpa, 'Mensagem com a ação executada no' )
 aAdd( aHlpSpa, 'processo' )
 
-PutSX1Help( 'P'+xTabLog+'_ACAO', aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
-AutoGrLog( 'Atualizado o Help do campo ' + xTabLog+'_ACAO' )
+PutSX1Help( "PZZZ_ACAO  ", aHlpPor, aHlpEng, aHlpSpa, .T.,,.T. )
+AutoGrLog( "Atualizado o Help do campo " + "ZZZ_ACAO" )
 
 AutoGrLog( CRLF + "Final da Atualização" + " " + "Helps de Campos" + CRLF + Replicate( "-", 128 ) + CRLF )
 
@@ -5215,7 +5039,7 @@ Return NIL
 Função de processamento abertura do SM0 modo exclusivo
 
 @author UPDATE gerado automaticamente
-@since  11/05/2026
+@since  26/02/2026
 @obs    Gerado por EXPORDIC - V.8.0.2.1 EFS / Upd. V.6.4.1 EFS
 @version 1.0
 /*/
@@ -5259,7 +5083,7 @@ Return lOpen
 Função de leitura do LOG gerado com limitacao de string
 
 @author UPDATE gerado automaticamente
-@since  11/05/2026
+@since  26/02/2026
 @obs    Gerado por EXPORDIC - V.8.0.2.1 EFS / Upd. V.6.4.1 EFS
 @version 1.0
 /*/
@@ -5294,45 +5118,5 @@ FT_FUSE()
 
 Return cRet
 
-/*/{Protheus.doc} MCSVALTAB
-Verifica se a tabela existe no dicionário
-@type function
-@version  
-@author MCS Tecnologia
-@since 5/11/2026
-@param aTabs, array, param_description
-@return variant, return_description
-/*/
-Static Function MCSVALTAB(aTabs)
 
-	Local lRet := .F.
-	Local nTab := 0
-	Local xMsg := ""
-	Local   aSalvAmb  := GetArea()
-	Local   aRet      := {}
-
-	If !MyOpenSm0(.F.)
-		Return aRet
-	EndIf
-
-
-	dbSelectArea( "SM0" )
-	aSalvSM0 := SM0->( GetArea() )
-	dbSetOrder( 1 )
-	dbGoTop()
-
-
-	For nTab := 1 to Len(aTabs)
-		If ExisteSX2(aTabs[nTab][1])
-			xMsg += "Tabela " + aTabs[nTab][1] + " já existe no dicionário."
-		EndIf
-		lRet := .T.
-	Next nTab
-
-	If !Empty(xMsg)
-		FWAlertError(xMsg)
-	EndIf
-
-	RestArea( aSalvSM0 )
-
-Return lRet
+/////////////////////////////////////////////////////////////////////////////

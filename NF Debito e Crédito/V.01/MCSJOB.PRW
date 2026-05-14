@@ -21,7 +21,6 @@ User Function MCSJOB(aEmp)
     Local lParMul   
     Local lParnProc 
 
-
     //зддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд©
     //Ё Abrindo o ambiente                                                 Ё
     //юддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддды
@@ -232,8 +231,9 @@ Query para busca dos dados de multa e juros
 /*/
 Static Function QryMulJur()
 
-    Local xQuery := ""
-    Local xAlias := ""
+    Local xQuery    := ""
+    Local xAlias    := ""
+    Local xSerie    := SuperGetMV("MV_NDCSERI",.F.,"9")
 
     xAlias := GetNextAlias()
 
@@ -279,6 +279,7 @@ Static Function QryMulJur()
     xQuery += "    AND D2.D2_SERIE   = E1.E1_PREFIXO " + chr(13)
     xQuery += "    AND D2.D2_CLIENTE = E1.E1_CLIENTE " + chr(13)
     xQuery += "    AND D2.D2_LOJA    = E1.E1_LOJA " + chr(13)
+    xQuery += "    AND D2.D2_SERIE <> ' " +AllTrim(xSerie)+" ' "  + chr(13)
     xQuery += "    AND D2.D_E_L_E_T_ = ' ' " + chr(13)
     xQuery += "LEFT JOIN " +RetSqlName("DKN")+ " DKN " + chr(13)
     xQuery += "    ON  DKN.DKN_FILIAL = E1.E1_FILIAL " + chr(13)

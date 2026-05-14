@@ -86,24 +86,24 @@ User Function MCSUPD(cEmpAmb, cFilAmb)
 		@ 035, 060 SAY oSay2 PROMPT "Tabela de Regra" SIZE 041, 007 OF oGroup1 COLORS 0, 16777215 PIXEL
 		@ 052, 060 SAY oSay3 PROMPT "Tabela de Perfis" SIZE 041, 007 OF oGroup1 COLORS 0, 16777215 PIXEL
 		@ 071, 060 SAY oSay5 PROMPT "Tabela de Grp Tributário" SIZE 061, 007 OF oGroup1 COLORS 0, 16777215 PIXEL
-		@ 090, 060 SAY oSay6 PROMPT "Tabela de Mun Igual" SIZE 067, 007 OF oGroup1 COLORS 0, 16777215 PIXEL
-		@ 110, 060 SAY oSay7 PROMPT "Tabela de Mun. Diferente" SIZE 065, 007 OF oGroup1 COLORS 0, 16777215 PIXEL
-		@ 130, 060 SAY oSay8 PROMPT "Tabela de Estados" SIZE 066, 007 OF oGroup1 COLORS 0, 16777215 PIXEL
-		@ 151, 060 SAY oSay9 PROMPT "Tabela de NCM Igual" SIZE 063, 007 OF oGroup1 COLORS 0, 16777215 PIXEL
-		@ 172, 060 SAY oSay10 PROMPT "Tabela de NCM Diferente" SIZE 063, 007 OF oGroup1 COLORS 0, 16777215 PIXEL
-		@ 191, 060 SAY oSay11 PROMPT "Tabela de Orig. Produto" SIZE 065, 007 OF oGroup1 COLORS 0, 16777215 PIXEL
-		@ 212, 060 SAY oSay12 PROMPT "Tabela de Tipo Produto" SIZE 063, 007 OF oGroup1 COLORS 0, 16777215 PIXEL
+		@ 088, 060 SAY oSay6 PROMPT "Tabela de Mun Igual" SIZE 067, 007 OF oGroup1 COLORS 0, 16777215 PIXEL
+		@ 105, 060 SAY oSay7 PROMPT "Tabela de Mun. Diferente" SIZE 065, 007 OF oGroup1 COLORS 0, 16777215 PIXEL
+		@ 122, 060 SAY oSay8 PROMPT "Tabela de Estados" SIZE 066, 007 OF oGroup1 COLORS 0, 16777215 PIXEL
+		@ 139, 060 SAY oSay9 PROMPT "Tabela de NCM Igual" SIZE 063, 007 OF oGroup1 COLORS 0, 16777215 PIXEL
+		@ 156, 060 SAY oSay10 PROMPT "Tabela de NCM Diferente" SIZE 063, 007 OF oGroup1 COLORS 0, 16777215 PIXEL
+		@ 177, 060 SAY oSay11 PROMPT "Tabela de Orig. Produto" SIZE 065, 007 OF oGroup1 COLORS 0, 16777215 PIXEL
+		@ 194, 060 SAY oSay12 PROMPT "Tabela de Tipo Produto" SIZE 063, 007 OF oGroup1 COLORS 0, 16777215 PIXEL
 		@ 018, 136 MSGET oGet1 VAR cGet1 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
-		@ 034, 136 MSGET oGet2 VAR cGet2 SIZE 060, 010 OF oGroup1 COLORS 0, 16777215 PIXEL
-		@ 056, 136 MSGET oGet3 VAR cGet3 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
-		@ 076, 136 MSGET oGet4 VAR cGet4 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
-		@ 096, 136 MSGET oGet5 VAR cGet5 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
-		@ 114, 136 MSGET oGet6 VAR cGet6 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
-		@ 134, 136 MSGET oGet7 VAR cGet7 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
-		@ 154, 136 MSGET oGet8 VAR cGet8 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
-		@ 173, 136 MSGET oGet9 VAR cGet9 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
-		@ 195, 136 MSGET oGet10 VAR cGet10 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
-		@ 214, 136 MSGET oGet11 VAR cGet11 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
+		@ 035, 136 MSGET oGet2 VAR cGet2 SIZE 060, 010 OF oGroup1 COLORS 0, 16777215 PIXEL
+		@ 052, 136 MSGET oGet3 VAR cGet3 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
+		@ 071, 136 MSGET oGet4 VAR cGet4 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
+		@ 088, 136 MSGET oGet5 VAR cGet5 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
+		@ 105, 136 MSGET oGet6 VAR cGet6 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
+		@ 122, 136 MSGET oGet7 VAR cGet7 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
+		@ 139, 136 MSGET oGet8 VAR cGet8 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
+		@ 156, 136 MSGET oGet9 VAR cGet9 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
+		@ 177, 136 MSGET oGet10 VAR cGet10 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
+		@ 194, 136 MSGET oGet11 VAR cGet11 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
 		@ 210, 272 BUTTON oButton1 PROMPT "Continuar" SIZE 037, 012 Action(nOpc := 1,oDlg:End()) OF oDlg PIXEL
 		@ 210, 314 BUTTON oButton2 PROMPT "Fechar" SIZE 037, 012 Action(oDlg:End()) OF oDlg PIXEL
 
@@ -499,7 +499,7 @@ aAdd( aSX2, { ;
 	'Tipo Produto'															, ; //X2_NOME
 	'Tipo Produto'															, ; //X2_NOMESPA
 	'Tipo Produto'															, ; //X2_NOMEENG
-	'C'																		, ; //X2_MODO
+	'E'																		, ; //X2_MODO
 	''																		, ; //X2_TTS
 	''																		, ; //X2_ROTINA
 	''																		, ; //X2_PYME
@@ -526,7 +526,7 @@ aAdd( aSX2, { ;
 	'Origem Produto'														, ; //X2_NOME
 	'Origem Produto'														, ; //X2_NOMESPA
 	'Origem Produto'														, ; //X2_NOMEENG
-	'C'																		, ; //X2_MODO
+	'E'																		, ; //X2_MODO
 	''																		, ; //X2_TTS
 	''																		, ; //X2_ROTINA
 	''																		, ; //X2_PYME
@@ -553,7 +553,7 @@ aAdd( aSX2, { ;
 	'Ncm diferente'															, ; //X2_NOME
 	'Ncm diferente'															, ; //X2_NOMESPA
 	'Ncm diferente'															, ; //X2_NOMEENG
-	'C'																		, ; //X2_MODO
+	'E'																		, ; //X2_MODO
 	''																		, ; //X2_TTS
 	''																		, ; //X2_ROTINA
 	''																		, ; //X2_PYME
@@ -580,7 +580,7 @@ aAdd( aSX2, { ;
 	'Municipios Diferentes'													, ; //X2_NOME
 	'Municipios Diferentes'													, ; //X2_NOMESPA
 	'Municipios Diferentes'													, ; //X2_NOMEENG
-	'C'																		, ; //X2_MODO
+	'E'																		, ; //X2_MODO
 	''																		, ; //X2_TTS
 	''																		, ; //X2_ROTINA
 	''																		, ; //X2_PYME
@@ -601,13 +601,13 @@ aAdd( aSX2, { ;
 // Tabela '+xTabMunI+'
 //
 aAdd( aSX2, { ;
-	xTabNcmI																, ; //X2_CHAVE
+	xTabNcmI																	, ; //X2_CHAVE
 	cPath																	, ; //X2_PATH
-	xTabNcmI+cEmpr															, ; //X2_ARQUIVO
+	xTabNcmI+cEmpr																, ; //X2_ARQUIVO
 	'Ncm Igual'																, ; //X2_NOME
 	'Ncm Igual'																, ; //X2_NOMESPA
 	'Ncm Igual'																, ; //X2_NOMEENG
-	'C'																		, ; //X2_MODO
+	'E'																		, ; //X2_MODO
 	''																		, ; //X2_TTS
 	''																		, ; //X2_ROTINA
 	''																		, ; //X2_PYME
@@ -634,7 +634,7 @@ aAdd( aSX2, { ;
 	'Estados'																, ; //X2_NOME
 	'Estados'																, ; //X2_NOMESPA
 	'Estados'																, ; //X2_NOMEENG
-	'C'																		, ; //X2_MODO
+	'E'																		, ; //X2_MODO
 	''																		, ; //X2_TTS
 	''																		, ; //X2_ROTINA
 	''																		, ; //X2_PYME
@@ -661,7 +661,7 @@ aAdd( aSX2, { ;
 	'Municipios Igual'														, ; //X2_NOME
 	'Municipios Igual'														, ; //X2_NOMESPA
 	'Municipios Igual'														, ; //X2_NOMEENG
-	'C'																		, ; //X2_MODO
+	'E'																		, ; //X2_MODO
 	''																		, ; //X2_TTS
 	''																		, ; //X2_ROTINA
 	''																		, ; //X2_PYME
@@ -688,7 +688,7 @@ aAdd( aSX2, { ;
 	'Gerenciador de Regras'													, ; //X2_NOME
 	'Gerenciador de Regras'													, ; //X2_NOMESPA
 	'Gerenciador de Regras'													, ; //X2_NOMEENG
-	'C'																		, ; //X2_MODO
+	'E'																		, ; //X2_MODO
 	''																		, ; //X2_TTS
 	''																		, ; //X2_ROTINA
 	''																		, ; //X2_PYME
@@ -715,7 +715,7 @@ aAdd( aSX2, { ;
 	'Grupos Tributários'													, ; //X2_NOME
 	'Grupos Tributários'													, ; //X2_NOMESPA
 	'Grupos Tributários'													, ; //X2_NOMEENG
-	'C'																		, ; //X2_MODO
+	'E'																		, ; //X2_MODO
 	''																		, ; //X2_TTS
 	''																		, ; //X2_ROTINA
 	''																		, ; //X2_PYME
@@ -742,7 +742,7 @@ aAdd( aSX2, { ;
 	'Perfis'																, ; //X2_NOME
 	'Perfis'																, ; //X2_NOMESPA
 	'Perfis'																, ; //X2_NOMEENG
-	'C'																		, ; //X2_MODO
+	'E'																		, ; //X2_MODO
 	''																		, ; //X2_TTS
 	''																		, ; //X2_ROTINA
 	''																		, ; //X2_PYME
@@ -769,7 +769,7 @@ aAdd( aSX2, { ;
 	'Monitor gravação perfil - Conf'										, ; //X2_NOME
 	'Monitor gravação perfil - Conf'										, ; //X2_NOMESPA
 	'Monitor gravação perfil - Conf'										, ; //X2_NOMEENG
-	'C'																		, ; //X2_MODO
+	'E'																		, ; //X2_MODO
 	''																		, ; //X2_TTS
 	''																		, ; //X2_ROTINA
 	''																		, ; //X2_PYME
@@ -1591,12 +1591,12 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 //
-// Campos Tabela '+xTabNcmI+'
+// Campos Tabela '+xTabMunI+'
 //
 aAdd( aSX3, { ;
-	xTabNcmI																	, ; //X3_ARQUIVO
+	xTabMunI																	, ; //X3_ARQUIVO
 	'01'																	, ; //X3_ORDEM
-	xTabNcmI+'_FILIAL'															, ; //X3_CAMPO
+	xTabMunI+'_FILIAL'															, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	2																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -1641,9 +1641,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabNcmI																	, ; //X3_ARQUIVO
+	xTabMunI																	, ; //X3_ARQUIVO
 	'02'																	, ; //X3_ORDEM
-	xTabNcmI+'_COD'																, ; //X3_CAMPO
+	xTabMunI+'_COD'																, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	6																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -1688,9 +1688,9 @@ aAdd( aSX3, { ;
 	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
-	xTabNcmI																	, ; //X3_ARQUIVO
+	xTabMunI																	, ; //X3_ARQUIVO
 	'03'																	, ; //X3_ORDEM
-	xTabNcmI+'_NCM'																, ; //X3_CAMPO
+	xTabMunI+'_NCM'																, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	8																		, ; //X3_TAMANHO
 	0																		, ; //X3_DECIMAL
@@ -4129,12 +4129,12 @@ aAdd( aSIX, { ;
 	'N'																		} ) //SHOWPESQ
 
 //
-// Tabela '+xTabMunI+'
+// Tabela '+xTabNcmI+'
 //
 aAdd( aSIX, { ;
-	xTabMunI																	, ; //INDICE
+	xTabNcmI																	, ; //INDICE
 	'1'																		, ; //ORDEM
-	xTabMunI+'_FILIAL'															, ; //CHAVE
+	xTabNcmI+'_FILIAL'															, ; //CHAVE
 	'Filial'																, ; //DESCRICAO
 	'Filial'																, ; //DESCSPA
 	'Filial'																, ; //DESCENG
@@ -4144,9 +4144,9 @@ aAdd( aSIX, { ;
 	'N'																		} ) //SHOWPESQ
 
 aAdd( aSIX, { ;
-	xTabMunI																	, ; //INDICE
+	xTabNcmI																	, ; //INDICE
 	'2'																		, ; //ORDEM
-	xTabMunI+'_FILIAL + '+xTabMunI+'_COD'													, ; //CHAVE
+	xTabNcmI+'_FILIAL + '+xTabNcmI+'_COD'													, ; //CHAVE
 	'Código'																, ; //DESCRICAO
 	'Código'																, ; //DESCSPA
 	'Código'																, ; //DESCENG
@@ -4156,9 +4156,9 @@ aAdd( aSIX, { ;
 	'N'																		} ) //SHOWPESQ
 
 aAdd( aSIX, { ;
-	xTabMunI																	, ; //INDICE
+	xTabNcmI																	, ; //INDICE
 	'3'																		, ; //ORDEM
-	xTabMunI+'_FILIAL + '+xTabMunI+'_COD + '+xTabMunI+'_NCM'										, ; //CHAVE
+	xTabNcmI+'_FILIAL + '+xTabNcmI+'_COD + '+xTabNcmI+'_NCM'										, ; //CHAVE
 	'Código + NCM'															, ; //DESCRICAO
 	'Código + NCM'															, ; //DESCSPA
 	'Código + NCM'															, ; //DESCENG

@@ -117,20 +117,24 @@ Gera nota de débito e crédito
 /*/
 User Function GERANOTA(xDoc,xSerie,xCli,xLoja,xTipo,aRegs,nVal)
 
-	Local xSerie        := SuperGetMV("MV_NDCSERI",.F.,"1")
-	Local xAliDoc       := SuperGetMV("XX_ALIAS",.F.,"WW1")
-	Local aArea         := ""
-	Local aAreaF4       := SF4->(GetArea("SF4"))
-	Local xInc          := 0
-	Local xEst          := GetMV("MV_ESTADO")
-	Local aDocumentos   := {}
-	Local jFld600       := JsonObject():new()
-	Local oDoc1         := JsonObject():New()
-	Local oDoc2         := JsonObject():New()
-	Local xTes          := "506"
+	Local xSerie        	:= SuperGetMV("MV_NDCSERI",.F.,"9")
+	Local xAliDoc       	:= SuperGetMV("XX_ALIAS",.F.,"WW1")
+	Local aArea         	:= ""
+	Local aAreaF4       	:= SF4->(GetArea("SF4"))
+	Local aAreaF2       	:= SF2->(GetArea("SF2"))
+	Local xInc          	:= 0
+	Local xEst          	:= GetMV("MV_ESTADO")
+	Local aDocumentos   	:= {}
+	Local jFld600       	:= JsonObject():new()
+	Local oDoc1         	:= JsonObject():New()
+	Local oDoc2         	:= JsonObject():New()
+	Local xTes          	:= "506"
+	Local aMsg          	:= {}
 
-	Private oModelNCND   := Nil
-	Private jDocRef      := JsonObject():new()
+	Private lAutoErrNoFile 	:= .F.
+	Private lMsErroAuto     := .F.
+	Private oModelNCND   	:= Nil
+	Private jDocRef      	:= JsonObject():new()
 
 	SF4->(dbSelectArea("SF4"))
 	SF4->(dbSetOrder(1))
@@ -240,14 +244,21 @@ User Function GERANOTA(xDoc,xSerie,xCli,xLoja,xTipo,aRegs,nVal)
 		If oModelNCND:VldData()
 			oModelNCND:CommitData()
 			ConOut('Registros Incluidos com Sucesso !')
+
 			RecLock(xAliDoc, .F.)
    				&(xAliDoc+"->"+xAliDoc+"_NFEOK")    := "S"
 				&(xAliDoc+"->"+xAliDoc+"_DKN")      := "S"
 			&(xAliDoc+"->"+"(MsUnlock())")
-			FWAlertSuccess("Nota Fiscal de Débito/Crédito inserida com sucesso :" + SF2->F2_DOC, "Totvs")
+
+			If !IsBlind()
+				FWAlertSuccess("Nota Fiscal de Débito/Crédito inserida com sucesso :" + SF2->F2_DOC, "Totvs")
+			EndIf
+
+			MCSGRVLOG("0",xTipo,xCli+xLoja+"||"+xDoc+xSerie,"Processo realizado com sucesso")
 		Else
 			MostraErro()
 			ConOut('Erro')
+			MCSGRVLOG("1",xTipo,xCli+xLoja+"||"+xDoc+xSerie,"Erro na inclusão")
 		EndIf
 	EndIf
 
@@ -255,6 +266,7 @@ User Function GERANOTA(xDoc,xSerie,xCli,xLoja,xTipo,aRegs,nVal)
 	FwFreeObj(oModelNCND)
 
 	RestArea(aAreaF4)
+	RestArea(aAreaF2)
 	RestArea(aArea)
 
 Return
@@ -305,3 +317,51 @@ Static Function fBuscaSD2(xDoc, xSerie, xCli, xLoja)
 	(xAlias)->(DbCloseArea())
 
 Return aRegs
+
+
+/*/{Protheus.doc} MCSGRVLOG
+Grava o log do registro do monitor
+@type function
+@version  
+@author MCS Tecnologia
+@since 5/8/2026
+@param xStatus, variant, param_description
+@param xChave, variant, param_description
+@return variant, return_description
+/*/
+Static Function MCSGRVLOG(xStatus,xTipo,xChave,xMsg)
+
+	
+    Local xAliDoc   := SuperGetMV("XX_ALILOG",.F.,"WW3")
+	LOcal aArea := &(xAliDoc+"->"+"(GetArea())")
+    Local xDoc      := ""
+
+    //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+    //³ Executa o reclock - executando em macro &                          ³
+    //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+    xDoc := GetSx8Num(xAliDoc,xAliDoc+"_ID")
+
+    Begin Transaction
+
+        RecLock(xAliDoc, .T.)
+            &(xAliDoc+"->"+xAliDoc+"_FILIAL")   := FWxFilial(xAliDoc)
+            &(xAliDoc+"->"+xAliDoc+"_ID")       := xDoc
+            &(xAliDoc+"->"+xAliDoc+"_TIPO")     := xTipo
+            &(xAliDoc+"->"+xAliDoc+"_CHAVE")    := xChave
+            &(xAliDoc+"->"+xAliDoc+"_DATA")     := dDataBase
+			&(xAliDoc+"->"+xAliDoc+"_HORA")     := Time()
+			&(xAliDoc+"->"+xAliDoc+"_USER")     := UsrRetName(__cUserId)
+			&(xAliDoc+"->"+xAliDoc+"_MSG")      := xMsg
+			&(xAliDoc+"->"+xAliDoc+"_STATUS")   := xStatus
+        &(xAliDoc+"->"+"(MsUnlock())")
+
+    	ConfirmSx8()
+
+	End Transaction
+
+    //U_MCSLOG("INFO","MCSJOB","Execução da rotina de gravação da: " + xAliDoc)
+    Conout("Log gravado com sucesso ")
+            
+    RestArea(aArea)
+
+Return
