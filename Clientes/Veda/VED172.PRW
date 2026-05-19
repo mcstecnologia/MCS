@@ -813,6 +813,13 @@ Local cLoja
 Local cMensagem	:=""
 Local aPedInadi:={}
 Local aPedVlAber:={}
+//Variaveis para tratamento da quebra - MCS
+Local nCount 	:= 0
+Local nTotIt 	:= 0
+Local nTotNumIt := GetMV("MV_NUMITEN")
+Local aNewPed 	:= {}
+Local nPed 		:= 0
+//Variaveis para tratamento da quebra - MCS
 Private NTENTSD9:=0
 Private aVDSC5PV:={}
 
@@ -1053,13 +1060,69 @@ While i<=len(aPedFat)
 				
 				If !lOffLine
 					If len(aPedAux)	>0
+
 						If u_VDVldNF(cSerie,cCliente,cLoja)
-							fGeraNota(aPedAux)
-							For c:=1 to len(aStatus)
-								oMark:aCols[aStatus[c]][nPosFLAG]:= "LBNO"
-								oMark:aCols[aStatus[c]][nPosSTS] := "BR_VERMELHO"
-							Next c
-							U_C2VD003(.F.)   /// Relatório de resíduos do cliente
+
+							//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ?
+        					//? Tratamento MCS para quebra com o parâmetro MV_NUMITEN            ?
+        					//?ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ?
+							If Len(aPedAux) <= nTotNumIt // parametro com a quantidade dos itens para quebra MV_NUMITEN
+
+								fGeraNota(aPedAux)
+								For c:=1 to len(aStatus)
+									oMark:aCols[aStatus[c]][nPosFLAG]:= "LBNO"
+									oMark:aCols[aStatus[c]][nPosSTS] := "BR_VERMELHO"
+								Next c
+								U_C2VD003(.F.)   /// Relatório de resíduos do cliente
+							Else 
+								//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ?
+								//? Se a qtde de item for maior, vai para o novo tratamento          ?
+								//?ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ?							
+								aNewPed := {}
+
+								nTotIt := Len(aPedAux)
+
+								For nPed := 1 to Len(aPedAux)
+									//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ?
+									//? Se a variavel contadora for menor e igual ao  MV_NUMITEN, adiciona no aNewPed        ?
+									//?ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ?	
+									nCount ++
+									If nCount <= nTotNumIt
+										aadd(aNewPed,{aPedAux[nPed][1],aPedAux[nPed][2],aPedAux[nPed][3],aPedAux[nPed][4],aPedAux[nPed][5],aPedAux[nPed][6],;
+											aPedAux[nPed][7],aPedAux[nPed][8],aPedAux[nPed][9],aPedAux[nPed][10],aPedAux[nPed][11],aPedAux[nPed][12],aPedAux[nPed][13],;
+											aPedAux[nPed][14]})
+            						EndIf
+									//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ?
+									//? Quando igual, envia o que foi adiconado para faturamento                             ?
+									//?ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ?	
+									If nCount == nTotNumIt
+										fGeraNota(aNewPed)
+										For c:=1 to len(aStatus)
+											oMark:aCols[aStatus[c]][nPosFLAG]:= "LBNO"
+											oMark:aCols[aStatus[c]][nPosSTS] := "BR_VERMELHO"
+										Next c
+										U_C2VD003(.F.)   /// Relatório de resíduos do cliente
+										nCount := 0
+										aNewPed := {}
+									EndIf
+									//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ?
+									//? Se o valor do loop foi igual a tamanho do array aPedAux, quer dizer que chegou no final     ?
+									//?ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ?	
+									If nPed == nTotIt
+										fGeraNota(aNewPed)
+										For c:=1 to len(aStatus)
+											oMark:aCols[aStatus[c]][nPosFLAG]:= "LBNO"
+											oMark:aCols[aStatus[c]][nPosSTS] := "BR_VERMELHO"
+										Next c
+										U_C2VD003(.F.)   /// Relatório de resíduos do cliente
+									EndIf
+
+								Next nPed
+
+							EndIf
+							//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ?
+							//? Fim Tratamento MCS                                          ?
+						    //?ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ?								
 						Endif
 					Endif
 				Else
