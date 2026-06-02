@@ -153,7 +153,7 @@ User Function MCSTES()
     Private oFontSubN  := TFont():New(cFontUti,,-20,,.T.)
     Private oFontBtn   := TFont():New(cFontUti,,-14)
      
-    aAdd(aHead, {""                 , "XX_COR",    "@BMP"                                   , 002,                        0,             ".F.",    "   ", "C", "",    "V",     "",      "",        "", "V"})
+    //aAdd(aHead, {""                 , "XX_COR",    "@BMP"                                   , 002,                        0,             ".F.",    "   ", "C", "",    "V",     "",      "",        "", "V"})
     aAdd(aHead, {"Filial"           , xTabela+"_FILIAL",  ""                                , TamSX3("F4_FILIAL")[01],    0,             ".T.",    ".T.", "C", "",    ""} )
     aAdd(aHead, {"TES"              , xTabela+"_TES",   ""                                  , TamSX3("F4_CODIGO")[01],    0,                "",    ".T.", "C", "",    ""} )
     aAdd(aHead, {"CFOP"             , xTabela+"_CFOP", ""                                   , TamSX3("F4_CF")[01],        0,                "",    ".T.", "C", "",    ""} )
@@ -165,12 +165,12 @@ User Function MCSTES()
     DEFINE MSDIALOG oDlgPvt TITLE "Tes X Cfop - Nota de Débito/Crédito" FROM 000, 000  TO nJanAltu, nJanLarg COLORS 0, 16777215 PIXEL
 
         @ 004, 003 SAY "MCS"                SIZE 200, 030 FONT oFontAno  OF oDlgPvt COLORS RGB(149,179,215) PIXEL
-        @ 004, 050 SAY "Listagem de"        SIZE 200, 030 FONT oFontSub  OF oDlgPvt COLORS RGB(031,073,125) PIXEL
+        @ 004, 050 SAY "Cadastro de"        SIZE 200, 030 FONT oFontSub  OF oDlgPvt COLORS RGB(031,073,125) PIXEL
         @ 014, 050 SAY "Tes x CFOP"         SIZE 200, 030 FONT oFontSubN OF oDlgPvt COLORS RGB(031,073,125) PIXEL
          
         @ 006, (nJanLarg/2-001)-(0052*01) BUTTON oBtnFech  PROMPT "Fechar"        SIZE 050, 018 OF oDlgPvt ACTION (oDlgPvt:End())                               FONT oFontBtn PIXEL
-        @ 006, (nJanLarg/2-001)-(0052*02) BUTTON oBtnLege  PROMPT "Legenda"       SIZE 050, 018 OF oDlgPvt ACTION (fLegenda())                                  FONT oFontBtn PIXEL
-        @ 006, (nJanLarg/2-001)-(0052*03) BUTTON oBtnSalv  PROMPT "Salvar"        SIZE 050, 018 OF oDlgPvt ACTION (fSalvar())                                   FONT oFontBtn PIXEL
+        //@ 006, (nJanLarg/2-001)-(0052*02) BUTTON oBtnLege  PROMPT "Legenda"       SIZE 050, 018 OF oDlgPvt ACTION (fMcsLegen())                                  FONT oFontBtn PIXEL
+        @ 006, (nJanLarg/2-001)-(0052*03) BUTTON oBtnSalv  PROMPT "Salvar"        SIZE 050, 018 OF oDlgPvt ACTION (fMcsSalva())                                   FONT oFontBtn PIXEL
          
         oMsGet := MsNewGetDados():New(      029,;                //nTop      - Linha Inicial
                                             003,;                //nLeft     - Coluna Inicial
@@ -209,12 +209,12 @@ Static Function fGravaAcols()
     Local xTabela   := SuperGetMV("MV_XMCS002",.F.,"WW2") //Guarda o alias da tabela de TES x CFOP
     Local aArea     := GetArea()
     Local xQuery    := ""
-    Local xAlias    := ""
+    Local xAlias    := GetNextAlias()
     Local nAtual    := 0
     Local nTotal    := 0
     Local oBmpAux
    
-    xQuery := "SELECT "+xTabela+"_FILIAL AS FILIAL, "+xTabela+"_TES, AS TES "+xTabela+"_CFOP, AS CF "+xTabela+"_BLQL AS BLQ, R_E_C_N_O_ AS RECNO " + chr(13)
+    xQuery := "SELECT "+xTabela+"_FILIAL AS FILIAL, "+xTabela+"_TES AS TES, "+xTabela+"_CFOP AS CF, "+xTabela+"_BLQL AS BLQ, R_E_C_N_O_ AS RECNO " + chr(13)
     xQuery += "FROM " +RetSqlName(xTabela) + " " + chr(13)
     xQuery += "WHERE "+xTabela+"_FILIAL = '" + FwxFilial(xTabela) + "' " + chr(13)
     xQuery += "AND D_E_L_E_T_ = ' ' "
@@ -226,17 +226,24 @@ Static Function fGravaAcols()
     (xAlias)->(DbGoTop())
     While !(xAlias)->(EoF())
      
-        If (xAlias)->BLQ == '1'
+        /*If (xAlias)->BLQ == '1'
             oBmpAux := oBmpVermelho
          
         ElseIf (xAlias)->BLQ == '0'"
             oBmpAux := oBmpVerde 
-        EndIf
+        EndIf*/
          
         //Adiciona o item no aCols
-        aAdd(aColsTab, { ;
+        /*aAdd(aColsTab, { ;
             oBmpAux,;
-        
+            (xAlias)->FILIAL,;
+            (xAlias)->TES,;
+            (xAlias)->CF,;
+            (xAlias)->BLQ,;
+            (xAlias)->RECNO,;
+            .F.;
+        })*/
+        aAdd(aColsTab, { ;
             (xAlias)->FILIAL,;
             (xAlias)->TES,;
             (xAlias)->CF,;
@@ -336,7 +343,7 @@ Static Function fMcsSalva()
          
     Next
      
-    MsgInfo("Manipulações finalizadas!", "Atenção")
+    MsgInfo("Gravação efetuada com sucesso!", "Sucesso")
 
     oDlgPvt:End()
 

@@ -50,6 +50,8 @@ User Function GRVSFX(xDoc, xSerie, xFornece, xLoja)
                 SFX->FX_CLASCON	:= '99'
                 SFX->FX_TIPSERV := '0'
                 SFX->FX_GRPCLAS := '99'
+				SFX->FX_FINNFC  := '0'
+				SFX->FX_TIPOREC := '0'
 			SFX->(MsUnlock())
 		EndIf
 

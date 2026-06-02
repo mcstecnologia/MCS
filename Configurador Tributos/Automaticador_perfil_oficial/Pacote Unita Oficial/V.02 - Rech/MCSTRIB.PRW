@@ -435,7 +435,6 @@ Static Function fGravaZZZ(xCodPer,xCodPro,xTipo,xStatus,xMessage,xDesc)
             &(xTabela+"->"+xTabela+"_ALIAS")  := xTab
             &(xTabela+"->"+xTabela+"_PERFIL") := xCodPer
             &(xTabela+"->"+xTabela+"_DATA")   := dDataBase
-            &(xTabela+"->"+xTabela+"_HORA")   := Time()
             &(xTabela+"->"+xTabela+"_ACAO")   := xMessage
             &(xTabela+"->"+xTabela+"_USER")   := UsrRetName(__cUserId)
             &(xTabela+"->"+xTabela+"_DESC")   := xDesc
@@ -777,7 +776,7 @@ User Function fInsertPer(xProd,xPosIpi,xOrig,xTipoPro,xClieFor,xLoja,xGrpTrib,xO
                 If !Empty(xTipo) .And. lUsaReven
                     xQuery2 += "AND ZM6_TIPPAR = '" + AllTrim(xTipo) + "' " + chr(13)
                 Else
-                    xQuery2 += "AND ZM6_TIPPAR = ' ' " + chr(13)
+                    xQuery += "AND ZM6_TIPPAR = ' ' " + chr(13)
                 EndIf
                 If Empty(xContri) .Or. xContri == '2'
                     xQuery2 += "AND ZM6_CONTRI IN ('2',' ') " + chr(13)

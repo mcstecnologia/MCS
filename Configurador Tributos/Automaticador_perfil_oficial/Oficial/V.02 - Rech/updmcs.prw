@@ -104,6 +104,28 @@ User Function MCSUPD(cEmpAmb, cFilAmb)
 		@ 156, 136 MSGET oGet9 VAR cGet9 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
 		@ 177, 136 MSGET oGet10 VAR cGet10 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
 		@ 194, 136 MSGET oGet11 VAR cGet11 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
+		/*@ 018, 065 SAY oSay1 PROMPT "Tabela de Log:" SIZE 041, 007 OF oDlg COLORS 0, 16777215 PIXEL
+		@ 018, 199 SAY oSay2 PROMPT "Tabela de Regra" SIZE 041, 007 OF oGroup1 COLORS 0, 16777215 PIXEL
+		@ 041, 060 SAY oSay3 PROMPT "Tabela de Perfis" SIZE 041, 007 OF oGroup1 COLORS 0, 16777215 PIXEL
+		@ 041, 199 SAY oSay5 PROMPT "Tabela de Grp Tributário" SIZE 061, 007 OF oGroup1 COLORS 0, 16777215 PIXEL
+		@ 065, 060 SAY oSay6 PROMPT "Tabela de Mun Igual" SIZE 067, 007 OF oGroup1 COLORS 0, 16777215 PIXEL
+		@ 065, 198 SAY oSay7 PROMPT "Tabela de Mun. Diferente" SIZE 065, 007 OF oGroup1 COLORS 0, 16777215 PIXEL
+		@ 093, 061 SAY oSay8 PROMPT "Tabela de Estados" SIZE 066, 007 OF oGroup1 COLORS 0, 16777215 PIXEL
+		@ 093, 199 SAY oSay9 PROMPT "Tabela de NCM Igual" SIZE 063, 007 OF oGroup1 COLORS 0, 16777215 PIXEL
+		@ 119, 059 SAY oSay10 PROMPT "Tabela de NCM Diferente" SIZE 063, 007 OF oGroup1 COLORS 0, 16777215 PIXEL
+		@ 118, 199 SAY oSay11 PROMPT "Tabela de Orig. Produto" SIZE 065, 007 OF oGroup1 COLORS 0, 16777215 PIXEL
+		@ 149, 059 SAY oSay12 PROMPT "Tabela de Tipo Produto" SIZE 063, 007 OF oGroup1 COLORS 0, 16777215 PIXEL
+		@ 015, 263 MSGET oGet2 VAR cGet2 SIZE 060, 010 OF oGroup1 COLORS 0, 16777215 PIXEL
+		@ 022, 137 MSGET oGet1 VAR cGet1 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
+		@ 045, 136 MSGET oGet3 VAR cGet3 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
+		@ 045, 269 MSGET oGet4 VAR cGet4 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
+		@ 068, 136 MSGET oGet5 VAR cGet5 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
+		@ 069, 269 MSGET oGet6 VAR cGet6 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
+		@ 095, 136 MSGET oGet7 VAR cGet7 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
+		@ 094, 269 MSGET oGet8 VAR cGet8 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
+		@ 122, 136 MSGET oGet9 VAR cGet9 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
+		@ 121, 269 MSGET oGet10 VAR cGet10 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL
+		@ 151, 136 MSGET oGet11 VAR cGet11 SIZE 060, 010 OF oDlg COLORS 0, 16777215 PIXEL*/
 		@ 210, 272 BUTTON oButton1 PROMPT "Continuar" SIZE 037, 012 Action(nOpc := 1,oDlg:End()) OF oDlg PIXEL
 		@ 210, 314 BUTTON oButton2 PROMPT "Fechar" SIZE 037, 012 Action(oDlg:End()) OF oDlg PIXEL
 
@@ -137,7 +159,6 @@ Local   cDesc7    := ""
 Local   cMsg      := ""
 Local   lOk       := .F.
 Local   lAuto     := ( cEmpAmb <> NIL .or. cFilAmb <> NIL )
-Local 	aTabs     := {}
 
 Private oMainWnd  := NIL
 Private oProcess  := NIL
@@ -201,36 +222,29 @@ If lOk
 
 	If !Empty( aMarcadas )
 
-		//aadd(aTabs,{xTabLog,xTabReg,xTabGrpT,xTabGrpT,xTabMunI,xTabMunD,xTabEst,xTabNcmI,xTabNcmD,xTabOriP,xTabTipP})
-		//lOk := MCSVALTAB(aTabs)
 
-		//If lOk 
+		If lAuto .OR. MsgNoYes( "Confirma a atualização dos dicionários ?", cTitulo )
+			oProcess := MsNewProcess():New( { | lEnd | lOk := FSTProc( @lEnd, aMarcadas, lAuto,xTabLog,xTabReg,xTabPer,xTabGrpT,xTabMunI,xTabMunD,xTabEst,xTabNcmI,xTabNcmD,xTabOriP,xTabTipP ) }, "Atualizando", "Aguarde, atualizando ...", .F. )
+			oProcess:Activate()
 
-			If lAuto .OR. MsgNoYes( "Confirma a atualização dos dicionários ?", cTitulo )
-				oProcess := MsNewProcess():New( { | lEnd | lOk := FSTProc( @lEnd, aMarcadas, lAuto,xTabLog,xTabReg,xTabPer,xTabGrpT,xTabMunI,xTabMunD,xTabEst,xTabNcmI,xTabNcmD,xTabOriP,xTabTipP ) }, "Atualizando", "Aguarde, atualizando ...", .F. )
-				oProcess:Activate()
-
-				If lAuto
-					If lOk
-						MsgInfo( "Atualização realizada.", "UPDMCS" )
-					Else
-						MsgStop( "Atualização não realizada.", "UPDMCS" )
-					EndIf
-					dbCloseAll()
+			If lAuto
+				If lOk
+					MsgInfo( "Atualização realizada.", "UPDMCS" )
 				Else
-					If lOk
-						Final( "Atualização realizada." )
-					Else
-						Final( "Atualização não realizada." )
-					EndIf
+					MsgStop( "Atualização não realizada.", "UPDMCS" )
 				EndIf
-
+				dbCloseAll()
 			Else
-				Final( "Atualização não realizada." )
+				If lOk
+					Final( "Atualização realizada." )
+				Else
+						Final( "Atualização não realizada." )
+				EndIf
 			EndIf
-		/*Else 
+
+		Else
 			Final( "Atualização não realizada." )
-		EndIf*/
+		EndIf
 
 	Else
 		Final( "Atualização não realizada." )
@@ -272,6 +286,8 @@ Local   nX        := 0
 Local   oDlg      := NIL
 Local   oFont     := NIL
 Local   oMemo     := NIL
+Local 	aTabs     := {}
+Local 	lDic      := .F.
 
 Private aArqUpd   := {}
 
@@ -304,122 +320,154 @@ If ( lOpen := MyOpenSm0(.T.) )
 
 			RpcSetEnv( SM0->M0_CODIGO, SM0->M0_CODFIL )
 
-			lMsFinalAuto := .F.
-			lMsHelpAuto  := .F.
+			//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+			//³Grava as tabelas informadas no array para validar                    ³
+			//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+			aadd(aTabs,{xTabLog})
+			aadd(aTabs,{xTabReg})
+			aadd(aTabs,{xTabPer})
+			aadd(aTabs,{xTabGrpT})
+			aadd(aTabs,{xTabMunI})
+			aadd(aTabs,{xTabMunD})
+			aadd(aTabs,{xTabEst})
+			aadd(aTabs,{xTabNcmI})
+			aadd(aTabs,{xTabNcmD})
+			aadd(aTabs,{xTabOriP})
+			aadd(aTabs,{xTabTipP})
 
-			AutoGrLog( Replicate( "-", 128 ) )
-			AutoGrLog( Replicate( " ", 128 ) )
-			AutoGrLog( "LOG DA ATUALIZAÇÃO DOS DICIONÁRIOS" )
-			AutoGrLog( Replicate( " ", 128 ) )
-			AutoGrLog( Replicate( "-", 128 ) )
-			AutoGrLog( " " )
-			AutoGrLog( " Dados Ambiente" )
-			AutoGrLog( " --------------------" )
-			AutoGrLog( " Empresa / Filial...: " + cEmpAnt + "/" + cFilAnt )
-			AutoGrLog( " Nome Empresa.......: " + Capital( AllTrim( GetAdvFVal( "SM0", "M0_NOMECOM", cEmpAnt + cFilAnt, 1, "" ) ) ) )
-			AutoGrLog( " Nome Filial........: " + Capital( AllTrim( GetAdvFVal( "SM0", "M0_FILIAL" , cEmpAnt + cFilAnt, 1, "" ) ) ) )
-			AutoGrLog( " DataBase...........: " + DtoC( dDataBase ) )
-			AutoGrLog( " Data / Hora Ínicio.: " + DtoC( Date() )  + " / " + Time() )
-			AutoGrLog( " Environment........: " + GetEnvServer()  )
-			AutoGrLog( " StartPath..........: " + GetSrvProfString( "StartPath", "" ) )
-			AutoGrLog( " RootPath...........: " + GetSrvProfString( "RootPath" , "" ) )
-			AutoGrLog( " Versão.............: " + GetVersao(.T.) )
-			AutoGrLog( " Usuário TOTVS .....: " + __cUserId + " " +  cUserName )
-			AutoGrLog( " Computer Name......: " + GetComputerName() )
+			//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+			//³Faz a validação se as tabelas informadas já existem no dicionário    ³
+			//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+			lDic := MCSVALTAB(aTabs)
 
-			aInfo   := GetUserInfo()
-			If ( nPos    := aScan( aInfo,{ |x,y| x[3] == ThreadId() } ) ) > 0
-				AutoGrLog( " " )
-				AutoGrLog( " Dados Thread" )
-				AutoGrLog( " --------------------" )
-				AutoGrLog( " Usuário da Rede....: " + aInfo[nPos][1] )
-				AutoGrLog( " Estação............: " + aInfo[nPos][2] )
-				AutoGrLog( " Programa Inicial...: " + aInfo[nPos][5] )
-				AutoGrLog( " Environment........: " + aInfo[nPos][6] )
-				AutoGrLog( " Conexão............: " + AllTrim( StrTran( StrTran( aInfo[nPos][7], Chr( 13 ), "" ), Chr( 10 ), "" ) ) )
-			EndIf
-			AutoGrLog( Replicate( "-", 128 ) )
-			AutoGrLog( " " )
 
-			If !lAutom
+			//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+			//³Somente continua se retornar .F., ou seja, todas as tabelas não existem ³
+			//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+			If !lDic
+
+				lMsFinalAuto := .F.
+				lMsHelpAuto  := .F.
+
 				AutoGrLog( Replicate( "-", 128 ) )
-				AutoGrLog( "Empresa : " + SM0->M0_CODIGO + "/" + SM0->M0_NOME + CRLF )
-			EndIf
+				AutoGrLog( Replicate( " ", 128 ) )
+				AutoGrLog( "LOG DA ATUALIZAÇÃO DOS DICIONÁRIOS" )
+				AutoGrLog( Replicate( " ", 128 ) )
+				AutoGrLog( Replicate( "-", 128 ) )
+				AutoGrLog( " " )
+				AutoGrLog( " Dados Ambiente" )
+				AutoGrLog( " --------------------" )
+				AutoGrLog( " Empresa / Filial...: " + cEmpAnt + "/" + cFilAnt )
+				AutoGrLog( " Nome Empresa.......: " + Capital( AllTrim( GetAdvFVal( "SM0", "M0_NOMECOM", cEmpAnt + cFilAnt, 1, "" ) ) ) )
+				AutoGrLog( " Nome Filial........: " + Capital( AllTrim( GetAdvFVal( "SM0", "M0_FILIAL" , cEmpAnt + cFilAnt, 1, "" ) ) ) )
+				AutoGrLog( " DataBase...........: " + DtoC( dDataBase ) )
+				AutoGrLog( " Data / Hora Ínicio.: " + DtoC( Date() )  + " / " + Time() )
+				AutoGrLog( " Environment........: " + GetEnvServer()  )
+				AutoGrLog( " StartPath..........: " + GetSrvProfString( "StartPath", "" ) )
+				AutoGrLog( " RootPath...........: " + GetSrvProfString( "RootPath" , "" ) )
+				AutoGrLog( " Versão.............: " + GetVersao(.T.) )
+				AutoGrLog( " Usuário TOTVS .....: " + __cUserId + " " +  cUserName )
+				AutoGrLog( " Computer Name......: " + GetComputerName() )
 
-			oProcess:SetRegua1( 8 )
+				aInfo   := GetUserInfo()
+				If ( nPos    := aScan( aInfo,{ |x,y| x[3] == ThreadId() } ) ) > 0
+					AutoGrLog( " " )
+					AutoGrLog( " Dados Thread" )
+					AutoGrLog( " --------------------" )
+					AutoGrLog( " Usuário da Rede....: " + aInfo[nPos][1] )
+					AutoGrLog( " Estação............: " + aInfo[nPos][2] )
+					AutoGrLog( " Programa Inicial...: " + aInfo[nPos][5] )
+					AutoGrLog( " Environment........: " + aInfo[nPos][6] )
+					AutoGrLog( " Conexão............: " + AllTrim( StrTran( StrTran( aInfo[nPos][7], Chr( 13 ), "" ), Chr( 10 ), "" ) ) )
+				EndIf
+				AutoGrLog( Replicate( "-", 128 ) )
+				AutoGrLog( " " )
 
-			//------------------------------------
-			// Atualiza o dicionário SX2
-			//------------------------------------
-			oProcess:IncRegua1( "Dicionário de arquivos" + " - " + SM0->M0_CODIGO + " " + SM0->M0_NOME + " ..." )
-			FSAtuSX2(xTabLog,xTabReg,xTabPer,xTabGrpT,xTabMunI,xTabMunD,xTabEst,xTabNcmI,xTabNcmD,xTabOriP,xTabTipP)
+				If !lAutom
+					AutoGrLog( Replicate( "-", 128 ) )
+					AutoGrLog( "Empresa : " + SM0->M0_CODIGO + "/" + SM0->M0_NOME + CRLF )
+				EndIf
 
-			//------------------------------------
-			// Atualiza o dicionário SX3
-			//------------------------------------
-			FSAtuSX3(xTabLog,xTabReg,xTabPer,xTabGrpT,xTabMunI,xTabMunD,xTabEst,xTabNcmI,xTabNcmD,xTabOriP,xTabTipP)
+				oProcess:SetRegua1( 8 )
 
-			//------------------------------------
-			// Atualiza o dicionário SIX
-			//------------------------------------
-			oProcess:IncRegua1( "Dicionário de índices" + " - " + SM0->M0_CODIGO + " " + SM0->M0_NOME + " ..." )
-			FSAtuSIX(xTabLog,xTabReg,xTabPer,xTabGrpT,xTabMunI,xTabMunD,xTabEst,xTabNcmI,xTabNcmD,xTabOriP,xTabTipP)
+				//------------------------------------
+				// Atualiza o dicionário SX2
+				//------------------------------------
+				oProcess:IncRegua1( "Dicionário de arquivos" + " - " + SM0->M0_CODIGO + " " + SM0->M0_NOME + " ..." )
+				FSAtuSX2(xTabLog,xTabReg,xTabPer,xTabGrpT,xTabMunI,xTabMunD,xTabEst,xTabNcmI,xTabNcmD,xTabOriP,xTabTipP)
 
-			oProcess:IncRegua1( "Dicionário de dados" + " - " + SM0->M0_CODIGO + " " + SM0->M0_NOME + " ..." )
-			oProcess:IncRegua2( "Atualizando campos/índices" )
+				//------------------------------------
+				// Atualiza o dicionário SX3
+				//------------------------------------
+				FSAtuSX3(xTabLog,xTabReg,xTabPer,xTabGrpT,xTabMunI,xTabMunD,xTabEst,xTabNcmI,xTabNcmD,xTabOriP,xTabTipP)
 
-			// Alteração física dos arquivos
-			__SetX31Mode( .F. )
+				//------------------------------------
+				// Atualiza o dicionário SIX
+				//------------------------------------
+				oProcess:IncRegua1( "Dicionário de índices" + " - " + SM0->M0_CODIGO + " " + SM0->M0_NOME + " ..." )
+				FSAtuSIX(xTabLog,xTabReg,xTabPer,xTabGrpT,xTabMunI,xTabMunD,xTabEst,xTabNcmI,xTabNcmD,xTabOriP,xTabTipP)
 
-			If FindFunction(cTCBuild)
-				cTopBuild := &cTCBuild.()
-			EndIf
+				oProcess:IncRegua1( "Dicionário de dados" + " - " + SM0->M0_CODIGO + " " + SM0->M0_NOME + " ..." )
+				oProcess:IncRegua2( "Atualizando campos/índices" )
 
-			For nX := 1 To Len( aArqUpd )
+				// Alteração física dos arquivos
+				__SetX31Mode( .F. )
 
-				If cTopBuild >= "20090811" .AND. TcInternal( 89 ) == "CLOB_SUPPORTED"
-					If ( ( aArqUpd[nX] >= "NQ " .AND. aArqUpd[nX] <= "NZZ" ) .OR. ( aArqUpd[nX] >= "O0 " .AND. aArqUpd[nX] <= "NZZ" ) ) .AND.;
-						!aArqUpd[nX] $ "NQD,NQF,NQP,NQT"
-						TcInternal( 25, "CLOB" )
+				If FindFunction(cTCBuild)
+					cTopBuild := &cTCBuild.()
+				EndIf
+
+				For nX := 1 To Len( aArqUpd )
+
+					If cTopBuild >= "20090811" .AND. TcInternal( 89 ) == "CLOB_SUPPORTED"
+						If ( ( aArqUpd[nX] >= "NQ " .AND. aArqUpd[nX] <= "NZZ" ) .OR. ( aArqUpd[nX] >= "O0 " .AND. aArqUpd[nX] <= "NZZ" ) ) .AND.;
+							!aArqUpd[nX] $ "NQD,NQF,NQP,NQT"
+							TcInternal( 25, "CLOB" )
+						EndIf
 					EndIf
-				EndIf
 
-				If Select( aArqUpd[nX] ) > 0
-					dbSelectArea( aArqUpd[nX] )
-					dbCloseArea()
-				EndIf
+					If Select( aArqUpd[nX] ) > 0
+						dbSelectArea( aArqUpd[nX] )
+						dbCloseArea()
+					EndIf
 
-				X31UpdTable( aArqUpd[nX] )
+					X31UpdTable( aArqUpd[nX] )
 
-				If __GetX31Error()
-					Alert( __GetX31Trace() )
-					MsgStop( "Ocorreu um erro desconhecido durante a atualização da tabela : " + aArqUpd[nX] + ". Verifique a integridade do dicionário e da tabela.", "ATENÇÃO" )
-					AutoGrLog( "Ocorreu um erro desconhecido durante a atualização da estrutura da tabela : " + aArqUpd[nX] )
-				EndIf
+					If __GetX31Error()
+						Alert( __GetX31Trace() )
+						MsgStop( "Ocorreu um erro desconhecido durante a atualização da tabela : " + aArqUpd[nX] + ". Verifique a integridade do dicionário e da tabela.", "ATENÇÃO" )
+						AutoGrLog( "Ocorreu um erro desconhecido durante a atualização da estrutura da tabela : " + aArqUpd[nX] )
+					EndIf
 
-				If cTopBuild >= "20090811" .AND. TcInternal( 89 ) == "CLOB_SUPPORTED"
-					TcInternal( 25, "OFF" )
-				EndIf
+					If cTopBuild >= "20090811" .AND. TcInternal( 89 ) == "CLOB_SUPPORTED"
+						TcInternal( 25, "OFF" )
+					EndIf
 
-			Next nX
+				Next nX
 
-			//------------------------------------
-			// Atualiza o dicionário SX6
-			//------------------------------------
-			oProcess:IncRegua1( "Dicionário de parâmetros" + " - " + SM0->M0_CODIGO + " " + SM0->M0_NOME + " ..." )
-			FSAtuSX6()
+				//------------------------------------
+				// Atualiza o dicionário SX6
+				//------------------------------------
+				oProcess:IncRegua1( "Dicionário de parâmetros" + " - " + SM0->M0_CODIGO + " " + SM0->M0_NOME + " ..." )
+				FSAtuSX6()
 
-			//------------------------------------
-			// Atualiza os helps
-			//------------------------------------
-			oProcess:IncRegua1( "Helps de Campo" + " - " + SM0->M0_CODIGO + " " + SM0->M0_NOME + " ..." )
-			FSAtuHlp(xTabLog,xTabReg,xTabPer,xTabGrpT,xTabMunI,xTabMunD,xTabEst,xTabNcmI,xTabNcmD,xTabOriP,xTabTipP)
+				//------------------------------------
+				// Atualiza os helps
+				//------------------------------------
+				oProcess:IncRegua1( "Helps de Campo" + " - " + SM0->M0_CODIGO + " " + SM0->M0_NOME + " ..." )
+				FSAtuHlp(xTabLog,xTabReg,xTabPer,xTabGrpT,xTabMunI,xTabMunD,xTabEst,xTabNcmI,xTabNcmD,xTabOriP,xTabTipP)
 
-			AutoGrLog( Replicate( "-", 128 ) )
-			AutoGrLog( " Data / Hora Final.: " + DtoC( Date() ) + " / " + Time() )
-			AutoGrLog( Replicate( "-", 128 ) )
+				AutoGrLog( Replicate( "-", 128 ) )
+				AutoGrLog( " Data / Hora Final.: " + DtoC( Date() ) + " / " + Time() )
+				AutoGrLog( Replicate( "-", 128 ) )
 
-			RpcClearEnv()
+				RpcClearEnv()
+			Else 
+				Final( "Atualização não realizada, existem tabelas informadas que já existem no dicionário, favor validar" )
+				RpcClearEnv()
+				lRet := .F.
+				Return lRet
+			EndIf	
 
 		Next nI
 
@@ -3584,10 +3632,56 @@ aAdd( aSX3, { ;
 	''																		, ; //X3_AGRUP
 	''																		, ; //X3_MODAL
 	''																		} ) //X3_PYME
+	aAdd( aSX3, { ;
+	xTabLog																	, ; //X3_ARQUIVO
+	'04'																	, ; //X3_ORDEM
+	xTabLog+'_HORA'														    , ; //X3_CAMPO
+	'C'																		, ; //X3_TIPO
+	5																		, ; //X3_TAMANHO
+	0																		, ; //X3_DECIMAL
+	'Hora'																	, ; //X3_TITULO
+	'Hora'																	, ; //X3_TITSPA
+	'Hora'																	, ; //X3_TITENG
+	'Hora'																	, ; //X3_DESCRIC
+	'Hora'																	, ; //X3_DESCSPA
+	'Hora'																	, ; //X3_DESCENG
+	''																		, ; //X3_PICTURE
+	''																		, ; //X3_VALID
+	'x       x       x       x       x       x       x       x       x       x       x       x       x       x       x x', ; //X3_USADO
+	''																		, ; //X3_RELACAO
+	''																		, ; //X3_F3
+	0																		, ; //X3_NIVEL
+	'xxxxxx x'																, ; //X3_RESERV
+	''																		, ; //X3_CHECK
+	''																		, ; //X3_TRIGGER
+	'U'																		, ; //X3_PROPRI
+	'S'																		, ; //X3_BROWSE
+	'A'																		, ; //X3_VISUAL
+	'R'																		, ; //X3_CONTEXT
+	''																		, ; //X3_OBRIGAT
+	''																		, ; //X3_VLDUSER
+	''																		, ; //X3_CBOX
+	''																		, ; //X3_CBOXSPA
+	''																		, ; //X3_CBOXENG
+	''																		, ; //X3_PICTVAR
+	''																		, ; //X3_WHEN
+	''																		, ; //X3_INIBRW
+	''																		, ; //X3_GRPSXG
+	''																		, ; //X3_FOLDER
+	''																		, ; //X3_CONDSQL
+	''																		, ; //X3_CHKSQL
+	''																		, ; //X3_IDXSRV
+	'N'																		, ; //X3_ORTOGRA
+	''																		, ; //X3_TELA
+	''																		, ; //X3_POSLGT
+	'N'																		, ; //X3_IDXFLD
+	''																		, ; //X3_AGRUP
+	''																		, ; //X3_MODAL
+	''																		} ) //X3_PYME
 
 aAdd( aSX3, { ;
 	xTabLog																	, ; //X3_ARQUIVO
-	'04'																	, ; //X3_ORDEM
+	'05'																	, ; //X3_ORDEM
 	xTabLog+'_ALIAS'																, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	3																		, ; //X3_TAMANHO
@@ -3634,7 +3728,7 @@ aAdd( aSX3, { ;
 
 aAdd( aSX3, { ;
 	xTabLog																	, ; //X3_ARQUIVO
-	'05'																	, ; //X3_ORDEM
+	'06'																	, ; //X3_ORDEM
 	xTabLog+'_SITUAC'															, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	1																		, ; //X3_TAMANHO
@@ -3681,7 +3775,7 @@ aAdd( aSX3, { ;
 
 aAdd( aSX3, { ;
 	xTabLog																	, ; //X3_ARQUIVO
-	'06'																	, ; //X3_ORDEM
+	'07'																	, ; //X3_ORDEM
 	xTabLog+'_PERFIL'															, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	6																		, ; //X3_TAMANHO
@@ -3728,7 +3822,7 @@ aAdd( aSX3, { ;
 
 aAdd( aSX3, { ;
 	xTabLog																	, ; //X3_ARQUIVO
-	'07'																	, ; //X3_ORDEM
+	'08'																	, ; //X3_ORDEM
 	xTabLog+'_DESC'																, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	50																		, ; //X3_TAMANHO
@@ -3775,7 +3869,7 @@ aAdd( aSX3, { ;
 
 aAdd( aSX3, { ;
 	xTabLog																	, ; //X3_ARQUIVO
-	'08'																	, ; //X3_ORDEM
+	'09'																	, ; //X3_ORDEM
 	xTabLog+'_ACAO'																, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	120																		, ; //X3_TAMANHO
@@ -3822,7 +3916,7 @@ aAdd( aSX3, { ;
 
 aAdd( aSX3, { ;
 	xTabLog																	, ; //X3_ARQUIVO
-	'09'																	, ; //X3_ORDEM
+	'10'																	, ; //X3_ORDEM
 	xTabLog+'_USER'																, ; //X3_CAMPO
 	'C'																		, ; //X3_TIPO
 	30																		, ; //X3_TAMANHO
@@ -5308,31 +5402,34 @@ Static Function MCSVALTAB(aTabs)
 	Local lRet := .F.
 	Local nTab := 0
 	Local xMsg := ""
-	Local   aSalvAmb  := GetArea()
-	Local   aRet      := {}
+	Local oButton1
+	Local oMultiGe1
+	Local oSay1
+	Static oDlg
 
-	If !MyOpenSm0(.F.)
-		Return aRet
-	EndIf
-
-
-	dbSelectArea( "SM0" )
-	aSalvSM0 := SM0->( GetArea() )
-	dbSetOrder( 1 )
-	dbGoTop()
-
-
+	//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+    //³Verifica as tabelas informadas na tela inicial                       ³
+    //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
 	For nTab := 1 to Len(aTabs)
-		If ExisteSX2(aTabs[nTab][1])
-			xMsg += "Tabela " + aTabs[nTab][1] + " já existe no dicionário."
+		If AliasInDic(aTabs[nTab][1])
+			xMsg += "Tabela " + aTabs[nTab][1] + " já existe no dicionário." + chr(13)
 		EndIf
-		lRet := .T.
 	Next nTab
 
-	If !Empty(xMsg)
-		FWAlertError(xMsg)
-	EndIf
+	//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+    //³Se existe, exibe a mensagem e retornar verdadeiro para não prosseguir ³
+    //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+	If !Empty(xMsg)                  
+		
+		DEFINE MSDIALOG oDlg TITLE "Dicionário já existente" FROM 000, 000  TO 400, 600 COLORS 0, 16777215 PIXEL
 
-	RestArea( aSalvSM0 )
+			@ 025, 117 SAY oSay1 PROMPT "Tabelas informadas já existem, não é possível continuar" SIZE 071, 007 OF oDlg COLORS 0, 16777215 PIXEL
+			@ 162, 222 BUTTON oButton1 PROMPT "Fechar" SIZE 037, 012 Action(oDlg:End()) OF oDlg PIXEL
+			@ 051, 048 GET oMultiGe1 VAR xMsg OF oDlg MULTILINE SIZE 212, 094 COLORS 0, 16777215 HSCROLL PIXEL
+
+		ACTIVATE MSDIALOG oDlg CENTERED
+
+		lRet := .T.
+	EndIf
 
 Return lRet

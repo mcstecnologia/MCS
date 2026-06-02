@@ -3,4 +3,4 @@ O que fazer:
 Ajustar todas as validações da rotina.
 Criar campo para gravar o numero da nota na WW1
 Criar validação para excluir a nota gerada na DKN e ajustar o campos da WW1
-Criar tela e lógica para gravar o TES x CFOP
+Criar tela e lógica para gravar o TES x CFOP - Finalizado

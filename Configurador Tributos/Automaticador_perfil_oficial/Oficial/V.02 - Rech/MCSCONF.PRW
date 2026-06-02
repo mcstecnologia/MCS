@@ -647,3 +647,75 @@ User Function WHENFOR()
     EndIf
 
 Return lRet
+
+/*/{Protheus.doc} MCSCOPIA
+Copia Customizada
+@type function
+@version  
+@author MCS Tecnologia
+@since 5/21/2026
+@return variant, return_description
+/*/
+User Function MCSCOPIA()
+	Local aArea        := GetArea()
+	Local cTitulo      := "Cópia"
+	Local cPrograma    := "MCSCONF"
+	Local nOperation   := MODEL_OPERATION_INSERT
+	Local nLin         := 0
+	Local nCol         := 0
+	Local nTamanGrid   := 0
+	
+	//Caso precise testar em algum lugar
+	__lCopia     := .T.
+	
+	//Carrega o modelo de dados
+	oModel := FWLoadModel(cPrograma)
+	oModel:SetOperation(nOperation) // Inclusão
+	oModel:Activate(.T.) // Ativa o modelo com os dados posicionados
+	
+	//Pegando o campo de chave
+	//cCodCd := GetSXENum("ZM6", "ZM6_COD")
+	//ConfirmSX8()
+	
+	//Setando os campos do cabeçalho
+	oModel:SetValue("ZM6MASTER", "ZZ2_CODCD",  "")
+	oModel:SetValue("ZM6MASTER", "ZZ2_DESC",   "COP - "+Alltrim(ZZ2->ZZ2_DESC))
+	
+	//Pegando os dados do filho
+	oModelGrid := oModel:GetModel("ZZ3DETAIL")
+	oStruct    := oModelGrid:GetStruct()
+	aCampos    := oStruct:GetFields()
+	
+	//Se não for P12, pega do aCols, senão pega do aDataModel
+	nTamanGrid := Iif(GetVersao(.F.) < "12", Len(oModelGrid:aCols), Len(oModelGrid:aDataModel))
+	
+	//Zerando os campos da grid
+	For nLin := 1 To nTamanGrid
+	
+		//Setando a linha atual
+		oModelGrid:SetLine(nLin)
+		
+		//Percorrendo as colunas
+		For nCol := 1 To Len(aCampos)
+		
+			//Se for a coluna desejada, irá zerar
+			If Alltrim(aCampos[nCol][3]) == "ZZ3_DESC"
+				oModel:SetValue("ZZ3DETAIL", aCampos[nCol][3], "Linha "+cValToChar(nLin))
+			EndIf
+		Next nCol
+	Next nLin
+	oModelGrid:SetLine(1)  
+	
+	//Executando a visualização dos dados para manipulação
+	nRet     := FWExecView( cTitulo , cPrograma, nOperation, /*oDlg*/, {|| .T. } ,/*bOk*/ , /*nPercReducao*/, /*aEnableButtons*/, /*bCancel*/ , /*cOperatId*/, /*cToolBar*/, oModel )
+	__lCopia := .F.
+	oModel:DeActivate()
+	
+	//Se a cópia for confirmada
+	If nRet == 0
+		MsgInfo("Cópia confirmada!", "Atenção")
+	EndIf
+	
+	RestArea(aArea)
+
+Return oModel

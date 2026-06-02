@@ -117,7 +117,7 @@ Gera nota de débito e crédito
 /*/
 User Function GERANOTA(xDoc,xSerie,xCli,xLoja,xTipo,aRegs,nVal)
 
-	Local xSerie        	:= SuperGetMV("MV_NDCSERI",.F.,"9")
+	Local xSerie        	:= SuperGetMV("MV_NDCSERI",.F.,"1")
 	Local xAliDoc       	:= SuperGetMV("XX_ALIAS",.F.,"WW1")
 	Local aArea         	:= ""
 	Local aAreaF4       	:= SF4->(GetArea("SF4"))

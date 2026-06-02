@@ -43,20 +43,11 @@ User Function ETQPKS99()
 	RestArea(aAreaSC2)
 
 Return
-/*/{Protheus.doc} ImprEtiq
-Efetiva a impressão 
-@type function
-@version  
-@author MCS Tecnologia
-@since 2/5/2026
-@param cOper, character, param_description
-@param nQtd, numeric, param_description
-@return variant, return_description
-/*/
 Static Function ImprEtiq( cOper , nQtd )
 
-	Local cImpres	:= SuperGetMV("AL_IMPET99",.F.,"ELTRON")
+	Local cImpres	:= SuperGetMV("AL_IMPET99",.F.,"ZEBRA")
 	Local cFabric	:= Padc("Fabricado no Brasil",25)
+	Local xValid    := Padc("Validade Indeterminada",25)
 	Local cPorta	:= "LPT1"
 	Local cMaterial	:= ""
 	Local cCliente	:= ""
@@ -146,6 +137,7 @@ Static Function ImprEtiq( cOper , nQtd )
 		nL5	:= nL4 + 1.8
 		nL6	:= nL5 + 1.8
 		nL7	:= nL6 + 1.8
+		nL8	:= nL7 + 1.8
 
 //		POSICAO X COLUNA 1
 		nCL1	:= 01.0
@@ -169,13 +161,14 @@ Static Function ImprEtiq( cOper , nQtd )
 			MscBSay(	nCL1	, nL6	, cFabric		,"N","1","1", , , , , .T. )
 			MscBSay(	nCL1	, nL7	, cMaterial		,"N","1","1", , , , , .T. )*/
 
-			MscBSay( 	nCL1	, nL1	, cProd1		,"N","1","1", , , , , .T. )
-			MscBSay( 	nCL1	, nL2	, cProd2		,"N","1","1", , , , , .T. )
-			MscBSay(	nCL1	, nL3	, cCNPJ			,"N","1","1", , , , , .T. )
-			MscBSay(	nCL1	, nL4	, cFabric		,"N","1","1", , , , , .T. )
-			MscBSay(	05.0	, nL5	, cMaterial		,"N","1","1", , , , , .T. )
-			MscBSay(	nCL1	, nL6	, cCliente		,"N","1","1", , , , , .T. )
-			MscBSayBar(	nCLA	, nL7	, cCodbar		,"N","MB04",4.0,.F.,.T.,.F.,,1.5,1.5,.F.,.F.,,.F.)
+			MscBSay( 	nCL1	, nL1	, cProd1		,"N","B","2", , , , , .T. )
+			MscBSay( 	nCL1	, nL2	, cProd2		,"N","B","2", , , , , .T. )
+			MscBSay(	nCL1	, nL3	, cCNPJ			,"N","B","2", , , , , .T. )
+			MscBSay(	nCL1	, nL4	, cFabric		,"N","B","2", , , , , .T. )
+			MscBSay(	05.0	, nL5	, cMaterial		,"N","B","2", , , , , .T. )
+			MscBSay(	nCL1	, nL6	, cCliente		,"N","B","2", , , , , .T. )
+			MscBSay(	nCL1	, nL7	, xValid		,"N","B","2", , , , , .T. )
+			MscBSayBar(	nCLA	, nL8	, cCodbar		,"N","MB04",4.0,.F.,.T.,.F.,,1.5,1.5,.F.,.F.,,.F.)
 
 			nSaldo++
 
@@ -197,13 +190,14 @@ Static Function ImprEtiq( cOper , nQtd )
 			MscBSay(	nCL2	, nL6	, cFabric		,"N","1","1", , , , , .T. )
 			MscBSay(	nCL2	, nL7	, cMaterial		,"N","1","1", , , , , .T. )*/
 			
-			MscBSay( 	nCL2	, nL1	, cProd1		,"N","1","1", , , , , .T. )
-			MscBSay( 	nCL2	, nL2	, cProd2		,"N","1","1", , , , , .T. )		
-			MscBSay(	nCL2	, nL3	, cCNPJ			,"N","1","1", , , , , .T. )
-			MscBSay(	nCL2	, nL4	, cFabric		,"N","1","1", , , , , .T. )
-			MscBSay(	39.0	, nL5	, cMaterial		,"N","1","1", , , , , .T. )
-			MscBSay(	nCL2	, nL6	, cCliente		,"N","1","1", , , , , .T. )	
-			MscBSayBar(	nCLB	, nL7	, cCodbar		,"N","MB04",4.0,.F.,.T.,.F.,,1.5,1.5,.F.,.F.,,.F.)
+			MscBSay( 	nCL2	, nL1	, cProd1		,"N","B","2", , , , , .T. )
+			MscBSay( 	nCL2	, nL2	, cProd2		,"N","B","2", , , , , .T. )		
+			MscBSay(	nCL2	, nL3	, cCNPJ			,"N","B","2", , , , , .T. )
+			MscBSay(	nCL2	, nL4	, cFabric		,"N","B","2", , , , , .T. )
+			MscBSay(	39.0	, nL5	, cMaterial		,"N","B","2", , , , , .T. )
+			MscBSay(	nCL2	, nL6	, cCliente		,"N","B","2", , , , , .T. )
+			MscBSay(	nCL2	, nL7	, xValid		,"N","B","2", , , , , .T. )	
+			MscBSayBar(	nCLB	, nL8	, cCodbar		,"N","MB04",4.0,.F.,.T.,.F.,,1.5,1.5,.F.,.F.,,.F.)
 			nSaldo++
 
 		Endif
@@ -224,13 +218,14 @@ Static Function ImprEtiq( cOper , nQtd )
 			MscBSay(	nCL3	, nL6	, cFabric		,"N","1","1", , , , , .T. )
 			MscBSay(	nCL3	, nL7	, cMaterial		,"N","1","1", , , , , .T. )*/
 
-			MscBSay( 	nCL3	, nL1	, cProd1		,"N","1","1", , , , , .T. )
-			MscBSay( 	nCL3	, nL2	, cProd2		,"N","1","1", , , , , .T. )
-			MscBSay(	nCL3	, nL3	, cCNPJ			,"N","1","1", , , , , .T. )
-			MscBSay(	nCL3	, nL4	, cFabric		,"N","1","1", , , , , .T. )
-			MscBSay(	73.0   	, nL5	, cMaterial		,"N","1","1", , , , , .T. )
-			MscBSay(	nCL3	, nL6	, cCliente		,"N","1","1", , , , , .T. )
-			MscBSayBar(	nCLC	, nL7	, cCodbar		,"N","MB04",4.0,.F.,.T.,.F.,,1.5,1.5,.F.,.F.,,.F.)
+			MscBSay( 	nCL3	, nL1	, cProd1		,"N","B","2", , , , , .T. )
+			MscBSay( 	nCL3	, nL2	, cProd2		,"N","B","2", , , , , .T. )
+			MscBSay(	nCL3	, nL3	, cCNPJ			,"N","B","2", , , , , .T. )
+			MscBSay(	nCL3	, nL4	, cFabric		,"N","B","2", , , , , .T. )
+			MscBSay(	73.0   	, nL5	, cMaterial		,"N","B","2", , , , , .T. )	
+			MscBSay(	nCL3	, nL6	, cCliente		,"N","B","2", , , , , .T. )
+			MscBSay(	nCL3	, nL7	, xValid		,"N","B","2", , , , , .T. )
+			MscBSayBar(	nCLC	, nL8	, cCodbar		,"N","MB04",4.0,.F.,.T.,.F.,,1.5,1.5,.F.,.F.,,.F.)
 			
 
 			nSaldo++
@@ -250,15 +245,8 @@ Static Function ImprEtiq( cOper , nQtd )
 	MscBClosePrinter()
 
 Return
-/*/{Protheus.doc} Material
-Busca o material para buscar na etiqueta
-@type function
-@version  
-@author MCS Tecnologia
-@since 2/5/2026
-@param _cProduto, variant, param_description
-@return variant, return_description
-/*/
+//======================================================================================================================================================================================================================== 
+//======================================================================================================================================================================================================================== 
 Static Function Material( _cProduto )
 
 	Local cMaterial		:= ""

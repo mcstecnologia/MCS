@@ -25,6 +25,7 @@ User Function MT103FIM()
 //	Local cHoraOk     := nil
 	Local lVerba      := SuperGetmv("KR_VERBATV",.F.,.F.)
 	Local i           := 0
+	Local lAtvCMP     := SuperGetMV("KR_XREGCMP",.F.,.T.)
 
 	If !IsBlind()
 		If(nOpc == 5 .And. ! INCLUI .And. ! ALTERA) //nOpc == 5 DEVOLUCAO
@@ -133,6 +134,13 @@ Endif
     If nOpc == 5 .and. Type("dDigitInc") != "U"
         dDataBase := dDigitInc
     EndIf
+
+	//зддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддд©
+    //Ё Chamada para tratamento do icms complementar 13% para SC            Ё
+    //юддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддддды
+	If lAtvCMP .And. INCLUI
+		U_KRO9911()
+	EndIf
 
 Return lRet
 
