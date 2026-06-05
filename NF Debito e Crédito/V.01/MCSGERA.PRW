@@ -13,7 +13,7 @@ Execauto para gravação da nota de debito e crédito
 @param xCond, variant, param_description
 @return variant, return_description
 /*/
-User Function MCSGERA()
+User Function MCSGERA(xDoc,xSerie,xCli,xLoja,xTipo,nVal)
 
 	Local aArea     := ""
     Local xAliDoc   := SuperGetMV("XX_ALIAS",.F.,"WW1")
@@ -73,27 +73,37 @@ User Function MCSGERA()
 	Else
 
 		//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-        //³ Valida se o registro selecionado esteja com NF gerada                ³
-        //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-		If &(xAliDoc+"->"+xAliDoc+"_NFEOK") == 'S'
-			xDoc := &(xAliDoc+"->"+xAliDoc+"_DOCUMEN")
-			xId  := &(xAliDoc+"->"+xAliDoc+"_ID")
-			FWAlertWarning("Para o registro ID: " + xId +" Nota: " + xDoc + "já foi gerada NF","Totvs")
-			Return
-		EndIf
+		//³ Trato, pois se a rotina de JOB estiver na pilha, já vem os dados    ³
+		//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+		If !IsInCallStack('U_MCSJOB')
 
-		//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-        //³ Armazena nas variáveis para envio a rotina de geração              ³
-        //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-		xDoc 	:= &(xAliDoc+"->"+xAliDoc+"_DOCUME")
-		xSerie 	:= &(xAliDoc+"->"+xAliDoc+"_SERIE")
-		xCli 	:= &(xAliDoc+"->"+xAliDoc+"_CLIENT")
-		xLoja 	:= &(xAliDoc+"->"+xAliDoc+"_LOJA")
-		xTipo   := &(xAliDoc+"->"+xAliDoc+"_TPNOTA")
-		nVal    := Iif(xTipo == '4',&(xAliDoc+"->"+xAliDoc+"_JURITE"),0)
+			//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+			//³ Valida se o registro selecionado esteja com NF gerada                ³
+			//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+			If &(xAliDoc+"->"+xAliDoc+"_NFEOK") == 'S'
+				xDoc := &(xAliDoc+"->"+xAliDoc+"_DOCUMEN")
+				xId  := &(xAliDoc+"->"+xAliDoc+"_ID")
+				FWAlertWarning("Para o registro ID: " + xId +" Nota: " + xDoc + "já foi gerada NF","Totvs")
+				Return
+			EndIf
+
+			//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+			//³ Armazena nas variáveis para envio a rotina de geração              ³
+			//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+			xDoc 	:= &(xAliDoc+"->"+xAliDoc+"_DOCUME")
+			xSerie 	:= &(xAliDoc+"->"+xAliDoc+"_SERIE")
+			xCli 	:= &(xAliDoc+"->"+xAliDoc+"_CLIENT")
+			xLoja 	:= &(xAliDoc+"->"+xAliDoc+"_LOJA")
+			xTipo   := &(xAliDoc+"->"+xAliDoc+"_TPNOTA")
+			nVal    := Iif(xTipo == '4',&(xAliDoc+"->"+xAliDoc+"_JURITE"),0)
+
+		EndIf
 
 		aRegs := fBuscaSD2(xDoc, xSerie, xCli, xLoja)
 
+        //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+        //³ Chamo a função que efetiva a gravação da nota                       ³
+        //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
 		U_GERANOTA(xDoc,xSerie,xCli,xLoja,xTipo,aRegs,nVal)
 
 	EndIf
@@ -117,7 +127,7 @@ Gera nota de débito e crédito
 /*/
 User Function GERANOTA(xDoc,xSerie,xCli,xLoja,xTipo,aRegs,nVal)
 
-	Local xSerie        	:= SuperGetMV("MV_NDCSERI",.F.,"1")
+	Local xSerie        	:= SuperGetMV("MV_NDCSERI",.F.,"9")
 	Local xAliDoc       	:= SuperGetMV("XX_ALIAS",.F.,"WW1")
 	Local aArea         	:= ""
 	Local aAreaF4       	:= SF4->(GetArea("SF4"))
@@ -130,8 +140,9 @@ User Function GERANOTA(xDoc,xSerie,xCli,xLoja,xTipo,aRegs,nVal)
 	Local oDoc2         	:= JsonObject():New()
 	Local xTes          	:= "506"
 	Local aMsg          	:= {}
+	Local xId               := ""
 
-	Private lAutoErrNoFile 	:= .F.
+	Private lAutoErrNoFile 	:= .T.
 	Private lMsErroAuto     := .F.
 	Private oModelNCND   	:= Nil
 	Private jDocRef      	:= JsonObject():new()
@@ -159,7 +170,7 @@ User Function GERANOTA(xDoc,xSerie,xCli,xLoja,xTipo,aRegs,nVal)
 
 	If oModelNCND:IsActive()
 
-		If xTipo == '3' .Or. xTipo == '4' .Or. xTipo == '8'
+		If xTipo == '3' .Or. xTipo == '4' .Or. xTipo == '7'
 			//CABEÇALHO
 			oModelNCND:SetValue( "CABMASTER"    , "F2_TPCOMPL" , jFld600["F2_TPCOMPL"])
 			oModelNCND:LoadValue( "CABMASTER"   , "F2_CLIENTE" , jFld600["A1_COD"]) //**IMPORTANTE ESSE CAMPO DEVE SER UTILIZADO SOMENTE LOADVALUE PARA PREENCHIMENTO
@@ -168,6 +179,17 @@ User Function GERANOTA(xDoc,xSerie,xCli,xLoja,xTipo,aRegs,nVal)
 			//oModelNCND:SetValue( "CABMASTER"    , "F2_CODA1U"  , "000001")
 
 			For xInc := 1 To Len(aRegs)
+
+				xTes := fRetTes(SubStr(aRegs[xInc][12],2,3))
+
+				//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+				//³ Controle para TES não encontrada na rotina de CF x TES              ³
+				//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+				If Empty(xTes)
+					xId  := &(xAliDoc+"->"+xAliDoc+"_ID")
+					MCSGRVLOG("1",xTipo,xCli+xLoja+"registro"+xId,"Erro na inclusão - TES não encontrada na rotina de CF x Tes, verifique")
+					Return
+				EndIf
 
 				oModelNCND:GetModel('ITENSDETAIL'):AddLine()
 				oModelNCND:SetValue( "ITENSDETAIL"    , "D2_ITEM"    , PadL(AllTrim(Str(xInc)), 2, '0'))
@@ -240,25 +262,38 @@ User Function GERANOTA(xDoc,xSerie,xCli,xLoja,xTipo,aRegs,nVal)
 			// Atribui array ao JSON principal
 			jDocRef["documentos"] := aDocumentos
 
+		ElseIf xTipo == '6'
+
 		EndIf
+
 		If oModelNCND:VldData()
 			oModelNCND:CommitData()
 			ConOut('Registros Incluidos com Sucesso !')
-
+			//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+			//³ Efetua o reclock no registro da tabela de controle                  ³
+			//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
 			RecLock(xAliDoc, .F.)
    				&(xAliDoc+"->"+xAliDoc+"_NFEOK")    := "S"
 				&(xAliDoc+"->"+xAliDoc+"_DKN")      := "S"
+				&(xAliDoc+"->"+xAliDoc+"_NFSF2")    := DKN->DKN_DOC //Vem posicionado
+				&(xAliDoc+"->"+xAliDoc+"_SERSF2")   := DKN->DKN_SERIE //Vem posicionado
 			&(xAliDoc+"->"+"(MsUnlock())")
 
 			If !IsBlind()
-				FWAlertSuccess("Nota Fiscal de Débito/Crédito inserida com sucesso :" + SF2->F2_DOC, "Totvs")
+				FWAlertSuccess("Nota Fiscal de Débito/Crédito inserida com sucesso : " + DKN->DKN_DOC, "Totvs")
 			EndIf
-
-			MCSGRVLOG("0",xTipo,xCli+xLoja+"||"+xDoc+xSerie,"Processo realizado com sucesso")
+			//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+			//³ Chama função para gravação dos logs de processamento                ³
+			//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+			MCSGRVLOG("0",xTipo,xCli+xLoja+"||"+xDoc+xSerie,"Processo realizado com sucesso, nota gerada: " + DKN->DKN_DOC + " série: " + DKN->DKN_SERIE)
 		Else
-			MostraErro()
+			If !IsBlind()
+				MostraErro()
+			Else 
+				aError := GetAutoGRLog()
+			EndIf
 			ConOut('Erro')
-			MCSGRVLOG("1",xTipo,xCli+xLoja+"||"+xDoc+xSerie,"Erro na inclusão")
+			MCSGRVLOG("1",xTipo,xCli+xLoja+"||"+xDoc+xSerie,"Erro na inclusão: " + Iif(Len(aError) > 0, aError[1], "Erro desconhecido"))
 		EndIf
 	EndIf
 
@@ -289,7 +324,8 @@ Static Function fBuscaSD2(xDoc, xSerie, xCli, xLoja)
 	Local xAlias 	:= GetNextAlias()
 	Local xQuery 	:= ""
 
-	xQuery := "SELECT D2_DOC AS DOC, D2_SERIE AS SERIE, D2_CLIENTE AS CLIFOR, D2_LOJA AS LOJA, D2_COD AS PROD, D2_ITEM AS ITEM, B1_LOCPAD AS LOCPAD, D2_PRCVEN AS VALOR, D2_QUANT AS QUANT, F2_CHVNFE AS CHVNFE, D2_EST AS UF " + chr(13)
+	xQuery := "SELECT D2_DOC AS DOC, D2_SERIE AS SERIE, D2_CLIENTE AS CLIFOR, D2_LOJA AS LOJA, D2_COD AS PROD, D2_ITEM AS ITEM, " + chr(13)
+	xQuery += "B1_LOCPAD AS LOCPAD, D2_PRCVEN AS VALOR, D2_QUANT AS QUANT, F2_CHVNFE AS CHVNFE, D2_EST AS UF, D2_CF AS CF " + chr(13)
 	xQuery += "FROM " +RetSqlName("SD2") + " D2 " + chr(13)
 	xQuery += "INNER JOIN " +RetSqlName("SB1") + " B1" + chr(13)
 	xQuery += "ON B1.B1_COD = D2.D2_COD" + chr(13)
@@ -309,8 +345,11 @@ Static Function fBuscaSD2(xDoc, xSerie, xCli, xLoja)
 
 	(xAlias)->(dbGoTop())
 
+    //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+    //³ Gravo os itens e retorno para uso na gravação da nota               ³
+    //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
 	While !(xAlias)->(Eof())
-		aAdd(aRegs,{(xAlias)->DOC, (xAlias)->SERIE, (xAlias)->CLIFOR, (xAlias)->LOJA, (xAlias)->PROD, (xAlias)->ITEM, (xALias)->LOCPAD, (xAlias)->VALOR, (xAlias)->QUANT, (xAlias)->CHVNFE, (xAlias)->UF})
+		aAdd(aRegs,{(xAlias)->DOC, (xAlias)->SERIE, (xAlias)->CLIFOR, (xAlias)->LOJA, (xAlias)->PROD, (xAlias)->ITEM, (xALias)->LOCPAD, (xAlias)->VALOR, (xAlias)->QUANT, (xAlias)->CHVNFE, (xAlias)->UF, (xAlias)->CF})
 		(xAlias)->(dbSkip())
 	EndDo
 
@@ -365,3 +404,30 @@ Static Function MCSGRVLOG(xStatus,xTipo,xChave,xMsg)
     RestArea(aArea)
 
 Return
+
+/*/{Protheus.doc} fRetTes
+Retorna o TES para nota de débito
+@type function
+@version  
+@author MCS Tecnologia
+@since 6/5/2026
+@param xCf, variant, param_description
+@return variant, return_description
+/*/
+Static Function fRetTes(xCf)
+
+	Local xTes      := ""
+	Local xTabela   := SuperGetMV("MV_XMCS002",.F.,"WW2") //Guarda o alias da tabela de TES x CFOP
+	Local aArea 	:= (xTabela)->(GetArea(xTabela))
+
+	(xTabela)->(dbSelectArea(xTabela))
+	(xTabela)->(dbSetOrder(2))
+
+	If (xTabela)->(dbSeek(xFilial(xTabela)+AllTrim("5"+xCf),.F.)) .Or. (xTabela)->(dbSeek(xFilial(xTabela)+AllTrim("6"+xCf),.F.));
+		.Or. (xTabela)->(dbSeek(xFilial(xTabela)+AllTrim("7"+xCf),.F.))
+		xTes := &(xTabela+"->"+xTabela+"_TES")
+	EndIf
+
+	RestArea(aArea)
+
+Return xTes

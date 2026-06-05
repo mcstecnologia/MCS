@@ -1,5 +1,5 @@
 #Include 'Protheus.CH'
-
+#include "AP5MAIL.CH""
 
 /*/{Protheus.doc} MCSJOB
 Job para gravação da tabela de monitoramento de nota débito e crédito
@@ -32,6 +32,7 @@ User Function MCSJOB(aEmp)
 
     lParMul   := SuperGetMV("XX_ATVNFMJ",.F.,.T.)
     lParnProc := SuperGetMV("XX_ATVNFNP",.F.,.T.)
+    lParAnt   := SuperGetMV("XX_ATVNANT",.F.,.F.)
 
     //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
     //³ Query para buscar multa e jutos                                      ³
@@ -49,6 +50,18 @@ User Function MCSJOB(aEmp)
     EndIf
     If lParnProc
         xAlias := QryNProc()
+        //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+        //³ Verifica se há registros encontrados                                ³
+        //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+        If !(xAlias)->(Eof())
+            fGrvMonit(xAlias,'3')
+        Else 
+            (xAlias)->(dbCloseArea())
+        EndIf
+    EndIf
+
+    If lParAnt
+        xAlias := QryAntec()
         //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
         //³ Verifica se há registros encontrados                                ³
         //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
@@ -83,6 +96,9 @@ Static Function fGrvMonit(xAlias,xTpNota)
     Local xAliDoc   := SuperGetMV("XX_ALIAS",.F.,"WW1")
     Local lGeraNF   := SuperGetMV("XX_NFDCAUT",.F.,.F.) //Indica se gera a nota automaticamente
     Local xDoc      := ""
+    Local nItens    := 0
+    Local lMail     := SuperGetMV("XX_ATVMAIL",.F.,.F.)
+    Local aRegs     := {}
 
     aArea := &(xAliDoc+"->"+"(GetArea())")
 
@@ -100,6 +116,15 @@ Static Function fGrvMonit(xAlias,xTpNota)
         //³ Executa o reclock - executando em macro &                          ³
         //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
         xDoc := GetSx8Num(xAliDoc,xAliDoc+"_ID")
+
+        //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+        //³ Implementado - Pois pode ser que o valor seja menor que 0.01        ³ //futuro
+        //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+        If xTpNota == '4'
+            If (xAlias)->VALOR_JUROS / (xAlias)->QTDE_ITENS_SD2 < 0.01 
+                nItens := (xAlias)->VALOR_JUROS / 0.01
+            EndIf
+        EndIf
 
         Begin Transaction
 
@@ -129,9 +154,19 @@ Static Function fGrvMonit(xAlias,xTpNota)
                     &(xAliDoc+"->"+xAliDoc+"_NFEOK")    := Iif((xAlias)->EXISTE_DKN == 'S',"S","N")
                     &(xAliDoc+"->"+xAliDoc+"_BASECI")   := Iif(xTpNota == '5',(xAlias)->BASE_IBS_CBS,0)
                 &(xAliDoc+"->"+"(MsUnlock())")
-            EndIf
+                ConfirmSx8()
 
-            ConfirmSx8()
+                aadd(aRegs,{(xAlias)->TIPO_NOTA,AllTrim((xAlias)->COD_CLIENTE),AllTrim((xAlias)->LOJA),AllTrim((xAlias)->NOME_CLIENTE),;
+                     xDoc})
+
+                //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+                //³ Indica se gera nota automaticamente, gero individualmente           ³
+                //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+                If lGeraNF
+                    U_MCSGERA((xAlias)->DOCUMENTO,(xAlias)->SERIE,AllTrim((xAlias)->COD_CLIENTE),AllTrim((xAlias)->LOJA),(xAlias)->TIPO_NOTA,Iif(xTpNota == '4',&(xAliDoc+"->"+xAliDoc+"_JURITE"),0))
+                EndIf
+                    
+            EndIf
 
         End Transaction
 
@@ -147,10 +182,10 @@ Static Function fGrvMonit(xAlias,xTpNota)
     (xAlias)->(dbCloseArea())
 
     //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-    //³ Indica se gera nota automaticamente                                ³
+    //³ Envia ou não email com informação de registros gerados              ³
     //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-    If lGeraNF
-        //U_GERANOTA(xDoc,xSerie,xCli,xLoja,xTipo,aRegs,nVal)
+    If lMail .And. Len(aRegs) > 0 .And. !lGeraNF
+         U_MCSMAIL(xTpNota, aRegs)
     EndIf
 
 Return
@@ -339,6 +374,7 @@ Static Function QryNProc()
 
     Local xQuery := ""
     Local xAlias := GetNextAlias()
+    Local xSerie := SuperGetMV("MV_NDCSERI",.F.,"9")
 
     xQuery := "SELECT " + chr(13)
     xQuery += "    D2.D2_FILIAL   AS FILIAL, " + chr(13)
@@ -395,6 +431,7 @@ Static Function QryNProc()
     xQuery += "WHERE D2.D2_FILIAL = '" +FwxFilial("SD2") + "' " + chr(13)
     xQuery += "  AND D2.D2_EMISSAO >= '20260101' " + chr(13)
     xQuery += "  AND D2.D2_IDTRIB = ' ' " + chr(13)
+    xQuery += "  AND D2.D2_SERIE <> '" +AllTrim(xSerie)+"' "  + chr(13)
     xQuery += "  AND D2.D_E_L_E_T_ = ' ' " + chr(13)
     xQuery += "  AND A1.D_E_L_E_T_ = ' ' " + chr(13)
     xQuery += "GROUP BY " + chr(13)
@@ -412,3 +449,195 @@ Static Function QryNProc()
     MpSysOpenQuery(xQuery, xAlias)
 
 Return xAlias
+
+/*/{Protheus.doc} QryAntec
+Query para busca dos recebimento antecipado
+@type function
+@version  
+@author MCS Tecnologia
+@since 6/5/2026
+@return variant, return_description
+/*/
+Static Function QryAntec()
+
+/*SELECT FK7_IDDOC, FK7_CLIFOR, FK7_LOJA, FK7_NUM FROM FK1990 FK1
+INNER JOIN FK7990 FK7 
+ON FK1.FK1_FILIAL = FK7.FK7_FILIAL 
+AND FK1.FK1_IDDOC = FK7.FK7_IDDOC
+AND FK7_TIPO = 'RA'
+AND FK1.D_E_L_E_T_ = ' '
+AND FK7.D_E_L_E_T_ = ' '*/
+
+
+Return xAlias
+
+/*/{Protheus.doc} MCSMAIL
+Envia email informado da geração das notas de débito
+@type function
+@version  
+@author Mcs tecnologia
+@since 6/5/2026
+@param xTipo, variant, param_description
+@param aRegs, array, param_description
+@return variant, return_description
+/*/
+User Function MCSMAIL(xTipo, aRegs)
+
+    Local lResulConn := .T.
+	Local lResulSend := .T.
+	Local cError 	 := ""
+	Local lResult 	 := .T.
+	Local xServer 	 := AllTrim(SuperGetMV("MV_RELSERV",.F.,"smtp.hostinger.com:465"))
+	Local xEmail 	 := AllTrim(SuperGetMV("MV_RELACNT",.F.,"rodrigo@mcstecno.com"))   //EMAIL PADRAO ENVIO DE EMAIL - CRIAR PARAMETRO 	- MV_MAILCOB
+	Local xPara		 := SuperGetMV("MV_MAILPR",.F.,"rodrigo@mcstecno.com;rgiesau@gmail.com")
+	Local xPass  	 := AllTrim(SuperGetMV("MV_RELPSW",.F.,"Rodrigo_2025"))    //SENHA DO NOVO EMAIL FINANCEIRO - CRIAR PARAMETRO -
+	Local lRelauth   := SuperGetMV("MV_RELAUTH",.F.,.T.)
+	Local xDe 		 := xEmail
+	Local xCc 		 := ""
+    Local xAssunto 	 := "MCSJOB - Notificação de Geração de Nota de Débito"
+    Local nRegs      := 0
+    Local xHtml      := ""
+
+    xPara := StrTran(xPara,",",";")
+	xPara := ALLTRIM(LOWER(xPara))
+
+    xHtml := "<!DOCTYPE html> " + chr(13)
+    xHtml += "<html lang='pt-BR'> " + chr(13)
+    xHtml += "<head> " + chr(13)
+    xHtml += "    <meta charset='UTF-8'> " + chr(13)
+    xHtml += "    <title>Notificação de Nota de Débito</title> " + chr(13)
+    xHtml += "</head> " + chr(13)
+    xHtml += "<body style='margin:0; padding:0; background-color:#f4f4f4; font-family:Arial, Helvetica, sans-serif;'> " + chr(13)
+    xHtml += "    <table width='100%' cellpadding='0' cellspacing='0' border='0' style='background-color:#f4f4f4; padding:20px;'> " + chr(13)
+    xHtml += "        <tr> " + chr(13)
+    xHtml += "            <td align='center'> " + chr(13)
+    xHtml += "                <table width='600' cellpadding='0' cellspacing='0' border='0' style='background-color:#ffffff; border:1px solid #dddddd; border-radius:5px;'> " + chr(13)                  
+    xHtml += "                    <tr> " + chr(13)
+    xHtml += "                        <td style='background-color:#003366; color:#ffffff; padding:20px; text-align:center;'> " + chr(13)
+    xHtml += "                            <h2 style='margin:0;'>Notificação de Nota de Débito</h2> " + chr(13)
+    xHtml += "                        </td> " + chr(13)
+    xHtml += "                    </tr> " + chr(13)
+    xHtml += "                    <tr> " + chr(13)
+    xHtml += "                        <td style='padding:30px;'> " + chr(13)
+    xHtml += "                            <p style='font-size:14px; color:#333333;'> Foram identificados registros de Nota de Débito gerados automaticamente pelo processo MCSJOB. Seguem os detalhes do documento:</p> " + chr(13)
+    xHtml += "                            <table width='100%' cellpadding='8' cellspacing='0' border='0' style='border-collapse:collapse;'> " + chr(13)   
+    For nRegs := 1 to Len(aRegs)
+        xHtml += "								<tr> " + chr(13)
+        xHtml += "									<td style='font-weight:bold; border-bottom:1px solid #eeeeee;'> " + chr(13)
+        xHtml += "										Tipo de Nota: " + chr(13)
+        xHtml += "									</td> " + chr(13)
+        xHtml += "									<td style='border-bottom:1px solid #eeeeee;'> " + chr(13)
+        xHtml += "										"+ aRegs[nRegs][1] +" " + chr(13)
+        xHtml += "									</td> " + chr(13)
+        xHtml += "								</tr> " + chr(13)
+        xHtml += "								<tr> " + chr(13)
+        xHtml += "									<td style='font-weight:bold; border-bottom:1px solid #eeeeee;'> " + chr(13)
+        xHtml += "										Cliente: " + chr(13)
+        xHtml += "									</td> " + chr(13)
+        xHtml += "									<td style='border-bottom:1px solid #eeeeee;'> " + chr(13)
+        xHtml += "										"+ aRegs[nRegs][2] +" " + chr(13)
+        xHtml += "									</td> " + chr(13)
+        xHtml += "								</tr> " + chr(13)
+        xHtml += "								<tr> " + chr(13) 
+        xHtml += "									<td style='font-weight:bold; border-bottom:1px solid #eeeeee;'> " + chr(13)
+        xHtml += "										Loja: " + chr(13)
+        xHtml += "									</td> " + chr(13)
+        xHtml += "									<td style='border-bottom:1px solid #eeeeee;'> " + chr(13)
+        xHtml += "										"+ aRegs[nRegs][3] +" " + chr(13)
+        xHtml += "									</td> " + chr(13)
+        xHtml += "								</tr> " + chr(13)
+        xHtml += "								<tr> " + chr(13)
+        xHtml += "									<td style='font-weight:bold; border-bottom:1px solid #eeeeee;'> " + chr(13)
+        xHtml += "										Nome Cliente: " + chr(13)
+        xHtml += "									</td> " + chr(13)
+        xHtml += "									<td style='border-bottom:1px solid #eeeeee;'> " + chr(13)
+        xHtml += "										"+ aRegs[nRegs][4] +" " + chr(13)
+        xHtml += "									</td> " + chr(13)
+        xHtml += "								</tr> " + chr(13)
+        xHtml += "								<tr> " + chr(13)
+        xHtml += "									<td style='font-weight:bold; border-bottom:1px solid #eeeeee;'> " + chr(13)
+        xHtml += "										ID: " + chr(13)
+        xHtml += "									</td> " + chr(13)
+        xHtml += "									<td style='border-bottom:1px solid #eeeeee;'> " + chr(13)
+        xHtml += "										"+ aRegs[nRegs][5] +" " + chr(13)
+        xHtml += "									</td> " + chr(13)
+        xHtml += "								</tr> " + chr(13)
+        xHtml += "								<tr> " + chr(13)
+        xHtml += "									<td style='font-weight:bold; border-bottom:1px solid #eeeeee;'> " + chr(13)
+        xHtml += "										Data: " + chr(13)
+        xHtml += "									</td> " + chr(13)
+        xHtml += "									<td style='border-bottom:1px solid #eeeeee;'> " + chr(13)
+        xHtml += "										"+ dToc(dDataBase) +" " + chr(13)
+        xHtml += "									</td> " + chr(13)
+        xHtml += "								</tr> " + chr(13)
+    Next nRegs
+    xHtml += "                            </table> " + chr(13)
+    xHtml += "                            <p style='margin-top:30px; font-size:14px; color:#333333;'> " + chr(13)
+    xHtml += "                                Registro gerado automaticamente pelo processo <strong>MCSJOB</strong>. " + chr(13)
+    xHtml += "                            </p> " + chr(13)
+    xHtml += "                        </td> " + chr(13)
+    xHtml += "                    </tr> " + chr(13)
+    xHtml += "                    <tr> " + chr(13)
+    xHtml += "                        <td style='background-color:#f8f8f8; padding:15px; text-align:center; font-size:12px; color:#666666;'> " + chr(13)
+    xHtml += "                            Este é um e-mail automático. Não responda esta mensagem. " + chr(13)
+    xHtml += "                        </td>  " + chr(13)
+    xHtml += "                    </tr> " + chr(13)
+    xHtml += "                </table> " + chr(13)
+    xHtml += "            </td> " + chr(13)
+    xHtml += "        </tr> " + chr(13)
+    xHtml += "    </table> " + chr(13)
+    xHtml += "</body> " + chr(13)
+    xHtml += "</html> " + chr(13)
+
+    CONOUT("MAIL")
+
+    CONNECT SMTP SERVER xServer ACCOUNT xEmail PASSWORD xPass RESULT lResulConn
+		
+	If !lResulConn
+		GET MAIL ERROR cError
+		If IsBlind()
+			ConOut(Padc("Falha na conexao "+cError,80))
+		Else
+			ConOut("Falha na conexao "+cError)
+		Endif
+		Return(.F.)
+	Endif
+		
+	If lRelauth
+		lResult := MailAuth(Alltrim(xEmail), Alltrim(xPass))
+		If !lResult
+			nA := At("@",xEmail)
+			cUser := If(nA>0,Subs(xEmail,1,nA-1),xEmail)
+			lResult := MailAuth(Alltrim(cUser), Alltrim(xPass))
+		Endif
+	Endif
+		
+	If lResult
+		SEND MAIL FROM xDe TO xPara CC xCc SUBJECT xAssunto BODY  xHtml ATTACHMENT  RESULT lResulSend
+		If !lResulSend
+			GET MAIL ERROR cError
+			If IsBlind()
+				ConOut(Padc("Falha no Envio do e-mail "+cError,80))
+			Else
+			    ConOut("Falha no Envio do e-mail " + cError)
+			Endif
+		Endif
+	Else
+		If IsBlind()
+			ConOut(Padc("Falha na autenticação do e-mail: "+cError,80))
+		Else
+			ConOut("Falha na autenticação do e-mail:" + cError)
+		Endif
+	Endif
+		
+	DISCONNECT SMTP SERVER
+		
+	IF lResulSend
+		If IsBlind()
+			ConOut(Padc("E-mail enviado com sucesso",80))
+		Else
+			ConOut("E-mail com erro: " + cError)
+		Endif
+	ENDIF
+
+Return

@@ -154,17 +154,17 @@ User Function MCSTES()
     Private oFontBtn   := TFont():New(cFontUti,,-14)
      
     //aAdd(aHead, {""                 , "XX_COR",    "@BMP"                                   , 002,                        0,             ".F.",    "   ", "C", "",    "V",     "",      "",        "", "V"})
-    aAdd(aHead, {"Filial"           , xTabela+"_FILIAL",  ""                                , TamSX3("F4_FILIAL")[01],    0,             ".T.",    ".T.", "C", "",    ""} )
-    aAdd(aHead, {"TES"              , xTabela+"_TES",   ""                                  , TamSX3("F4_CODIGO")[01],    0,                "",    ".T.", "C", "",    ""} )
-    aAdd(aHead, {"CFOP"             , xTabela+"_CFOP", ""                                   , TamSX3("F4_CF")[01],        0,                "",    ".T.", "C", "",    ""} )
-    aAdd(aHead, {"Bloqueado"        , xTabela+"_BLQL", ""                                   , TamSX3(xTabela+"_BLQL")[01],0,                "",    ".T.", "C", "",    ""} )
-    aAdd(aHead, {"Recno",           "XX_RECNO",  "@E 999,999,999,999,999,999",  018,                      0,                        ".T.",              ".T.", "N", "",    ""} )
+    aAdd(aHead, {"Filial"           , FwCodFil()       , ""                                   , TamSX3("F4_FILIAL")[01],    0,                ".T."         ,".T.", "C", "",    ""} )
+    aAdd(aHead, {"TES"              , xTabela+"_TES"   , ""                                   , TamSX3("F4_CODIGO")[01],    0,                ""            ,".T.", "C", "",    ""} )
+    aAdd(aHead, {"CFOP"             , xTabela+"_CFOP"  , ""                                   , TamSX3("F4_CF")[01]    ,    0,                ""            ,".T.", "C", "",    ""} )
+    aAdd(aHead, {"Bloqueado"        , xTabela+"_BLQL"  , ""                                   , TamSX3(xTabela+"_BLQL")[01],0,                ""            ,".T.", "C", "",    ""} )
+    aAdd(aHead, {"Recno"            , "XX_RECNO"       ,  "@E 999,999,999,999,999,999"        ,  018,                       0,                ".T."         ,".T.", "N", "",    ""} )
  
     Processa({|| fGravaAcols()}, "Processando")
  
     DEFINE MSDIALOG oDlgPvt TITLE "Tes X Cfop - Nota de Débito/Crédito" FROM 000, 000  TO nJanAltu, nJanLarg COLORS 0, 16777215 PIXEL
 
-        @ 004, 003 SAY "MCS"                SIZE 200, 030 FONT oFontAno  OF oDlgPvt COLORS RGB(149,179,215) PIXEL
+        //@ 004, 003 SAY "MCS"                SIZE 200, 030 FONT oFontAno  OF oDlgPvt COLORS RGB(149,179,215) PIXEL
         @ 004, 050 SAY "Cadastro de"        SIZE 200, 030 FONT oFontSub  OF oDlgPvt COLORS RGB(031,073,125) PIXEL
         @ 014, 050 SAY "Tes x CFOP"         SIZE 200, 030 FONT oFontSubN OF oDlgPvt COLORS RGB(031,073,125) PIXEL
          
@@ -349,3 +349,58 @@ Static Function fMcsSalva()
 
 
 Return
+
+/*/{Protheus.doc} FVALCFOP
+Valida se o CFOP existe no de/para
+@type function
+@version  
+@author rodri
+@since 6/5/2026
+@param xCf, variant, param_description
+@return variant, return_description
+/*/
+User Function FVALCFOP(xCf)
+
+    Local lRet := .T.
+    Local xTabela   := SuperGetMV("MV_XMCS002",.F.,"WW2") //Guarda o alias da tabela de TES x CFOP
+	Local aArea 	:= (xTabela)->(GetArea(xTabela))
+
+	(xTabela)->(dbSelectArea(xTabela))
+	(xTabela)->(dbSetOrder(2))
+
+	If (xTabela)->(dbSeek(xFilial(xTabela)+AllTrim("5"+xCf),.F.)) .Or. (xTabela)->(dbSeek(xFilial(xTabela)+AllTrim("6"+xCf),.F.));
+		.Or. (xTabela)->(dbSeek(xFilial(xTabela)+AllTrim("7"+xCf),.F.))
+		xTes := &(xTabela+"->"+xTabela+"_TES")
+        lRet := .F.
+	EndIf
+
+	RestArea(aArea)
+
+
+Return lRet
+
+/*/{Protheus.doc} fGatTes
+Gatilho para preenchimento do CFOP
+@type function
+@version  
+@author rodri
+@since 6/5/2026
+@return variant, return_description
+/*/
+User Function fGAtCFOP()
+
+    Local aArea     := SF4->(GetArea())
+    Local xTabela   := SuperGetMV("MV_XMCS002",.F.,"WW2") //Guarda o alias da tabela de TES x CFOP
+
+    SF4->(dbSelectArea("SF4"))
+    SF4->(dbSetOrder(1))
+
+    xTes := M->&(xTabela+"_TES")
+
+    If SF4->(dbSeek(xFilial("SF4") + xTes, .F.))
+        xCf := SF4->F4_CF
+    EndIf    
+
+    FwRestArea(aArea)
+    
+Return xCf
