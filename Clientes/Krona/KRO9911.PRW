@@ -70,3 +70,98 @@ User Function KRO9911()
     FwRestArea(aArea)
 
 Return
+
+/*/{Protheus.doc} KRO9911
+Condição para o gatilho
+@type function
+@version  
+@author MCS Tecnologia
+@since 5/25/2026
+@return variant, return_description
+/*/
+User Function KRO9911A()
+
+    Local lRet      := .F.
+    Local aAreaF4   := SF4->(GetArea())
+    Local aAreaB1   := SB1->(GetArea())
+    Local aAreaA2   := SA2->(GetArea())
+    Local nPosClasf := aScan(aHeader,{|x| AllTrim(x[2])=="D1_CLASFIS"})
+    Local nPosCF    := aScan(aHeader,{|x| AllTrim(x[2])=="D1_CF"})
+    Local nPosPIcms := aScan(aHeader,{|x| AllTrim(x[2])=="D1_PICM"})
+    Local nNext     := 0
+
+    SA2->(dbSelectArea("SA2"))
+    SA2->(dbSetOrder(1))
+
+    //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+    //³ Apesar de vir posiconado e com a informação, é para garantir         ³
+    //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+    SA2->(dbSeek(xFilial("SA2") + CA100FOR + CLOJA,.F.))
+
+    For nNext := 1 to Len(aCols)
+        If AllTrim(aCols[nNext][nPosCF]) == '1556' .Or. AllTrim(aCols[nNext][nPosCF]) == '1551' .And. AllTrim(aCols[nNext][nPosClasf]) == '1' .And. SA2->A2_EST == 'SC';
+            .Or. aCols[nNext][nPosPIcms] == 4
+            lRet := .T.
+        EndIf
+    Next nNext
+
+    FwRestArea(aAreaF4)
+    FwRestArea(aAreaB1)
+    FwRestArea(aAreaA2)
+
+Return (lRet)
+
+/*/{Protheus.doc} KRO9911B
+Gatilho para preenchimento em tela do valor do icms complementar e aliquota
+@type function
+@version  
+@author rodri
+@since 5/25/2026
+@return variant, return_description
+/*/
+User Function KRO9911B(xTipo)
+
+    Local nRet      := 0
+    Local aAreaF1   := SF1->(GetArea())
+    Local aAreaF4   := SF4->(GetArea()) 
+    Local nPosClasf := aScan(aHeader,{|x| AllTrim(x[2])=="D1_CLASFIS"})
+    Local nPosItem	:= aScan(aHeader,{|x| AllTrim(x[2])=="D1_ITEM"})
+	Local nPosCod   := aScan(aHeader,{|x| AllTrim(x[2])=="D1_COD"})
+    Local nPosBase  := aScan(aHeader,{|x| AllTrim(x[2])=="D1_BASEICM"}) 
+    //Local nPosAliq  := aScan(aHeader,{|x| AllTrim(x[2])=="D1_ALIQCMP"})
+    Local nPosCF    := aScan(aHeader,{|x| AllTrim(x[2])=="D1_CF"})
+    Local nPosIcmCo := aScan(aHeader,{|x| AllTrim(x[2])=="D1_ICMSCOM"})
+    Local nPosPIcms := aScan(aHeader,{|x| AllTrim(x[2])=="D1_PICM"})
+    Local nNext     := 0
+    Local nAliq     := 0
+    Local xClasfis  := ""
+    Local xCf       := ""
+
+    For nNext := 1 to Len(aCols)
+        If !aCols[nNext][Len(aHeader)+1]
+            xItem   := aCols[nNext][nPosItem]
+            xProd  	:= aCols[nNext][nPosCod]
+            xBase   := aCols[nNext][nPosBase]
+            xClasFis:= aCols[nNext][nPosClasf]
+            //nAliq   := aCols[nNext][nPosAliq]
+            xCf     := SubStr(aCols[nNext][nPosCF],1,1)
+            If AllTrim(xClasFis) == '1' .Or. aCols[nNext][nPosPIcms] == 4 .And. AllTrim(xCf) $ "1556#1551" 
+                //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+                //³ Altera o aCols conforme o gatilho feito, gravo duas vezes para garantir ³
+                //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+                If xTipo == "BASE"
+                    aCols[nNext][nPosIcmCo] := Round(aCols[nNext][nPosBase] * 0.13,2)
+                    //aCols[nNext][nPosAliq] := 13
+                /*Else
+                    aCols[nNext][nPosIcmCo] := Round(aCols[nNext][nPosBase] * 0.13,2)
+                    //aCols[nNext][nPosAliq] := 13*/
+                EndIf
+            EndIf
+        EndIf
+    Next nNext
+
+
+    FwRestArea(aAreaF1)
+    FwRestArea(aAreaF4)
+
+Return (nRet)
