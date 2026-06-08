@@ -134,28 +134,27 @@ Static Function fGrvMonit(xAlias,xTpNota)
                 RecLock(xAliDoc, .T.)
                     &(xAliDoc+"->"+xAliDoc+"_FILIAL")   := FWxFilial(xAliDoc)
                     &(xAliDoc+"->"+xAliDoc+"_ID")       := xDoc
-                    &(xAliDoc+"->"+xAliDoc+"_PREF")     := Iif(xTpNota $ '4/6',(xAlias)->PREFIXO,'')
-                    &(xAliDoc+"->"+xAliDoc+"_NUMTIT")   := Iif(xTpNota $ '4/6',(xAlias)->TITULO,'')
-                    &(xAliDoc+"->"+xAliDoc+"_PARCEL")   := Iif(xTpNota $ '4/6',(xAlias)->PARCELA,'')
-                    &(xAliDoc+"->"+xAliDoc+"_TIPO")     := Iif(xTpNota $ '4/6',(xAlias)->TIPO,'')
+                    &(xAliDoc+"->"+xAliDoc+"_PREF")     := Iif(xTpNota == '4',(xAlias)->PREFIXO,'')
+                    &(xAliDoc+"->"+xAliDoc+"_NUMTIT")   := Iif(xTpNota == '4',(xAlias)->TITULO,'')
+                    &(xAliDoc+"->"+xAliDoc+"_PARCEL")   := Iif(xTpNota == '4',(xAlias)->PARCELA,'')
+                    &(xAliDoc+"->"+xAliDoc+"_TIPO")     := Iif(xTpNota == '4',(xAlias)->TIPO,'')
                     &(xAliDoc+"->"+xAliDoc+"_CLIENT")   := AllTrim((xAlias)->COD_CLIENTE)
                     &(xAliDoc+"->"+xAliDoc+"_LOJA")     := AllTrim((xAlias)->LOJA)
                     &(xAliDoc+"->"+xAliDoc+"_NOME")     := AllTrim((xAlias)->NOME_CLIENTE)
-                    &(xAliDoc+"->"+xAliDoc+"_DOCUME")   := Iif(!xTpNota $ '4/6',(xAlias)->DOCUMENTO,'')
-                    &(xAliDoc+"->"+xAliDoc+"_SERIE")    := Iif(!xTpNota $ '4/6',(xAlias)->SERIE,'')
-                    &(xAliDoc+"->"+xAliDoc+"_EMISS")    := Iif(!xTpNota $ '6',sTod((xAlias)->DT_EMISSAO),sTod(""))
+                    &(xAliDoc+"->"+xAliDoc+"_DOCUME")   := (xAlias)->DOCUMENTO
+                    &(xAliDoc+"->"+xAliDoc+"_SERIE")    := (xAlias)->SERIE
+                    &(xAliDoc+"->"+xAliDoc+"_EMISS")    := sTod((xAlias)->DT_EMISSAO)
                     &(xAliDoc+"->"+xAliDoc+"_VECTO")    := Iif(xTpNota == '4',sTod((xAlias)->DT_VENCIMENTO),sTod(""))
-                    &(xAliDoc+"->"+xAliDoc+"_BAIXA")    := Iif(xTpNota $ '4/6',sTod((xAlias)->DT_BAIXA),sTod(""))
-                    &(xAliDoc+"->"+xAliDoc+"_VLRTIT")   := Iif(xTpNota == '4/6',(xAlias)->VALOR_TITULO,(xAlias)->VALOR_TOTAL) //Uso o mesmo campo para gravar valor da NF e titulo
+                    &(xAliDoc+"->"+xAliDoc+"_BAIXA")    := Iif(xTpNota == '4',sTod((xAlias)->DT_BAIXA),sTod(""))
+                    &(xAliDoc+"->"+xAliDoc+"_VLRTIT")   := Iif(xTpNota == '4',(xAlias)->VALOR_TITULO,(xAlias)->VALOR_TOTAL) //Uso o mesmo campo para gravar valor da NF e titulo
                     &(xAliDoc+"->"+xAliDoc+"_VLRJUR")   := Iif(xTpNota == '4',(xAlias)->VALOR_JUROS,0)
-                    &(xAliDoc+"->"+xAliDoc+"_QTDIT")    := Iif(!xTpNota $ '4/6',(xAlias)->QTDE_ITENS_SD2,0)
-                    &(xAliDoc+"->"+xAliDoc+"_IBSCBS")   := Iif(!xTpNota $ '4/6',(xAlias)->CALCULA_IBS_CBS,0)
+                    &(xAliDoc+"->"+xAliDoc+"_QTDIT")    := Iif(xTpNota $ '4/5',(xAlias)->QTDE_ITENS_SD2,0)
+                    &(xAliDoc+"->"+xAliDoc+"_IBSCBS")   := Iif(xTpNota $ '4/5',(xAlias)->CALCULA_IBS_CBS,0)
                     &(xAliDoc+"->"+xAliDoc+"_JURITE")   := Iif(xTpNota == '4',(xAlias)->VALOR_JUROS / (xAlias)->QTDE_ITENS_SD2,0)
                     &(xAliDoc+"->"+xAliDoc+"_DKN")      := Iif(xTpNota $ '4/5',(xAlias)->EXISTE_DKN,'N')
                     &(xAliDoc+"->"+xAliDoc+"_TPNOTA")   := (xAlias)->TIPO_NOTA
                     &(xAliDoc+"->"+xAliDoc+"_NFEOK")    := Iif((xAlias)->EXISTE_DKN == 'S',"S","N")
                     &(xAliDoc+"->"+xAliDoc+"_BASECI")   := Iif(xTpNota == '5',(xAlias)->BASE_IBS_CBS,0)
-                    &(xAliDoc+"->"+xAliDoc+"_IDFK7")    := Iif(xTpNota == '6',(xAlias)->IDDOC,'')
                 &(xAliDoc+"->"+"(MsUnlock())")
                 ConfirmSx8()
 
@@ -465,7 +464,7 @@ Query para busca dos recebimento antecipado
 @since 6/5/2026
 @return variant, return_description
 /*/
-Static Function QryAntec()
+Static Function QryIDDOC()
 
     Local xQuery    := ""
     Local xAlias    := GetNextAlias()
@@ -488,6 +487,38 @@ Static Function QryAntec()
     xQuery += "AND A1.D_E_L_E_T_ = ' ' " + chr(13)
 
     MpSysOpenQuery(xQuery, xAlias)
+
+Return xAlias
+
+/*/{Protheus.doc} QryAntec
+Retorna os pedidos com condição de pagamento antecipado
+@type function
+@version  
+@author MCS Tecnologia
+@since 6/8/2026
+@return variant, return_description
+/*/
+Static Function QryAntec()
+
+    Local xQuery := ""
+    Local xAlias := GetNextAlias()
+
+    xQuery := "SELECT C5_FILIAL, C5_NUM AS DOCUMENTO, C5_CLIENTE AS COD_CLIENTE, C5_LOJACLI AS LOJA, A1.A1_NOME AS NOME_CLIENTE, C5_EMISSAO AS DT_EMISSAO, " + chr(13)
+    xQuery += "'6' AS TIPO_NOTA, 'N' AS EXISTE_DKN " + chr(13)
+    xQuery += "FROM " + RetSqlName("SC5") + " C5 " + chr(13)
+    xQuery += "INNER JOIN " + RetSqlName("SE4") + " SE4 " + chr(13)
+    xQuery += "ON E4_CODIGO = C5_CONDPAG " + chr(13)
+    xQuery += "AND E4_FILIAL = '" + FwxFilial("SE4") + "' " + chr(13)
+    xQuery += "AND E4_CTRADT = '1' " + chr(13)
+    xQuery += "INNER JOIN " + RetSqlName("SA1") + " A1 " + chr(13)
+    xQuery += "ON A1.A1_COD = C5_CLIENTE " + chr(13)
+    xQuery += "AND A1.A1_LOJA = C5_LOJACLI " + chr(13)
+    xQuery += "WHERE C5_FILIAL = '" + FwxFilial("SC5") + "' " + chr(13)
+    xQuery += "AND C5.D_E_L_E_T_ = ' ' " + chr(13)
+    xQuery += "AND SE4.D_E_L_E_T_ = ' ' " + chr(13)
+    xQuery += "AND A1.D_E_L_E_T_ = ' ' " + chr(13)
+
+    MpSysOpenQuery(xQuery,xAlias)
 
 Return xAlias
 
