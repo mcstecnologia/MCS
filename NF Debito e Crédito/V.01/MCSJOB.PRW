@@ -66,7 +66,7 @@ User Function MCSJOB(aEmp)
         //³ Verifica se há registros encontrados                                ³
         //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
         If !(xAlias)->(Eof())
-            fGrvMonit(xAlias,'3')
+            fGrvMonit(xAlias,'6')
         Else 
             (xAlias)->(dbCloseArea())
         EndIf
@@ -111,6 +111,8 @@ Static Function fGrvMonit(xAlias,xTpNota)
             lRet := MCSVERIF((xAlias)->PREFIXO, (xAlias)->TITULO, (xAlias)->PARCELA, (xAlias)->TIPO, (xAlias)->LOJA, (xAlias)->COD_CLIENTE, (xAlias)->DOCUMENTO, (xAlias)->SERIE, (xAlias)->TIPO_NOTA)
         ElseIf xTpNota == '3'
             lRet := MCSVERIF("","","","",(xAlias)->LOJA, (xAlias)->COD_CLIENTE, (xAlias)->DOCUMENTO, (xAlias)->SERIE, (xAlias)->TIPO_NOTA)
+        ElseIf xTpNota == '6'
+            lRet := MCSVERIF("","","","","","","","","",(xAlias)->IDDOC)
         EndIf
         //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
         //³ Executa o reclock - executando em macro &                          ³
@@ -132,27 +134,28 @@ Static Function fGrvMonit(xAlias,xTpNota)
                 RecLock(xAliDoc, .T.)
                     &(xAliDoc+"->"+xAliDoc+"_FILIAL")   := FWxFilial(xAliDoc)
                     &(xAliDoc+"->"+xAliDoc+"_ID")       := xDoc
-                    &(xAliDoc+"->"+xAliDoc+"_PREF")     := Iif(xTpNota == '4',(xAlias)->PREFIXO,'')
-                    &(xAliDoc+"->"+xAliDoc+"_NUMTIT")   := Iif(xTpNota == '4',(xAlias)->TITULO,'')
-                    &(xAliDoc+"->"+xAliDoc+"_PARCEL")   := Iif(xTpNota == '4',(xAlias)->PARCELA,'')
-                    &(xAliDoc+"->"+xAliDoc+"_TIPO")     := Iif(xTpNota == '4',(xAlias)->TIPO,'')
+                    &(xAliDoc+"->"+xAliDoc+"_PREF")     := Iif(xTpNota $ '4/6',(xAlias)->PREFIXO,'')
+                    &(xAliDoc+"->"+xAliDoc+"_NUMTIT")   := Iif(xTpNota $ '4/6',(xAlias)->TITULO,'')
+                    &(xAliDoc+"->"+xAliDoc+"_PARCEL")   := Iif(xTpNota $ '4/6',(xAlias)->PARCELA,'')
+                    &(xAliDoc+"->"+xAliDoc+"_TIPO")     := Iif(xTpNota $ '4/6',(xAlias)->TIPO,'')
                     &(xAliDoc+"->"+xAliDoc+"_CLIENT")   := AllTrim((xAlias)->COD_CLIENTE)
                     &(xAliDoc+"->"+xAliDoc+"_LOJA")     := AllTrim((xAlias)->LOJA)
                     &(xAliDoc+"->"+xAliDoc+"_NOME")     := AllTrim((xAlias)->NOME_CLIENTE)
-                    &(xAliDoc+"->"+xAliDoc+"_DOCUME")   := (xAlias)->DOCUMENTO
-                    &(xAliDoc+"->"+xAliDoc+"_SERIE")    := (xAlias)->SERIE
-                    &(xAliDoc+"->"+xAliDoc+"_EMISS")    := sTod((xAlias)->DT_EMISSAO)
+                    &(xAliDoc+"->"+xAliDoc+"_DOCUME")   := Iif(!xTpNota $ '4/6',(xAlias)->DOCUMENTO,'')
+                    &(xAliDoc+"->"+xAliDoc+"_SERIE")    := Iif(!xTpNota $ '4/6',(xAlias)->SERIE,'')
+                    &(xAliDoc+"->"+xAliDoc+"_EMISS")    := Iif(!xTpNota $ '6',sTod((xAlias)->DT_EMISSAO),sTod(""))
                     &(xAliDoc+"->"+xAliDoc+"_VECTO")    := Iif(xTpNota == '4',sTod((xAlias)->DT_VENCIMENTO),sTod(""))
-                    &(xAliDoc+"->"+xAliDoc+"_BAIXA")    := Iif(xTpNota == '4',sTod((xAlias)->DT_BAIXA),sTod(""))
-                    &(xAliDoc+"->"+xAliDoc+"_VLRTIT")   := Iif(xTpNota == '4',(xAlias)->VALOR_TITULO,(xAlias)->VALOR_TOTAL) //Uso o mesmo campo para gravar valor da NF e titulo
+                    &(xAliDoc+"->"+xAliDoc+"_BAIXA")    := Iif(xTpNota $ '4/6',sTod((xAlias)->DT_BAIXA),sTod(""))
+                    &(xAliDoc+"->"+xAliDoc+"_VLRTIT")   := Iif(xTpNota == '4/6',(xAlias)->VALOR_TITULO,(xAlias)->VALOR_TOTAL) //Uso o mesmo campo para gravar valor da NF e titulo
                     &(xAliDoc+"->"+xAliDoc+"_VLRJUR")   := Iif(xTpNota == '4',(xAlias)->VALOR_JUROS,0)
-                    &(xAliDoc+"->"+xAliDoc+"_QTDIT")    := (xAlias)->QTDE_ITENS_SD2
-                    &(xAliDoc+"->"+xAliDoc+"_IBSCBS")   := (xAlias)->CALCULA_IBS_CBS
+                    &(xAliDoc+"->"+xAliDoc+"_QTDIT")    := Iif(!xTpNota $ '4/6',(xAlias)->QTDE_ITENS_SD2,0)
+                    &(xAliDoc+"->"+xAliDoc+"_IBSCBS")   := Iif(!xTpNota $ '4/6',(xAlias)->CALCULA_IBS_CBS,0)
                     &(xAliDoc+"->"+xAliDoc+"_JURITE")   := Iif(xTpNota == '4',(xAlias)->VALOR_JUROS / (xAlias)->QTDE_ITENS_SD2,0)
-                    &(xAliDoc+"->"+xAliDoc+"_DKN")      := (xAlias)->EXISTE_DKN
+                    &(xAliDoc+"->"+xAliDoc+"_DKN")      := Iif(xTpNota $ '4/5',(xAlias)->EXISTE_DKN,'N')
                     &(xAliDoc+"->"+xAliDoc+"_TPNOTA")   := (xAlias)->TIPO_NOTA
                     &(xAliDoc+"->"+xAliDoc+"_NFEOK")    := Iif((xAlias)->EXISTE_DKN == 'S',"S","N")
                     &(xAliDoc+"->"+xAliDoc+"_BASECI")   := Iif(xTpNota == '5',(xAlias)->BASE_IBS_CBS,0)
+                    &(xAliDoc+"->"+xAliDoc+"_IDFK7")    := Iif(xTpNota == '6',(xAlias)->IDDOC,'')
                 &(xAliDoc+"->"+"(MsUnlock())")
                 ConfirmSx8()
 
@@ -198,7 +201,7 @@ Verifica se o registros já existe na tabela de monitoramento
 @since 5/1/2026
 @return variant, return_description
 /*/
-Static Function MCSVERIF(xPref, xTitulo, xParcela, xTipo, xLoja, xCodCli, xDocumento, xSerie, xTipNota)
+Static Function MCSVERIF(xPref, xTitulo, xParcela, xTipo, xLoja, xCodCli, xDocumento, xSerie, xTipNota, xIdDoc)
 
     Local lExist   := .F. 
     Local xAliDoc  := SuperGetMV("XX_ALIAS",.F.,"WW1")
@@ -220,7 +223,11 @@ Static Function MCSVERIF(xPref, xTitulo, xParcela, xTipo, xLoja, xCodCli, xDocum
         If (xAliDoc)->(dbSeek(xFilial(xAliDoc)+xDocumento+xSerie+xCodCli+xLoja,.F.))
             lExist := .T.
         EndIf
-    EndIf
+    ElseIf xTipNota == '6'
+        (xAliDoc)->(dbSetOrder(5))
+        If (xAliDoc)->(dbSeek(xFilial(xAliDoc)+xIdDoc,.F.))
+            lExist := .T.
+        EndIf
 
     FwRestArea(aArea)
 
@@ -460,14 +467,27 @@ Query para busca dos recebimento antecipado
 /*/
 Static Function QryAntec()
 
-/*SELECT FK7_IDDOC, FK7_CLIFOR, FK7_LOJA, FK7_NUM FROM FK1990 FK1
-INNER JOIN FK7990 FK7 
-ON FK1.FK1_FILIAL = FK7.FK7_FILIAL 
-AND FK1.FK1_IDDOC = FK7.FK7_IDDOC
-AND FK7_TIPO = 'RA'
-AND FK1.D_E_L_E_T_ = ' '
-AND FK7.D_E_L_E_T_ = ' '*/
+    Local xQuery    := ""
+    Local xAlias    := GetNextAlias()
+    
+    xQuery := "SELECT FK7_IDDOC AS IDDOC, FK7_CLIFOR AS COD_CLIENTE, FK7_LOJA AS LOJA,A1.A1_NOME AS NOME_CLIENTE, FK7_NUM AS TITULO, FK1_VALOR AS VALOR_TITULO " + chr(13)
+    xQuery += "FK7_PREFIX AS PREFIXO, FK7_TIPO AS TIPO, '6' AS TIPO_NOTA" + chr(13)
+    xQuery += "FROM " + RetSqlName("FK1") + " FK1 " + chr(13)
+    xQuery += "INNER JOIN " + RetSqlName("FK7") + " FK7 " + chr(13)
+    xQuery += "ON FK1.FK1_FILIAL = FK7.FK7_FILIAL " + chr(13)
+    xQuery += "AND FK1.FK1_IDDOC = FK7.FK7_IDDOC " + chr(13)
+    xQuery += "INNER JOIN " + RetSqlName("SA1") + " A1 " + chr(13)
+    xQuery += "ON A1.A1_COD = FK7.FK7_CLIFOR " + chr(13)
+    xQuery += "AND A1.A1_LOJA = FK7.FK7_LOJA " + chr(13)
+    xQuery += "WHERE FK1.FK1_FILIAL = '" + FwxFilial("FK1") + "' " + chr(13)
+    xQuery += "AND FK1.FK1_DATA = '" + dTos(dDataBase) + "' " + chr(13)
+    xQuery += "AND FK7_TIPO = 'RA' " + chr(13)
+    xQuery += "AND FK7_ALIAS = 'SE1' " + chr(13)
+    xQuery += "AND FK1.D_E_L_E_T_ = ' ' " + chr(13)
+    xQuery += "AND FK7.D_E_L_E_T_ = ' ' " + chr(13)
+    xQuery += "AND A1.D_E_L_E_T_ = ' ' " + chr(13)
 
+    MpSysOpenQuery(xQuery, xAlias)
 
 Return xAlias
 
