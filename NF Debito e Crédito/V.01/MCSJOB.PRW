@@ -128,6 +128,13 @@ Static Function fGrvMonit(xAlias,xTpNota)
             EndIf
         EndIf
 
+        //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+        //³ Topo 6- grava o ID doc da FK7 na tabela de controle, para uso na NF ³ 
+        //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ      
+        If xtpNota == '6'
+            xIdFK7 := QryIDDOC((xAlias)->TITULO,(xAlias)->COD_CLIENTE,(xAlias)->LOJA)
+        EndIf
+
         Begin Transaction
 
             If !lRet
@@ -135,9 +142,9 @@ Static Function fGrvMonit(xAlias,xTpNota)
                     &(xAliDoc+"->"+xAliDoc+"_FILIAL")   := FWxFilial(xAliDoc)
                     &(xAliDoc+"->"+xAliDoc+"_ID")       := xDoc
                     &(xAliDoc+"->"+xAliDoc+"_PREF")     := Iif(xTpNota == '4',(xAlias)->PREFIXO,'')
-                    &(xAliDoc+"->"+xAliDoc+"_NUMTIT")   := Iif(xTpNota == '4',(xAlias)->TITULO,'')
+                    &(xAliDoc+"->"+xAliDoc+"_NUMTIT")   := Iif(xTpNota $ '4/6',(xAlias)->TITULO,'')
                     &(xAliDoc+"->"+xAliDoc+"_PARCEL")   := Iif(xTpNota == '4',(xAlias)->PARCELA,'')
-                    &(xAliDoc+"->"+xAliDoc+"_TIPO")     := Iif(xTpNota == '4',(xAlias)->TIPO,'')
+                    &(xAliDoc+"->"+xAliDoc+"_TIPO")     := Iif(xTpNota $ '4/6',(xAlias)->TIPO,'')
                     &(xAliDoc+"->"+xAliDoc+"_CLIENT")   := AllTrim((xAlias)->COD_CLIENTE)
                     &(xAliDoc+"->"+xAliDoc+"_LOJA")     := AllTrim((xAlias)->LOJA)
                     &(xAliDoc+"->"+xAliDoc+"_NOME")     := AllTrim((xAlias)->NOME_CLIENTE)
@@ -155,6 +162,8 @@ Static Function fGrvMonit(xAlias,xTpNota)
                     &(xAliDoc+"->"+xAliDoc+"_TPNOTA")   := (xAlias)->TIPO_NOTA
                     &(xAliDoc+"->"+xAliDoc+"_NFEOK")    := Iif((xAlias)->EXISTE_DKN == 'S',"S","N")
                     &(xAliDoc+"->"+xAliDoc+"_BASECI")   := Iif(xTpNota == '5',(xAlias)->BASE_IBS_CBS,0)
+                    &(xAliDoc+"->"+xAliDoc+"_SLDFIE")   := Iif(xTpNota == '6',(xAlias)->SALDO,0)
+                    &(xAliDoc+"->"+xAliDoc+"_FK7ID")    := Iif(xTpNota == '6',xIdFK7,'')
                 &(xAliDoc+"->"+"(MsUnlock())")
                 ConfirmSx8()
 
@@ -164,7 +173,7 @@ Static Function fGrvMonit(xAlias,xTpNota)
                 //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
                 //³ Indica se gera nota automaticamente, gero individualmente           ³
                 //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-                If lGeraNF
+                If lGeraNF .And. (xTpNota == '4' .Or. xTpNota == '5')
                     U_MCSGERA((xAlias)->DOCUMENTO,(xAlias)->SERIE,AllTrim((xAlias)->COD_CLIENTE),AllTrim((xAlias)->LOJA),(xAlias)->TIPO_NOTA,Iif(xTpNota == '4',&(xAliDoc+"->"+xAliDoc+"_JURITE"),0))
                 EndIf
                     
@@ -464,31 +473,37 @@ Query para busca dos recebimento antecipado
 @since 6/5/2026
 @return variant, return_description
 /*/
-Static Function QryIDDOC()
+Static Function QryIDDOC(xTit,xCli,xLoja)
 
     Local xQuery    := ""
     Local xAlias    := GetNextAlias()
+    Local xIdFk7    := ""
     
-    xQuery := "SELECT FK7_IDDOC AS IDDOC, FK7_CLIFOR AS COD_CLIENTE, FK7_LOJA AS LOJA,A1.A1_NOME AS NOME_CLIENTE, FK7_NUM AS TITULO, FK1_VALOR AS VALOR_TITULO " + chr(13)
-    xQuery += "FK7_PREFIX AS PREFIXO, FK7_TIPO AS TIPO, '6' AS TIPO_NOTA" + chr(13)
+    xQuery := "SELECT FK7_IDDOC AS IDDOC" + chr(13)
     xQuery += "FROM " + RetSqlName("FK1") + " FK1 " + chr(13)
     xQuery += "INNER JOIN " + RetSqlName("FK7") + " FK7 " + chr(13)
     xQuery += "ON FK1.FK1_FILIAL = FK7.FK7_FILIAL " + chr(13)
     xQuery += "AND FK1.FK1_IDDOC = FK7.FK7_IDDOC " + chr(13)
-    xQuery += "INNER JOIN " + RetSqlName("SA1") + " A1 " + chr(13)
-    xQuery += "ON A1.A1_COD = FK7.FK7_CLIFOR " + chr(13)
-    xQuery += "AND A1.A1_LOJA = FK7.FK7_LOJA " + chr(13)
     xQuery += "WHERE FK1.FK1_FILIAL = '" + FwxFilial("FK1") + "' " + chr(13)
-    xQuery += "AND FK1.FK1_DATA = '" + dTos(dDataBase) + "' " + chr(13)
+    xQuery += "AND FK7.FK7_NUM = '" +xTit+ "' " + chr(13)
+    xQuery += "AND FK7.FK7_CLIEFOR = '" +xCli+ "' " + chr(13)
+    xQuery += "AND FK7.FK7_LOJA = '" +xLoja+ "' " + chr(13)
     xQuery += "AND FK7_TIPO = 'RA' " + chr(13)
     xQuery += "AND FK7_ALIAS = 'SE1' " + chr(13)
     xQuery += "AND FK1.D_E_L_E_T_ = ' ' " + chr(13)
     xQuery += "AND FK7.D_E_L_E_T_ = ' ' " + chr(13)
-    xQuery += "AND A1.D_E_L_E_T_ = ' ' " + chr(13)
 
     MpSysOpenQuery(xQuery, xAlias)
 
-Return xAlias
+    (xAlias)->(dbGoTop())
+
+    If !(xAlias)->(Eof())
+        xIdFK7 := (xAlias)->IDDOC
+    EndIf
+
+    (xAlias)->(dbCloseArea())
+
+Return xIdFK7
 
 /*/{Protheus.doc} QryAntec
 Retorna os pedidos com condição de pagamento antecipado
@@ -504,7 +519,7 @@ Static Function QryAntec()
     Local xAlias := GetNextAlias()
 
     xQuery := "SELECT C5_FILIAL, C5_NUM AS DOCUMENTO, C5_CLIENTE AS COD_CLIENTE, C5_LOJACLI AS LOJA, A1.A1_NOME AS NOME_CLIENTE, C5_EMISSAO AS DT_EMISSAO, " + chr(13)
-    xQuery += "'6' AS TIPO_NOTA, 'N' AS EXISTE_DKN " + chr(13)
+    xQuery += "'6' AS TIPO_NOTA, 'N' AS EXISTE_DKN, FIE_NUM AS TITULO, FIE_TIPO AS TIPO, FIE_SALDO AS SALDO, FIE_VALOR AS VALOR_TOTAL " + chr(13)
     xQuery += "FROM " + RetSqlName("SC5") + " C5 " + chr(13)
     xQuery += "INNER JOIN " + RetSqlName("SE4") + " SE4 " + chr(13)
     xQuery += "ON E4_CODIGO = C5_CONDPAG " + chr(13)
@@ -513,6 +528,11 @@ Static Function QryAntec()
     xQuery += "INNER JOIN " + RetSqlName("SA1") + " A1 " + chr(13)
     xQuery += "ON A1.A1_COD = C5_CLIENTE " + chr(13)
     xQuery += "AND A1.A1_LOJA = C5_LOJACLI " + chr(13)
+    xQuery += "INNER JOIN " + RetSqlName("FIE") + " FIE " + chr(13)
+    xQuery += "ON FIE.FIE_FILIAL = C5_FILIAL " + chr(13)
+    xQuery += "AND FIE.FIE_PEDIDO = C5_NUM " + chr(13)
+    xQuery += "AND FIE_CLIENTE = C5_CLIENTE " + chr(13)
+    xQuery += "AND FIE_LOJA = C5_LOJACLI " + chr(13)
     xQuery += "WHERE C5_FILIAL = '" + FwxFilial("SC5") + "' " + chr(13)
     xQuery += "AND C5.D_E_L_E_T_ = ' ' " + chr(13)
     xQuery += "AND SE4.D_E_L_E_T_ = ' ' " + chr(13)
