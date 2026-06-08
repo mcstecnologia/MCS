@@ -99,6 +99,7 @@ Static Function fGrvMonit(xAlias,xTpNota)
     Local nItens    := 0
     Local lMail     := SuperGetMV("XX_ATVMAIL",.F.,.F.)
     Local aRegs     := {}
+    Local xIdFK7    := ""
 
     aArea := &(xAliDoc+"->"+"(GetArea())")
 
@@ -129,7 +130,7 @@ Static Function fGrvMonit(xAlias,xTpNota)
         EndIf
 
         //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-        //³ Topo 6- grava o ID doc da FK7 na tabela de controle, para uso na NF ³ 
+        //³ Tipo 6- grava o ID doc da FK7 na tabela de controle, para uso na NF ³ 
         //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ      
         If xtpNota == '6'
             xIdFK7 := QryIDDOC((xAlias)->TITULO,(xAlias)->COD_CLIENTE,(xAlias)->LOJA)
