@@ -95,7 +95,7 @@ User Function MCSGERA(xDoc,xSerie,xCli,xLoja,xTipo,nVal)
 			xCli 	:= &(xAliDoc+"->"+xAliDoc+"_CLIENT")
 			xLoja 	:= &(xAliDoc+"->"+xAliDoc+"_LOJA")
 			xTipo   := &(xAliDoc+"->"+xAliDoc+"_TPNOTA")
-			nVal    := Iif(xTipo == '4',&(xAliDoc+"->"+xAliDoc+"_JURITE"),0)
+			nVal    := Iif(xTipo == '4',&(xAliDoc+"->"+xAliDoc+"_VLRJUR"),0)
 
 		EndIf
 
@@ -141,6 +141,8 @@ User Function GERANOTA(xDoc,xSerie,xCli,xLoja,xTipo,aRegs,nVal)
 	Local xTes          	:= "506"
 	Local aMsg          	:= {}
 	Local xId               := ""
+	Local nQtdTot           := 0
+	Local nValJur           := 0
 
 	Private lAutoErrNoFile 	:= .T.
 	Private lMsErroAuto     := .F.
@@ -168,6 +170,8 @@ User Function GERANOTA(xDoc,xSerie,xCli,xLoja,xTipo,aRegs,nVal)
 
 	oModelNCND:Activate()
 
+	nQtdTot := GetQtdTot(xDoc,xSerie,xCli,xLoja)
+
 	If oModelNCND:IsActive()
 
 		If xTipo == '3' .Or. xTipo == '4' .Or. xTipo == '7'
@@ -191,12 +195,20 @@ User Function GERANOTA(xDoc,xSerie,xCli,xLoja,xTipo,aRegs,nVal)
 					Return
 				EndIf
 
+				//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+				//³ Faz o rateio proporcional dos juros conforme a quantidade de cada prod          ³
+				//https://tdn.totvs.com/pages/releaseview.action?pageId=1013620273
+				//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+				If xTipo == '4'
+					nValJur := (aRegs[xInc][13] / nQtdTot) * nVal
+				EndIf
+
 				oModelNCND:GetModel('ITENSDETAIL'):AddLine()
 				oModelNCND:SetValue( "ITENSDETAIL"    , "D2_ITEM"    , PadL(AllTrim(Str(xInc)), 2, '0'))
 				oModelNCND:SetValue( "ITENSDETAIL"    , "D2_COD"     , aRegs[xInc][5])
 				oModelNCND:SetValue( "ITENSDETAIL"    , "D2_QUANT"   , 1)
-				oModelNCND:SetValue( "ITENSDETAIL"    , "D2_PRCVEN"  , Iif(xTipo == '4',nVal,aRegs[xInc][8]))
-				oModelNCND:SetValue( "ITENSDETAIL"    , "D2_TOTAL"   , Iif(xTipo == '4',nVal,aRegs[xInc][8]))
+				oModelNCND:SetValue( "ITENSDETAIL"    , "D2_PRCVEN"  , Iif(xTipo == '4',nValJur,aRegs[xInc][8]))
+				oModelNCND:SetValue( "ITENSDETAIL"    , "D2_TOTAL"   , Iif(xTipo == '4',nValJur,aRegs[xInc][8]))
 				oModelNCND:SetValue( "ITENSDETAIL"    , "D2_TES"     , xTes)
 				oModelNCND:SetValue( "ITENSDETAIL"    , "D2_CF"      , Iif(xEst == aRegs[xInc][11], "5"+SubStr(SF4->F4_CF,2,3),"6"+SubStr(SF4->F4_CF,2,3)))
 				oModelNCND:SetValue( "ITENSDETAIL"    , "D2_LOCAL"   , aRegs[xInc][7])
@@ -325,7 +337,7 @@ Static Function fBuscaSD2(xDoc, xSerie, xCli, xLoja)
 	Local xQuery 	:= ""
 
 	xQuery := "SELECT D2_DOC AS DOC, D2_SERIE AS SERIE, D2_CLIENTE AS CLIFOR, D2_LOJA AS LOJA, D2_COD AS PROD, D2_ITEM AS ITEM, " + chr(13)
-	xQuery += "B1_LOCPAD AS LOCPAD, D2_PRCVEN AS VALOR, D2_QUANT AS QUANT, F2_CHVNFE AS CHVNFE, D2_EST AS UF, D2_CF AS CF " + chr(13)
+	xQuery += "B1_LOCPAD AS LOCPAD, D2_PRCVEN AS VALOR, D2_QUANT AS QUANT, F2_CHVNFE AS CHVNFE, D2_EST AS UF, D2_CF AS CF, D2_QUANT AS QTD " + chr(13)
 	xQuery += "FROM " +RetSqlName("SD2") + " D2 " + chr(13)
 	xQuery += "INNER JOIN " +RetSqlName("SB1") + " B1" + chr(13)
 	xQuery += "ON B1.B1_COD = D2.D2_COD" + chr(13)
@@ -349,7 +361,7 @@ Static Function fBuscaSD2(xDoc, xSerie, xCli, xLoja)
     //³ Gravo os itens e retorno para uso na gravação da nota               ³
     //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
 	While !(xAlias)->(Eof())
-		aAdd(aRegs,{(xAlias)->DOC, (xAlias)->SERIE, (xAlias)->CLIFOR, (xAlias)->LOJA, (xAlias)->PROD, (xAlias)->ITEM, (xALias)->LOCPAD, (xAlias)->VALOR, (xAlias)->QUANT, (xAlias)->CHVNFE, (xAlias)->UF, (xAlias)->CF})
+		aAdd(aRegs,{(xAlias)->DOC, (xAlias)->SERIE, (xAlias)->CLIFOR, (xAlias)->LOJA, (xAlias)->PROD, (xAlias)->ITEM, (xALias)->LOCPAD, (xAlias)->VALOR, (xAlias)->QUANT, (xAlias)->CHVNFE, (xAlias)->UF, (xAlias)->CF, (xAlias)->QTD})
 		(xAlias)->(dbSkip())
 	EndDo
 
@@ -431,3 +443,41 @@ Static Function fRetTes(xCf)
 	RestArea(aArea)
 
 Return xTes
+
+/*/{Protheus.doc} GetQtdTot
+Retorna a quantidade total de itens da nota
+@type function
+@version  
+@author MCS Tecnologia
+@since 6/9/2026
+@param xDoc, variant, param_description
+@param xSerie, variant, param_description
+@param xCli, variant, param_description
+@param xLoja, variant, param_description
+@return variant, return_description
+/*/
+Static Function GetQtdTot(xDoc, xSerie, xCli, xLoja)
+
+	Local nQtdTot  := 0
+	Local xAlias   := GetNextAlias()
+	Local xQuery   := ""
+
+	xQuery := "SELECT SUM(D2_QUANT) AS QTD FROM " +RetSqlName("SD2") + " D2 " + chr(13)
+	xQuery += "WHERE D2_FILIAL = '" + FwxFilial("SD2") + "' " + chr(13)
+	xQuery += "AND D2_DOC = '"+xDoc+"' " + chr(13)
+	xQuery += "AND D2_SERIE = '"+AllTrim(xSerie)+"' " + chr(13)
+	xQuery += "AND D2_CLIENTE = '"+AllTrim(xCli)+"' " + chr(13)
+	xQuery += "AND D2_LOJA = '"+AllTrim(xLoja)+"' "+ chr(13)
+	xQuery += "AND D2.D_E_L_E_T_ = ' ' " + chr(13)
+
+	MpSysOpenQuery(xQuery,xAlias)
+
+	(xAlias)->(dbGoTop())
+
+	If (xAlias)->(Eof())
+		nQtdTot := (xAlias)->QTD
+	EndIf
+
+	(xAlias)->(DbCloseArea())
+
+Return nQtdTot

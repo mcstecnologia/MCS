@@ -158,7 +158,7 @@ Static Function fGrvMonit(xAlias,xTpNota)
                     &(xAliDoc+"->"+xAliDoc+"_VLRJUR")   := Iif(xTpNota == '4',(xAlias)->VALOR_JUROS,0)
                     &(xAliDoc+"->"+xAliDoc+"_QTDIT")    := Iif(xTpNota $ '4/5',(xAlias)->QTDE_ITENS_SD2,0)
                     &(xAliDoc+"->"+xAliDoc+"_IBSCBS")   := Iif(xTpNota $ '4/5',(xAlias)->CALCULA_IBS_CBS,0)
-                    &(xAliDoc+"->"+xAliDoc+"_JURITE")   := Iif(xTpNota == '4',(xAlias)->VALOR_JUROS / (xAlias)->QTDE_ITENS_SD2,0)
+                    //&(xAliDoc+"->"+xAliDoc+"_JURITE")   := Iif(xTpNota == '4',(xAlias)->VALOR_JUROS / (xAlias)->QTDE_ITENS_SD2,0)
                     &(xAliDoc+"->"+xAliDoc+"_DKN")      := Iif(xTpNota $ '4/5',(xAlias)->EXISTE_DKN,'N')
                     &(xAliDoc+"->"+xAliDoc+"_TPNOTA")   := (xAlias)->TIPO_NOTA
                     &(xAliDoc+"->"+xAliDoc+"_NFEOK")    := Iif((xAlias)->EXISTE_DKN == 'S',"S","N")

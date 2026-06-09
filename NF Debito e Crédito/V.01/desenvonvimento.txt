@@ -1,6 +1,8 @@
 O que fazer:
 
 Ajustar todas as validações da rotina.
-Criar campo para gravar o numero da nota na WW1
 Criar validação para excluir a nota gerada na DKN e ajustar o campos da WW1
-Criar tela e lógica para gravar o TES x CFOP - Finalizado
+Criar regra para tipo 6
+
+Ajustar para o valor de multa e juros ser proporcional a quantidade do produto
+** estudo, integrar com API do governo para a nota de tipo 03, notas não processadas
