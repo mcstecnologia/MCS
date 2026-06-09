@@ -129,13 +129,6 @@ Static Function fGrvMonit(xAlias,xTpNota)
             EndIf
         EndIf
 
-        //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-        //³ Tipo 6- grava o ID doc da FK7 na tabela de controle, para uso na NF ³ 
-        //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ      
-        If xtpNota == '6'
-            xIdFK7 := QryIDDOC((xAlias)->TITULO,(xAlias)->COD_CLIENTE,(xAlias)->LOJA)
-        EndIf
-
         Begin Transaction
 
             If !lRet
@@ -164,7 +157,7 @@ Static Function fGrvMonit(xAlias,xTpNota)
                     &(xAliDoc+"->"+xAliDoc+"_NFEOK")    := Iif((xAlias)->EXISTE_DKN == 'S',"S","N")
                     &(xAliDoc+"->"+xAliDoc+"_BASECI")   := Iif(xTpNota == '5',(xAlias)->BASE_IBS_CBS,0)
                     &(xAliDoc+"->"+xAliDoc+"_SLDFIE")   := Iif(xTpNota == '6',(xAlias)->SALDO,0)
-                    &(xAliDoc+"->"+xAliDoc+"_FK7ID")    := Iif(xTpNota == '6',xIdFK7,'')
+
                 &(xAliDoc+"->"+"(MsUnlock())")
                 ConfirmSx8()
 
@@ -466,45 +459,6 @@ Static Function QryNProc()
 
 Return xAlias
 
-/*/{Protheus.doc} QryAntec
-Query para busca dos recebimento antecipado
-@type function
-@version  
-@author MCS Tecnologia
-@since 6/5/2026
-@return variant, return_description
-/*/
-Static Function QryIDDOC(xTit,xCli,xLoja)
-
-    Local xQuery    := ""
-    Local xAlias    := GetNextAlias()
-    Local xIdFk7    := ""
-    
-    xQuery := "SELECT FK7_IDDOC AS IDDOC" + chr(13)
-    xQuery += "FROM " + RetSqlName("FK1") + " FK1 " + chr(13)
-    xQuery += "INNER JOIN " + RetSqlName("FK7") + " FK7 " + chr(13)
-    xQuery += "ON FK1.FK1_FILIAL = FK7.FK7_FILIAL " + chr(13)
-    xQuery += "AND FK1.FK1_IDDOC = FK7.FK7_IDDOC " + chr(13)
-    xQuery += "WHERE FK1.FK1_FILIAL = '" + FwxFilial("FK1") + "' " + chr(13)
-    xQuery += "AND FK7.FK7_NUM = '" +xTit+ "' " + chr(13)
-    xQuery += "AND FK7.FK7_CLIEFOR = '" +xCli+ "' " + chr(13)
-    xQuery += "AND FK7.FK7_LOJA = '" +xLoja+ "' " + chr(13)
-    xQuery += "AND FK7_TIPO = 'RA' " + chr(13)
-    xQuery += "AND FK7_ALIAS = 'SE1' " + chr(13)
-    xQuery += "AND FK1.D_E_L_E_T_ = ' ' " + chr(13)
-    xQuery += "AND FK7.D_E_L_E_T_ = ' ' " + chr(13)
-
-    MpSysOpenQuery(xQuery, xAlias)
-
-    (xAlias)->(dbGoTop())
-
-    If !(xAlias)->(Eof())
-        xIdFK7 := (xAlias)->IDDOC
-    EndIf
-
-    (xAlias)->(dbCloseArea())
-
-Return xIdFK7
 
 /*/{Protheus.doc} QryAntec
 Retorna os pedidos com condição de pagamento antecipado

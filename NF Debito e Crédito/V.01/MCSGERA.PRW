@@ -27,6 +27,7 @@ User Function MCSGERA(xDoc,xSerie,xCli,xLoja,xTipo,nVal)
     Local lInverte  
 	Local nCt       
 	Local xId       := ""
+	Local xTitulo   := ""
 
     //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
     //³ GetArea para a tabela de monitoramento                              ³
@@ -54,11 +55,12 @@ User Function MCSGERA(xDoc,xSerie,xCli,xLoja,xTipo,nVal)
 				xCli 	:= &(xAliDoc+"->"+xAliDoc+"_CLIENT")
 				xLoja 	:= &(xAliDoc+"->"+xAliDoc+"_LOJA")
 				xTipo   := &(xAliDoc+"->"+xAliDoc+"_TPNOTA")
-				nVal    := Iif(xTipo == '4',&(xAliDoc+"->"+xAliDoc+"_JURITE"),0)
+				xId     := &(xAliDoc+"->"+xAliDoc+"_ID")
+				nVal    := Iif(xTipo == '4',&(xAliDoc+"->"+xAliDoc+"_VLRJUR"),0)
 
 				aRegs := fBuscaSD2(xDoc, xSerie, xCli, xLoja)
 
-				U_GERANOTA(xDoc,xSerie,xCli,xLoja,xTipo,aRegs,nVal)
+				U_GERANOTA(xDoc,xSerie,xCli,xLoja,xTipo,aRegs,nVal,xId)
 
 				nCt++
 					/*//Limpando a marca
@@ -95,16 +97,21 @@ User Function MCSGERA(xDoc,xSerie,xCli,xLoja,xTipo,nVal)
 			xCli 	:= &(xAliDoc+"->"+xAliDoc+"_CLIENT")
 			xLoja 	:= &(xAliDoc+"->"+xAliDoc+"_LOJA")
 			xTipo   := &(xAliDoc+"->"+xAliDoc+"_TPNOTA")
+			xId     := &(xAliDoc+"->"+xAliDoc+"_ID")
 			nVal    := Iif(xTipo == '4',&(xAliDoc+"->"+xAliDoc+"_VLRJUR"),0)
 
 		EndIf
 
-		aRegs := fBuscaSD2(xDoc, xSerie, xCli, xLoja)
+		If xTipo $ '4/5'
+			aRegs := fBuscaSD2(xDoc, xSerie, xCli, xLoja)
+		Else 
+			aRegs := fBuscaSC6(xDOc,xCli,xLoja)
+		EndIf
 
         //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
         //³ Chamo a função que efetiva a gravação da nota                       ³
         //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-		U_GERANOTA(xDoc,xSerie,xCli,xLoja,xTipo,aRegs,nVal)
+		U_GERANOTA(xDoc,xSerie,xCli,xLoja,xTipo,aRegs,nVal,xId)
 
 	EndIf
 
@@ -125,9 +132,9 @@ Gera nota de débito e crédito
 @param xTipo, variant, param_description
 @return variant, return_description
 /*/
-User Function GERANOTA(xDoc,xSerie,xCli,xLoja,xTipo,aRegs,nVal)
+User Function GERANOTA(xDoc,xSerie,xCli,xLoja,xTipo,aRegs,nVal,xId)
 
-	Local xSerie        	:= SuperGetMV("MV_NDCSERI",.F.,"9")
+	Local xSerCple        	:= SuperGetMV("MV_NDCSERI",.F.,"9")
 	Local xAliDoc       	:= SuperGetMV("XX_ALIAS",.F.,"WW1")
 	Local aArea         	:= ""
 	Local aAreaF4       	:= SF4->(GetArea("SF4"))
@@ -143,11 +150,17 @@ User Function GERANOTA(xDoc,xSerie,xCli,xLoja,xTipo,aRegs,nVal)
 	Local xId               := ""
 	Local nQtdTot           := 0
 	Local nValJur           := 0
+	Local nNexId            := 0
+	Local aIdFK7            := {}
 
 	Private lAutoErrNoFile 	:= .T.
 	Private lMsErroAuto     := .F.
 	Private oModelNCND   	:= Nil
 	Private jDocRef      	:= JsonObject():new()
+
+
+    aAreaTab := &(xAliDoc+"->"+"(GetArea())")
+	&(xAliDoc+"->"+"(DbGoTop())")
 
 	SF4->(dbSelectArea("SF4"))
 	SF4->(dbSetOrder(1))
@@ -156,7 +169,7 @@ User Function GERANOTA(xDoc,xSerie,xCli,xLoja,xTipo,aRegs,nVal)
 
 	jFld600["F2_TPCOMPL"] := AllTrim(xTipo)
 
-	jFld600["F2_SERIE"] := xSerie
+	jFld600["F2_SERIE"] := xSerCple
 	jFld600["A1_COD"]   := xCli
 	jFld600["A1_LOJA"]  := xLoja
 
@@ -275,6 +288,49 @@ User Function GERANOTA(xDoc,xSerie,xCli,xLoja,xTipo,aRegs,nVal)
 			jDocRef["documentos"] := aDocumentos
 
 		ElseIf xTipo == '6'
+			oModelNCND:SetValue( "CABMASTER"    , "F2_TPCOMPL" ,xTipo) //PAGAMENTO ANTECIPADO
+			oModelNCND:LoadValue("CABMASTER"   , "F2_CLIENTE" ,xCli)
+			oModelNCND:SetValue("CABMASTER"     , "F2_LOJA"    ,xLoja)
+			oModelNCND:SetValue( "CABMASTER"    , "F2_COND"    ,"000")
+			//oModelNCND:SetValue( "CABMASTER"    , "F2_CODA1U"  ,"000001")
+
+			For xInc := 1 To Len(aRegs)
+
+				//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+				//³ Controle para TES não encontrada na rotina de CF x TES              ³
+				//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+				xTes := fRetTes(SubStr(aRegs[xInc][4],2,3))
+
+				oModelNCND:GetModel('ITENSDETAIL'):AddLine()
+				oModelNCND:SetValue( "ITENSDETAIL"    , "D2_ITEM"    ,PadL(AllTrim(Str(xInc)), 2, '0'))
+				oModelNCND:SetValue( "ITENSDETAIL"    , "D2_COD"     ,aRegs[xInc][1])
+				oModelNCND:SetValue( "ITENSDETAIL"    , "D2_PRCVEN"  ,aRegs[xInc][2])
+				oModelNCND:SetValue( "ITENSDETAIL"    , "D2_TES"     ,xTes)
+				oModelNCND:SetValue( "ITENSDETAIL"    , "D2_LOCAL"   ,aRegs[xInc][3])
+
+			Next xInc
+
+			//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+			//³ Busca os IDS da FK7 dos títulos amarrados na antecipação           ³
+			//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+			aIdFK7 := QryIDDOC(xDoc,xCli,xLoja)
+
+			jParam['billBranch']       := FWxFilial("SE1") //Filial do Protheus que será consultada (informar código completo)
+			jParam['participantCode']  := xCli //Código do Cliente
+			jParam['participantUnit']  := xLoja //Loja do Cliente
+			jParam['documentBranch']   := cFilant //Variável cFilAnt
+			jParam['documentSeries']   := jFld600["F2_SERIE"] //Série da Nota Fiscal
+			jParam['mainSourceTable']  := "SF2" //Tabela de origem
+			jParam['identification']   := {} //Identificadores (chave) dos títulos (RA) - FK7_IDDOC
+
+			//ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+			//³ Grava para cada id encontradp                                      ³
+			//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+			For nNexId := 1 To Len(aIdFK7)
+				AADD(jParam['identification'], aIdFK7[nNexId] ) //FK7_IDDOC
+			Next nNexId
+     
+        SetJVAdt(jParam)
 
 		EndIf
 
@@ -481,3 +537,94 @@ Static Function GetQtdTot(xDoc, xSerie, xCli, xLoja)
 	(xAlias)->(DbCloseArea())
 
 Return nQtdTot
+
+/*/{Protheus.doc} QryAntec
+Query para busca dos recebimento antecipado
+@type function
+@version  
+@author MCS Tecnologia
+@since 6/5/2026
+@return variant, return_description
+/*/
+Static Function QryIDDOC(xDoc,xCli,xLoja)
+
+    Local xQuery    := ""
+    Local xAlias    := GetNextAlias()
+    Local aIdFk7    := {}
+    
+    xQuery := "SELECT FK7_IDDOC" + chr(13)
+    xQuery += "FROM " + RetSqlName("SC5") + " C5 " + chr(13)
+    xQuery += "INNER JOIN " + RetSqlName("SE4") + " SE4 " + chr(13)
+    xQuery += "ON E4_CODIGO = C5_CONDPAG " + chr(13)
+    xQuery += "AND E4_FILIAL = '" + FwxFilial("SE4") + "' " + chr(13)
+    xQuery += "AND E4_CTRADT = '1' " + chr(13)
+    xQuery += "INNER JOIN " + RetSqlName("FIE") + " FIE " + chr(13)
+    xQuery += "ON FIE.FIE_FILIAL = C5_FILIAL " + chr(13)
+    xQuery += "AND FIE.FIE_PEDIDO = C5_NUM " + chr(13)
+    xQuery += "AND FIE_CLIENTE = C5_CLIENTE " + chr(13)
+    xQuery += "AND FIE_LOJA = C5_LOJACLI " + chr(13)
+	xQuery += "INNER JOIN " + RetSqlName('FK7') + " FK7 " + chr(13)
+	xQuery += "ON FK7_FILIAL = C5_FILIAL " + chr(13)
+	xQuery += "AND FK7_CLIEFOR = C5_CLIENTE " + chr(13)
+	xQuery += "AND FK7_LOJA = C5_LOJA " + chr(13)
+	xQuery += "AND FK7_NUM = FIE_NUM " + chr(13)
+    xQuery += "WHERE C5_FILIAL = '" + FwxFilial("SC5") + "' " + chr(13)
+	xQuery += "AND C5_NUM = '" + AllTrim(xDoc) + "' " + chr(13)
+	xQuery += "AND C5_CLIENTE = '" + AllTrim(xCli) + "' " + chr(13)
+	xQuery += "AND C5_LOJACLI = '" + AllTrim(xLoja) + "' " + chr(13)
+	xQuery += "AND FK7_ALIAS = 'SE1' " + chr(13)
+	xQuery += "AND FK7_TIPO = 'RA' " + chr(13)
+	xQuery += "AND C5.D_E_L_E_T_ = ' ' " + chr(13)
+    xQuery += "AND SE4.D_E_L_E_T_ = ' ' " + chr(13)
+	xQuery += "AND FK7.D_E_L_E_T_ = ' ' "
+
+    MpSysOpenQuery(xQuery, xAlias)
+
+    (xAlias)->(dbGoTop())
+
+    While !(xAlias)->(Eof())
+        aAdd(aIdFk7, {(xAlias)->IDDOC})
+        (xAlias)->(dbSkip())
+    EndDo
+
+    (xAlias)->(dbCloseArea())
+
+Return aIdFk7
+
+/*/{Protheus.doc} fBuscaSC6
+Busca os dados do pedido para nota de débito tipo 06
+@type function
+@version  
+@author MCS Tecnologia
+@since 6/9/2026
+@param xPed, variant, param_description
+@param xCli, variant, param_description
+@param xLoja, variant, param_description
+@return variant, return_description
+/*/
+Static Function fBuscaSC6(xPed,xCli,xLoja)
+
+	Local xAlias := GetNextAlias()
+	Local xQuery := ""
+	Local aRegs  := {}
+
+	xQuery := "SELECT C6_PRODUTO, C6_PRCVEN, C6_LOCAL, C6_CF "+ chr(13)
+	xQuery += "FROM " + RetSqlName("SC6") + " C6 " + chr(13)
+	xQuery += "WHERE C6_FILIAL = '" + FwxFilial("SC6") + "' " + chr(13)
+	xQuery += "AND C6_NUM = '" + AllTrim(xPed) + "' " + chr(13)
+	xQuery += "AND C6_CLI = '" + AllTrim(xCli) + "' " + chr(13)
+	xQuery += "AND C6_LOJA = '" + AllTrim(xLoja) + "' " + chr(13)
+	xQuery += "AND D_E_L_E_T_ = ' ' " + chr(13)
+
+	MpSysOpenQuery(xQuery,xAlias)
+
+	(xAlias)->(dbGoTop())
+
+	While !(xAlias)->(Eof())
+		aAdd(aRegs,{(xAlias)->C6_PRODUTO, (xAlias)->C6_PRCVEN, (xAlias)->C6_LOCAL, (xAlias)->C6_CF})
+		(xAlias)->(dbSkip())
+	EndDo
+
+	(xAlias)->(DbCloseArea())
+
+Return aRegs
