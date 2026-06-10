@@ -34,6 +34,7 @@ User Function MCSTELA1()
     //Setando Legenda
     oMark:AddLegend( xCampo+" == 'N' .And. "+xTabela+"_TPNOTA == '4' ", "GREEN",   "NF Tipo 4 Não Gerada" )
     oMark:AddLegend( xCampo+" == 'N' .And. "+xTabela+"_TPNOTA == '3' ", "PINK",    "NF Tipo 3 Não Gerada" )
+    oMark:AddLegend( xCampo+" == 'N' .And. "+xTabela+"_TPNOTA == '6' ", "BLUE",    "NF Tipo 6 Não Gerada" )
     oMark:AddLegend( xCampo+" == 'S' ", "RED",    "NF Gerada" )
 
      

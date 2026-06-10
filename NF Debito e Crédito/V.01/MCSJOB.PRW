@@ -149,13 +149,13 @@ Static Function fGrvMonit(xAlias,xTpNota)
                     &(xAliDoc+"->"+xAliDoc+"_BAIXA")    := Iif(xTpNota == '4',sTod((xAlias)->DT_BAIXA),sTod(""))
                     &(xAliDoc+"->"+xAliDoc+"_VLRTIT")   := Iif(xTpNota == '4',(xAlias)->VALOR_TITULO,(xAlias)->VALOR_TOTAL) //Uso o mesmo campo para gravar valor da NF e titulo
                     &(xAliDoc+"->"+xAliDoc+"_VLRJUR")   := Iif(xTpNota == '4',(xAlias)->VALOR_JUROS,0)
-                    &(xAliDoc+"->"+xAliDoc+"_QTDIT")    := Iif(xTpNota $ '4/5',(xAlias)->QTDE_ITENS_SD2,0)
-                    &(xAliDoc+"->"+xAliDoc+"_IBSCBS")   := Iif(xTpNota $ '4/5',(xAlias)->CALCULA_IBS_CBS,0)
+                    &(xAliDoc+"->"+xAliDoc+"_QTDIT")    := Iif(xTpNota $ '4/3',(xAlias)->QTDE_ITENS_SD2,0)
+                    &(xAliDoc+"->"+xAliDoc+"_IBSCBS")   := Iif(xTpNota $ '4/3',(xAlias)->CALCULA_IBS_CBS,0)
                     //&(xAliDoc+"->"+xAliDoc+"_JURITE")   := Iif(xTpNota == '4',(xAlias)->VALOR_JUROS / (xAlias)->QTDE_ITENS_SD2,0)
-                    &(xAliDoc+"->"+xAliDoc+"_DKN")      := Iif(xTpNota $ '4/5',(xAlias)->EXISTE_DKN,'N')
+                    &(xAliDoc+"->"+xAliDoc+"_DKN")      := Iif(xTpNota $ '4/3',(xAlias)->EXISTE_DKN,'N')
                     &(xAliDoc+"->"+xAliDoc+"_TPNOTA")   := (xAlias)->TIPO_NOTA
                     &(xAliDoc+"->"+xAliDoc+"_NFEOK")    := Iif((xAlias)->EXISTE_DKN == 'S',"S","N")
-                    &(xAliDoc+"->"+xAliDoc+"_BASECI")   := Iif(xTpNota == '5',(xAlias)->BASE_IBS_CBS,0)
+                    &(xAliDoc+"->"+xAliDoc+"_BASECI")   := Iif(xTpNota == '3',(xAlias)->BASE_IBS_CBS,0)
                     &(xAliDoc+"->"+xAliDoc+"_SLDFIE")   := Iif(xTpNota == '6',(xAlias)->SALDO,0)
 
                 &(xAliDoc+"->"+"(MsUnlock())")
@@ -167,7 +167,7 @@ Static Function fGrvMonit(xAlias,xTpNota)
                 //ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
                 //³ Indica se gera nota automaticamente, gero individualmente           ³
                 //ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-                If lGeraNF .And. (xTpNota == '4' .Or. xTpNota == '5')
+                If lGeraNF .And. (xTpNota == '4' .Or. xTpNota == '3')
                     U_MCSGERA((xAlias)->DOCUMENTO,(xAlias)->SERIE,AllTrim((xAlias)->COD_CLIENTE),AllTrim((xAlias)->LOJA),(xAlias)->TIPO_NOTA,Iif(xTpNota == '4',&(xAliDoc+"->"+xAliDoc+"_JURITE"),0))
                 EndIf
                     

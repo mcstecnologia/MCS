@@ -102,7 +102,7 @@ User Function MCSGERA(xDoc,xSerie,xCli,xLoja,xTipo,nVal)
 
 		EndIf
 
-		If xTipo $ '4/5'
+		If xTipo $ '4/3'
 			aRegs := fBuscaSD2(xDoc, xSerie, xCli, xLoja)
 		Else 
 			aRegs := fBuscaSC6(xDOc,xCli,xLoja)
